@@ -12,4 +12,5 @@ type Author struct {
 	LastName   string    `gorm:"column:lastName;index:uq_first_last,unique"`
 	BirthDate  time.Time `gorm:"column:birthDate"`
 	Books      []Book
+	FullName   string
 }
