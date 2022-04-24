@@ -9,6 +9,8 @@ type Book struct {
 	Title    string
 	ISBN     string
 	Content  []byte
+	Format   string
+	Version  string
 	AuthorID uint
 	Author   Author
 }
