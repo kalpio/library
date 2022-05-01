@@ -85,9 +85,7 @@ func Test_Try_Add_Existing_Author(t *testing.T) {
 	author1 := models.NewAuthor(firstName, middleName, lastName)
 	result1, err := author.Save(db, author1)
 	iss.True(err != nil)
-	iss.Equal(author1.FirstName, result1.FirstName)
-	iss.Equal(author1.MiddleName, result1.MiddleName)
-	iss.Equal(author1.LastName, result1.LastName)
+	iss.True(result1 == nil)
 }
 
 func Test_Get_Author(t *testing.T) {
@@ -99,10 +97,7 @@ func Test_Get_Author(t *testing.T) {
 	get, err := author.GetByID(db, expect.ID)
 
 	iss.NoErr(err)
-	iss.True(expect.ID == get.ID)
-	iss.True(expect.FirstName == get.FirstName)
-	iss.True(expect.MiddleName == get.MiddleName)
-	iss.True(expect.LastName == get.LastName)
+	assert_that_they_are_same_author(t, get, expect)
 }
 
 func Test_GetAll(t *testing.T) {
@@ -129,18 +124,25 @@ func assert_that_contains_author(t *testing.T, results []*models.Author, expect 
 	iss := is.New(t)
 	for _, v := range results {
 		if v.ID == expect.ID {
-			iss.Equal(v.FirstName, expect.FirstName)
-			iss.Equal(v.MiddleName, expect.MiddleName)
-			iss.Equal(v.LastName, expect.LastName)
-			iss.Equal(v.CreatedAt, expect.CreatedAt)
-			iss.Equal(v.UpdatedAt, expect.UpdatedAt)
-			iss.Equal(v.DeletedAt, expect.DeletedAt)
-
+			assert_that_they_are_same_author(t, v, expect)
 			return
 		}
 	}
 
 	iss.Fail()
+}
+
+func assert_that_they_are_same_author(t *testing.T, get *models.Author, expect *models.Author) {
+	iss := is.New(t)
+	iss.Equal(get.FirstName, expect.FirstName)
+	iss.Equal(get.MiddleName, expect.MiddleName)
+	iss.Equal(get.LastName, expect.LastName)
+	iss.Equal(get.CreatedAt.UTC(), expect.CreatedAt.UTC())
+	iss.Equal(get.UpdatedAt.UTC(), expect.UpdatedAt.UTC())
+	if expect.DeletedAt.Valid {
+		iss.True(get.DeletedAt.Valid)
+		iss.Equal(get.DeletedAt.Time.UTC(), expect.DeletedAt.Time.UTC())
+	}
 }
 
 func createNewAuthorInDB(t *testing.T) *models.Author {
