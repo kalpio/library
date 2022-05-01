@@ -10,6 +10,7 @@ require (
 
 require (
 	github.com/denisenkom/go-mssqldb v0.11.0 // indirect
+	github.com/go-ozzo/ozzo-validation/v4 v4.3.0
 	github.com/golang-sql/civil v0.0.0-20190719163853-cb61b32ac6fe // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.2 // indirect
