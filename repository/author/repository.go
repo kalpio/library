@@ -8,19 +8,19 @@ import (
 	"gorm.io/gorm"
 )
 
-func Save(db *gorm.DB, author *models.Author) (*models.Author, error) {
+func Save(db *gorm.DB, author *models.Author) error {
 	if err := author.Validate(); err != nil {
-		return nil, err
+		return err
 	}
 
 	existed, _ := getAuthorByFirstAndLastName(db, author.FirstName, author.LastName)
 	if existed != nil && existed.ID > 0 {
-		return nil, errors.New("repository: author already exists")
+		return errors.New("repository: author already exists")
 	}
 
 	result := db.Create(&author)
 
-	return author, result.Error
+	return result.Error
 }
 
 func GetByID(db *gorm.DB, id uint) (*models.Author, error) {
@@ -35,10 +35,18 @@ func GetByID(db *gorm.DB, id uint) (*models.Author, error) {
 func GetAll(db *gorm.DB) ([]*models.Author, error) {
 	var results []*models.Author
 	if tx := db.Find(&results); tx.Error != nil {
-		return nil, fmt.Errorf("could not read authors: %w", tx.Error)
+		return nil, fmt.Errorf("repository: could not read authors: %w", tx.Error)
 	}
 
 	return results, nil
+}
+
+func Delete(db *gorm.DB, id uint) error {
+	if tx := db.Delete(&models.Author{}, id); tx.Error != nil {
+		return fmt.Errorf("repository: could not delete author: %w", tx.Error)
+	}
+
+	return nil
 }
 
 func getAuthorByFirstAndLastName(db *gorm.DB, firstName, lastName string) (*models.Author, error) {

@@ -1,138 +1,97 @@
-package author_test
+package author
 
 import (
-	"fmt"
-	"library/migrations"
 	"library/models"
 	"library/random"
-	"library/repository/author"
+	"library/repository/testutils"
 	"testing"
 
 	"github.com/matryer/is"
-	"gorm.io/driver/sqlserver"
 	"gorm.io/gorm"
 )
 
-var db *gorm.DB
-
-func getDBName() string {
-	return fmt.Sprintf("library_%s", random.RandomString(6))
-}
-
-func beforeTest(t *testing.T) func(t *testing.T) {
-	dbName := getDBName()
-	var err error
-	iss := is.New(t)
-
-	dsn := "sqlserver://jz:jzsoft@localhost:1433"
-	db, err = gorm.Open(sqlserver.Open(dsn), &gorm.Config{})
-	iss.NoErr(err)
-
-	if err := migrations.CreateAndUseDatabase(db, dbName); err != nil {
-		iss.NoErr(err)
-	}
-
-	dsn = fmt.Sprintf("sqlserver://jz:jzsoft@localhost:1433?database=%s", dbName)
-	db, err = gorm.Open(sqlserver.Open(dsn), &gorm.Config{})
-	iss.NoErr(err)
-
-	if err := migrations.UpdateDatabase(db); err != nil {
-		iss.NoErr(err)
-	}
-
-	return func(t *testing.T) {
-		if err := migrations.DropDatabase(db, dbName); err != nil {
-			iss.NoErr(err)
-		}
-	}
-}
-
-func Test_Save_New_Author(t *testing.T) {
-	afterTest := beforeTest(t)
+func Test_SaveNewAuthor(t *testing.T) {
+	db, afterTest := testutils.BeforeTest(t)
 	defer afterTest(t)
 
-	firstName := "Robert"
-	middleName := "C."
-	lastName := "Martin"
+	firstName := random.RandomString(10)
+	middleName := random.RandomString(10)
+	lastName := random.RandomString(10)
 	author0 := models.NewAuthor(firstName, middleName, lastName)
 	iss := is.New(t)
-
-	result, err := author.Save(db, author0)
+	err := Save(db, author0)
 
 	iss.NoErr(err)
 	iss.True(author0.ID > 0)
-	iss.Equal(author0.FirstName, result.FirstName)
-	iss.Equal(author0.MiddleName, result.MiddleName)
-	iss.Equal(author0.LastName, result.LastName)
+	iss.Equal(author0.FirstName, firstName)
+	iss.Equal(author0.MiddleName, middleName)
+	iss.Equal(author0.LastName, lastName)
 }
 
-func Test_Try_Add_Existing_Author(t *testing.T) {
-	afterTest := beforeTest(t)
+func Test_TryAddExistingAuthor(t *testing.T) {
+	db, afterTest := testutils.BeforeTest(t)
 	defer afterTest(t)
 
 	iss := is.New(t)
-	firstName := "Robert"
-	middleName := "C."
-	lastName := "Martin"
+	firstName := random.RandomString(10)
+	middleName := random.RandomString(10)
+	lastName := random.RandomString(10)
 
 	author0 := models.NewAuthor(firstName, middleName, lastName)
-	result0, err := author.Save(db, author0)
+	err := Save(db, author0)
 	iss.NoErr(err)
-	iss.Equal(author0.FirstName, result0.FirstName)
-	iss.Equal(author0.MiddleName, result0.MiddleName)
-	iss.Equal(author0.LastName, result0.LastName)
+	iss.Equal(author0.FirstName, firstName)
+	iss.Equal(author0.MiddleName, middleName)
+	iss.Equal(author0.LastName, lastName)
 
 	author1 := models.NewAuthor(firstName, middleName, lastName)
-	result1, err := author.Save(db, author1)
+	err = Save(db, author1)
 	iss.True(err != nil)
-	iss.True(result1 == nil)
+	iss.True(author1.ID == 0)
 }
 
-func Test_Get_Author(t *testing.T) {
-	afterTest := beforeTest(t)
+func Test_GetAuthor(t *testing.T) {
+	db, afterTest := testutils.BeforeTest(t)
 	defer afterTest(t)
 
 	iss := is.New(t)
-	expect := createNewAuthorInDB(t)
-	get, err := author.GetByID(db, expect.ID)
+	expect := createNewAuthorInDB(db, t)
+	get, err := GetByID(db, expect.ID)
 
 	iss.NoErr(err)
-	assert_that_they_are_same_author(t, get, expect)
+	assertThatTheyAreSameAuthor(t, get, expect)
 }
 
 func Test_GetAll(t *testing.T) {
-	afterTest := beforeTest(t)
+	db, afterTest := testutils.BeforeTest(t)
 	defer afterTest(t)
 
 	iss := is.New(t)
-	expects := []*models.Author{}
-	expects = append(expects, createNewAuthorInDB(t))
-	expects = append(expects, createNewAuthorInDB(t))
-	expects = append(expects, createNewAuthorInDB(t))
+	var expects []*models.Author
+	expects = append(expects, createNewAuthorInDB(db, t))
+	expects = append(expects, createNewAuthorInDB(db, t))
+	expects = append(expects, createNewAuthorInDB(db, t))
 
-	results, err := author.GetAll(db)
+	results, err := GetAll(db)
 
 	iss.NoErr(err)
 	iss.Equal(len(expects), 3)
 
 	for _, v := range expects {
-		assert_that_contains_author(t, results, v)
+		assertThatContainsAuthor(t, results, v)
 	}
 }
 
-func assert_that_contains_author(t *testing.T, results []*models.Author, expect *models.Author) {
-	iss := is.New(t)
+func assertThatContainsAuthor(t *testing.T, results []*models.Author, expect *models.Author) {
 	for _, v := range results {
 		if v.ID == expect.ID {
-			assert_that_they_are_same_author(t, v, expect)
+			assertThatTheyAreSameAuthor(t, v, expect)
 			return
 		}
 	}
-
-	iss.Fail()
 }
 
-func assert_that_they_are_same_author(t *testing.T, get *models.Author, expect *models.Author) {
+func assertThatTheyAreSameAuthor(t *testing.T, get *models.Author, expect *models.Author) {
 	iss := is.New(t)
 	iss.Equal(get.FirstName, expect.FirstName)
 	iss.Equal(get.MiddleName, expect.MiddleName)
@@ -145,11 +104,25 @@ func assert_that_they_are_same_author(t *testing.T, get *models.Author, expect *
 	}
 }
 
-func createNewAuthorInDB(t *testing.T) *models.Author {
-	a := models.NewAuthor(random.RandomString(6), random.RandomString(6), random.RandomString(6))
+func Test_Delete(t *testing.T) {
+	db, afterTest := testutils.BeforeTest(t)
+	defer afterTest(t)
 	iss := is.New(t)
-	result, err := author.Save(db, a)
+
+	a := createNewAuthorInDB(db, t)
+	err := Delete(db, a.ID)
+
+	iss.NoErr(err)
+}
+
+func createNewAuthorInDB(db *gorm.DB, t *testing.T) *models.Author {
+	a := models.NewAuthor(
+		random.RandomString(6),
+		random.RandomString(6),
+		random.RandomString(6))
+	iss := is.New(t)
+	err := Save(db, a)
 	iss.NoErr(err)
 
-	return result
+	return a
 }

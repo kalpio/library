@@ -22,9 +22,9 @@ func NewAuthor(firstName, middleName, lastName string) *Author {
 	}
 }
 
-func (self Author) Validate() error {
-	return validation.ValidateStruct(&self,
-		validation.Field(&self.FirstName, validation.Required),
-		validation.Field(&self.LastName, validation.Required),
+func (a Author) Validate() error {
+	return validation.ValidateStruct(&a,
+		validation.Field(&a.FirstName, validation.Required),
+		validation.Field(&a.LastName, validation.Required),
 	)
 }
