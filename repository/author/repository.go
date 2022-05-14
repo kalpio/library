@@ -3,9 +3,9 @@ package author
 import (
 	"errors"
 	"fmt"
-	"library/models"
-
 	"gorm.io/gorm"
+	"library/models"
+	"library/repository"
 )
 
 func Save(db *gorm.DB, author *models.Author) error {
@@ -32,7 +32,7 @@ func GetByID(db *gorm.DB, id uint) (*models.Author, error) {
 	return result, nil
 }
 
-func GetAll(db *gorm.DB) ([]*models.Author, error) {
+func GetAll[T repository.Models](db *gorm.DB) ([]*models.Author, error) {
 	var results []*models.Author
 	if tx := db.Find(&results); tx.Error != nil {
 		return nil, fmt.Errorf("repository: could not read authors: %w", tx.Error)

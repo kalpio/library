@@ -5,6 +5,7 @@ import (
 	"gorm.io/gorm"
 	"library/models"
 	"library/random"
+	"library/repository"
 	"library/repository/testutils"
 	"testing"
 )
@@ -63,7 +64,7 @@ func Test_GetAll(t *testing.T) {
 	expected = append(expected, createNewBookInDB(db, t))
 	expected = append(expected, createNewBookInDB(db, t))
 
-	results, err := GetAll(db)
+	results, err := repository.GetAll[models.Book](db)
 	iss.NoErr(err)
 	iss.Equal(len(results), 3)
 

@@ -33,14 +33,14 @@ func GetByISBN(db *gorm.DB, isbn string) (*models.Book, error) {
 	return result, nil
 }
 
-func GetAll(db *gorm.DB) ([]*models.Book, error) {
-	var results []*models.Book
-	if tx := db.Find(&results); tx.Error != nil {
-		return nil, fmt.Errorf("repository: could not read books: %w", tx.Error)
-	}
-
-	return results, nil
-}
+//func GetAll(db *gorm.DB) ([]*models.Book, error) {
+//	var results []*models.Book
+//	if tx := db.Find(&results); tx.Error != nil {
+//		return nil, fmt.Errorf("repository: could not read books: %w", tx.Error)
+//	}
+//
+//	return results, nil
+//}
 
 func Delete(db *gorm.DB, id uint) error {
 	if tx := db.Delete(&models.Book{}, id); tx.Error != nil {

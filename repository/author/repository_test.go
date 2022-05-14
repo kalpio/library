@@ -18,6 +18,7 @@ func Test_SaveNewAuthor(t *testing.T) {
 	middleName := random.RandomString(10)
 	lastName := random.RandomString(10)
 	author0 := models.NewAuthor(firstName, middleName, lastName)
+
 	iss := is.New(t)
 	err := Save(db, author0)
 
