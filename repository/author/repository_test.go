@@ -3,6 +3,7 @@ package author
 import (
 	"library/models"
 	"library/random"
+	"library/repository"
 	"library/repository/testutils"
 	"testing"
 
@@ -51,16 +52,16 @@ func Test_TryAddExistingAuthor(t *testing.T) {
 	iss.True(author1.ID == 0)
 }
 
-func Test_GetAuthor(t *testing.T) {
+func TestGetByID(t *testing.T) {
 	db, afterTest := testutils.BeforeTest(t)
 	defer afterTest(t)
 
 	iss := is.New(t)
 	expect := createNewAuthorInDB(db, t)
-	get, err := GetByID(db, expect.ID)
+	got, err := repository.GetByID[models.Author](db, expect.ID)
 
 	iss.NoErr(err)
-	assertThatTheyAreSameAuthor(t, get, expect)
+	assertThatTheyAreSameAuthor(t, got, expect)
 }
 
 func Test_GetAll(t *testing.T) {
