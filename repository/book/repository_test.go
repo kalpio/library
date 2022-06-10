@@ -11,7 +11,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func Test_SaveNewBook(t *testing.T) {
+func TestSaveNewBook(t *testing.T) {
 	db, afterTest := testutils.BeforeTest(t)
 	defer afterTest(t)
 
@@ -43,7 +43,7 @@ func Test_SaveNewBook(t *testing.T) {
 	iss.Equal(result0.Author, author)
 }
 
-func Test_GetByISBN(t *testing.T) {
+func TestGetByISBN(t *testing.T) {
 	db, afterTest := testutils.BeforeTest(t)
 	defer afterTest(t)
 	iss := is.New(t)
@@ -56,7 +56,7 @@ func Test_GetByISBN(t *testing.T) {
 	iss.Equal(got.ID, expected.ID)
 }
 
-func Test_GetAll(t *testing.T) {
+func TestGetAll(t *testing.T) {
 	db, afterTest := testutils.BeforeTest(t)
 	defer afterTest(t)
 
@@ -101,7 +101,7 @@ func assertThatTheyAreSameBook(t *testing.T, get models.Book, expected *models.B
 	}
 }
 
-func Test_Delete(t *testing.T) {
+func TestDelete(t *testing.T) {
 	db, afterTest := testutils.BeforeTest(t)
 	defer afterTest(t)
 	iss := is.New(t)

@@ -1,17 +1,18 @@
 package author
 
 import (
-	"gorm.io/gorm"
 	"library/models"
 	"library/random"
 	"library/repository"
 	"library/repository/testutils"
 	"testing"
 
+	"gorm.io/gorm"
+
 	"github.com/matryer/is"
 )
 
-func Test_SaveNewAuthor(t *testing.T) {
+func TestSaveNewAuthor(t *testing.T) {
 	db, afterTest := testutils.BeforeTest(t)
 	defer afterTest(t)
 
@@ -30,7 +31,7 @@ func Test_SaveNewAuthor(t *testing.T) {
 	iss.Equal(result.LastName, lastName)
 }
 
-func Test_TryAddExistingAuthor(t *testing.T) {
+func TestTryAddExistingAuthor(t *testing.T) {
 	db, afterTest := testutils.BeforeTest(t)
 	defer afterTest(t)
 
@@ -53,6 +54,36 @@ func Test_TryAddExistingAuthor(t *testing.T) {
 	iss.True(result1.ID == 0)
 }
 
+func TestTryAddEmptyFirstName(t *testing.T) {
+	db, afterTest := testutils.BeforeTest(t)
+	defer afterTest(t)
+
+	iss := is.New(t)
+	firstName := ""
+	middleName := random.RandomString(10)
+	lastName := random.RandomString(10)
+
+	author := models.NewAuthor(firstName, middleName, lastName)
+	result, err := repository.Save(db, *author)
+	iss.True(err != nil)
+	iss.True(result.ID == 0)
+}
+
+func TestTryAddEmptyLastName(t *testing.T) {
+	db, afterTest := testutils.BeforeTest(t)
+	defer afterTest(t)
+
+	iss := is.New(t)
+	firstName := random.RandomString(10)
+	middleName := random.RandomString(10)
+	lastName := ""
+
+	author := models.NewAuthor(firstName, middleName, lastName)
+	result, err := repository.Save(db, *author)
+	iss.True(err != nil)
+	iss.True(result.ID == 0)
+}
+
 func TestGetByID(t *testing.T) {
 	db, afterTest := testutils.BeforeTest(t)
 	defer afterTest(t)
@@ -65,7 +96,7 @@ func TestGetByID(t *testing.T) {
 	assertThatTheyAreSameAuthor(t, got, expect)
 }
 
-func Test_GetAll(t *testing.T) {
+func TestGetAll(t *testing.T) {
 	db, afterTest := testutils.BeforeTest(t)
 	defer afterTest(t)
 
@@ -107,7 +138,7 @@ func assertThatTheyAreSameAuthor(t *testing.T, got models.Author, expect models.
 	}
 }
 
-func Test_Delete(t *testing.T) {
+func TestDelete(t *testing.T) {
 	db, afterTest := testutils.BeforeTest(t)
 	defer afterTest(t)
 	iss := is.New(t)
