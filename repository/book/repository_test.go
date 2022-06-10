@@ -1,13 +1,14 @@
 package book
 
 import (
-	"github.com/matryer/is"
-	"gorm.io/gorm"
 	"library/models"
 	"library/random"
 	"library/repository"
 	"library/repository/testutils"
 	"testing"
+
+	"github.com/matryer/is"
+	"gorm.io/gorm"
 )
 
 func Test_SaveNewBook(t *testing.T) {
@@ -29,17 +30,17 @@ func Test_SaveNewBook(t *testing.T) {
 	book0.Content = content
 	book0.Version = version
 	iss := is.New(t)
-	err := Save(db, book0)
+	result0, err := repository.Save(db, *book0)
 
 	iss.NoErr(err)
-	iss.True(book0.ID > 0)
-	iss.Equal(book0.Title, title)
-	iss.Equal(book0.ISBN, isbn)
-	iss.Equal(book0.Content, content)
-	iss.Equal(book0.Format, format)
-	iss.Equal(book0.Version, version)
-	iss.Equal(book0.AuthorID, author.ID)
-	iss.Equal(book0.Author, author)
+	iss.True(result0.ID > 0)
+	iss.Equal(result0.Title, title)
+	iss.Equal(result0.ISBN, isbn)
+	iss.Equal(result0.Content, content)
+	iss.Equal(result0.Format, format)
+	iss.Equal(result0.Version, version)
+	iss.Equal(result0.AuthorID, author.ID)
+	iss.Equal(result0.Author, author)
 }
 
 func Test_GetByISBN(t *testing.T) {
@@ -48,10 +49,11 @@ func Test_GetByISBN(t *testing.T) {
 	iss := is.New(t)
 
 	expected := createNewBookInDB(db, t)
-	get, err := GetByISBN(db, expected.ISBN)
+	columnValue := map[string]interface{}{"ISBN": expected.ISBN}
+	got, err := repository.GetByColumns[models.Book](db, columnValue)
 
 	iss.NoErr(err)
-	iss.Equal(get.ID, expected.ID)
+	iss.Equal(got.ID, expected.ID)
 }
 
 func Test_GetAll(t *testing.T) {
@@ -73,7 +75,7 @@ func Test_GetAll(t *testing.T) {
 	}
 }
 
-func assertThatContainsBook(t *testing.T, results []*models.Book, expected *models.Book) {
+func assertThatContainsBook(t *testing.T, results []models.Book, expected *models.Book) {
 	for _, v := range results {
 		if v.ID == expected.ID {
 			assertThatTheyAreSameBook(t, v, expected)
@@ -82,7 +84,7 @@ func assertThatContainsBook(t *testing.T, results []*models.Book, expected *mode
 	}
 }
 
-func assertThatTheyAreSameBook(t *testing.T, get *models.Book, expected *models.Book) {
+func assertThatTheyAreSameBook(t *testing.T, get models.Book, expected *models.Book) {
 	iss := is.New(t)
 	iss.Equal(get.Title, expected.Title)
 	iss.Equal(get.ISBN, expected.ISBN)
@@ -103,8 +105,9 @@ func Test_Delete(t *testing.T) {
 	db, afterTest := testutils.BeforeTest(t)
 	defer afterTest(t)
 	iss := is.New(t)
-	b := createNewBookInDB(db, t)
-	err := Delete(db, b.ID)
+
+	book := createNewBookInDB(db, t)
+	err := repository.Delete[models.Book](db, book.ID)
 
 	iss.NoErr(err)
 }
@@ -119,8 +122,8 @@ func createNewBookInDB(db *gorm.DB, t *testing.T) *models.Book {
 			random.RandomString(6),
 			random.RandomString(6)))
 	iss := is.New(t)
-	err := Save(db, b)
+	result, err := repository.Save(db, *b)
 	iss.NoErr(err)
 
-	return b
+	return &result
 }

@@ -1,11 +1,11 @@
 package repository
 
 import (
-	"bytes"
 	"errors"
 	"fmt"
-	"gorm.io/gorm"
 	"library/models"
+
+	"gorm.io/gorm"
 )
 
 type Models interface {
@@ -13,45 +13,32 @@ type Models interface {
 	Validate() error
 }
 
-func Save[T Models](db *gorm.DB, model T) error {
+func Save[T Models](db *gorm.DB, model T) (T, error) {
 	if err := model.Validate(); err != nil {
-		return err
+		return *new(T), err
 	}
 
-	tx := db.Create(model)
-	return tx.Error
+	tx := db.Create(&model)
+	return model, tx.Error
 }
 
-func GetByColumns[T Models](db *gorm.DB, columns []string) (T, error) {
-	if len(columns) == 0 {
-		return nil, errors.New("repository: columns name cannot be empty")
+func GetByColumns[T Models](db *gorm.DB, columnValue map[string]interface{}) (T, error) {
+	if len(columnValue) == 0 {
+		return *new(T), errors.New("repository: column and value cannot be empty")
 	}
 
 	var result T
-	if tx := db.Where(concatColumnsToWhere(columns)).Find(&result); tx.Error != nil {
-		return nil, fmt.Errorf("repository: cannot get data: %w", tx.Error)
+	if tx := db.Where(columnValue).Find(&result); tx.Error != nil {
+		return *new(T), fmt.Errorf("repository: cannot get data: %w", tx.Error)
 	}
 
 	return result, nil
 }
 
-func concatColumnsToWhere(columns []string) string {
-	length := len(columns)
-	var result bytes.Buffer
-	for i, column := range columns {
-		result.WriteString(fmt.Sprintf("`%s` = ?", column))
-		if i != length-1 {
-			result.WriteString(", ")
-		}
-	}
-
-	return result.String()
-}
-
 func GetAll[T Models](db *gorm.DB) ([]T, error) {
 	var results []T
 	if tx := db.Find(&results); tx.Error != nil {
-		return nil, fmt.Errorf("repository: could not read %q: %w", new(T), tx.Error)
+		return *new([]T), fmt.Errorf("repository: could not read %q: %w", new(T), tx.Error)
 	}
 
 	return results, nil
@@ -60,8 +47,16 @@ func GetAll[T Models](db *gorm.DB) ([]T, error) {
 func GetByID[T Models](db *gorm.DB, id uint) (T, error) {
 	var result T
 	if tx := db.First(&result, id); tx.Error != nil {
-		return nil, fmt.Errorf("repository: could not find %q by ID: %d: %w", new(T), id, tx.Error)
+		return *new(T), fmt.Errorf("repository: could not find %q by ID: %d: %w", new(T), id, tx.Error)
 	}
 
 	return result, nil
+}
+
+func Delete[T Models](db *gorm.DB, id uint) error {
+	if tx := db.Delete(new(T), id); tx.Error != nil {
+		return fmt.Errorf("repository: could not delete: %w", tx.Error)
+	}
+
+	return nil
 }
