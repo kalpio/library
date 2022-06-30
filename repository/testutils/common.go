@@ -2,12 +2,14 @@ package testutils
 
 import (
 	"fmt"
-	"github.com/matryer/is"
-	"gorm.io/driver/sqlserver"
-	"gorm.io/gorm"
 	"library/migrations"
 	"library/random"
 	"testing"
+
+	"github.com/matryer/is"
+	_ "github.com/mattn/go-sqlite3"
+	"gorm.io/driver/sqlite"
+	"gorm.io/gorm"
 )
 
 func BeforeTest(t *testing.T) (*gorm.DB, func(t *testing.T)) {
@@ -18,17 +20,13 @@ func BeforeTest(t *testing.T) (*gorm.DB, func(t *testing.T)) {
 	)
 	iss := is.New(t)
 
-	dsn := "sqlserver://jz:jzsoft@localhost:1433"
-	db, err = gorm.Open(sqlserver.Open(dsn), &gorm.Config{})
+	dsn := fmt.Sprintf("file:%s.db?cache=shared&mode=rwc", randomDBName)
+	db, err = gorm.Open(sqlite.Open(dsn), &gorm.Config{})
 	iss.NoErr(err)
 
 	if err := migrations.CreateAndUseDatabase(db, randomDBName); err != nil {
 		iss.NoErr(err)
 	}
-
-	dsn = fmt.Sprintf("sqlserver://jz:jzsoft@localhost:1433?database=%s", randomDBName)
-	db, err = gorm.Open(sqlserver.Open(dsn), &gorm.Config{})
-	iss.NoErr(err)
 
 	if err := migrations.UpdateDatabase(db); err != nil {
 		iss.NoErr(err)
