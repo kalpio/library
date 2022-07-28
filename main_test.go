@@ -35,10 +35,10 @@ func dropDatabase(db *gorm.DB, dsn string) {
 
 func TestAuthorAPI(t *testing.T) {
 	authortest.SetApp(a)
-	t.Run("authorAddNewAuthor", authortest.PostNewAuthor)
-	t.Run("authorAddDuplicatedAuthor", authortest.PostDuplicatedAuthor)
-	t.Run("creatingAuthorWithEmptyFirstNameShouldFail", authortest.PostAuthorWithEmptyFirstNameShouldFail)
-	t.Run("creatingAuthorWithEmptyLastNameShouldFail", authortest.PostAuthorWithEmptyLastNameShouldFail)
-	t.Run("creatingAuthorWithEmptyMiddleNameShouldPass", authortest.PostAuthorWithEmptyMiddleNameShouldPass)
-	t.Run("creatingAuthorWithEmptyPropsShouldFail", authortest.PostAuthorWithEmptyPropsShouldFail)
+	t.Run("PostNewAuthor", authortest.PostNewAuthor)
+	t.Run("PostDuplicatedAuthor", authortest.PostDuplicatedAuthor)
+	t.Run("PostAuthorWithEmptyFirstNameShouldFail", authortest.PostAuthorWithEmptyFirstNameShouldFail)
+	t.Run("PostAuthorWithEmptyLastNameShouldFail", authortest.PostAuthorWithEmptyLastNameShouldFail)
+	t.Run("PostAuthorWithEmptyMiddleNameShouldPass", authortest.PostAuthorWithEmptyMiddleNameShouldPass)
+	t.Run("PostAuthorWithEmptyPropsShouldFail", authortest.PostAuthorWithEmptyPropsShouldFail)
 }
