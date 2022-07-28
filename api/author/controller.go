@@ -1,6 +1,9 @@
 package author
 
 import (
+	"library/services/author"
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )
@@ -13,7 +16,28 @@ func NewAuthorController(db *gorm.DB) *authorCtrl {
 	return &authorCtrl{db: db}
 }
 
-func (a *authorCtrl) Add(ctx *gin.Context) {}
+type authorDto struct {
+	FirstName  string `json:"first_name"`
+	MiddleName string `json:"middle_name"`
+	LastName   string `json:"last_name"`
+}
+
+func (a *authorCtrl) Add(ctx *gin.Context) {
+	var json authorDto
+
+	if err := ctx.ShouldBindJSON(&json); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	result, err := author.Create(a.db, json.FirstName, json.MiddleName, json.LastName)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	ctx.JSON(http.StatusCreated, result)
+}
 
 func (a *authorCtrl) Get(ctx *gin.Context) {}
 
