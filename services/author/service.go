@@ -2,9 +2,10 @@ package author
 
 import (
 	"errors"
-	"gorm.io/gorm"
 	"library/models"
 	"library/repository"
+
+	"gorm.io/gorm"
 )
 
 func Create(db *gorm.DB, firstName, middleName, lastName string) (*models.Author, error) {
@@ -25,6 +26,15 @@ func Create(db *gorm.DB, firstName, middleName, lastName string) (*models.Author
 	}
 
 	result, err := repository.Save(db, *model)
+	if err != nil {
+		return nil, err
+	}
+
+	return &result, nil
+}
+
+func GetByID(db *gorm.DB, id uint) (*models.Author, error) {
+	result, err := repository.GetByID[models.Author](db, id)
 	if err != nil {
 		return nil, err
 	}

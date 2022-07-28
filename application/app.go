@@ -1,19 +1,20 @@
-package main
+package application
 
 import (
 	"fmt"
-	"github.com/gin-gonic/gin"
-	"gorm.io/driver/sqlite"
-	"gorm.io/gorm"
 	"library/api/author"
 	"library/migrations"
 	"log"
 	"net"
+
+	"github.com/gin-gonic/gin"
+	"gorm.io/driver/sqlite"
+	"gorm.io/gorm"
 )
 
 type App struct {
-	db     *gorm.DB
-	router *gin.Engine
+	DB     *gorm.DB
+	Router *gin.Engine
 	host   string
 	port   string
 }
@@ -37,22 +38,22 @@ func (a *App) initializeDB(dsn string) {
 		log.Fatalln(err)
 	}
 
-	a.db = db
+	a.DB = db
 
-	if err := migrations.CreateAndUseDatabase(a.db, dsn); err != nil {
+	if err := migrations.CreateAndUseDatabase(a.DB, dsn); err != nil {
 		log.Fatalln(err)
 	}
-	if err := migrations.UpdateDatabase(a.db); err != nil {
+	if err := migrations.UpdateDatabase(a.DB); err != nil {
 		log.Fatalln(err)
 	}
 }
 
 func (a *App) initializeRouter() {
-	a.router = gin.Default()
+	a.Router = gin.Default()
 
-	authorCtrl := author.NewAuthorController(a.db)
+	authorCtrl := author.NewAuthorController(a.DB)
 
-	v1 := a.router.Group("/api/v1")
+	v1 := a.Router.Group("/api/v1")
 	{
 		v1.GET("/author", authorCtrl.GetAll)
 		v1.GET("/author/:id", authorCtrl.Get)
@@ -63,7 +64,7 @@ func (a *App) initializeRouter() {
 }
 
 func (a *App) Run() {
-	if err := a.router.Run(net.JoinHostPort(a.host, a.port)); err != nil {
+	if err := a.Router.Run(net.JoinHostPort(a.host, a.port)); err != nil {
 		log.Fatalln(err)
 	}
 }
