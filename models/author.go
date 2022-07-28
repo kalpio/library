@@ -1,16 +1,17 @@
 package models
 
 import (
+	"library/repository/base"
+
 	validation "github.com/go-ozzo/ozzo-validation/v4"
-	"gorm.io/gorm"
 )
 
 type Author struct {
-	gorm.Model
-	FirstName  string `gorm:"column:firstName;index:uq_first_last,unique"`
-	MiddleName string `gorm:"column:middleName"`
-	LastName   string `gorm:"column:lastName;index:uq_first_last,unique"`
-	Books      []Book
+	base.Entity
+	FirstName  string `gorm:"column:firstName;index:uq_first_last,unique" json:"first_name"`
+	MiddleName string `gorm:"column:middleName" json:"middle_name"`
+	LastName   string `gorm:"column:lastName;index:uq_first_last,unique" json:"last_name"`
+	Books      []Book `json:"books"`
 }
 
 func NewAuthor(firstName, middleName, lastName string) *Author {
