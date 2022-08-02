@@ -41,4 +41,7 @@ func TestAuthorAPI(t *testing.T) {
 	t.Run("PostAuthorWithEmptyLastNameShouldFail", authortest.PostAuthorWithEmptyLastNameShouldFail)
 	t.Run("PostAuthorWithEmptyMiddleNameShouldPass", authortest.PostAuthorWithEmptyMiddleNameShouldPass)
 	t.Run("PostAuthorWithEmptyPropsShouldFail", authortest.PostAuthorWithEmptyPropsShouldFail)
+
+	t.Run("GetExistingAuthorByID", authortest.GetExistingAuthorByID)
+	t.Run("GetNotExistingAuthorByID", authortest.GetNotExistingAuthorByID)
 }

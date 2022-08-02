@@ -54,7 +54,7 @@ func (a *authorCtrl) Get(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusCreated, result)
+	ctx.JSON(http.StatusOK, result)
 }
 
 func (a *authorCtrl) GetAll(ctx *gin.Context) {}
