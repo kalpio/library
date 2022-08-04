@@ -98,10 +98,3 @@ func postAuthorData(buff *bytes.Buffer) *httptest.ResponseRecorder {
 	req, _ := http.NewRequest("POST", "/api/v1/author", buff)
 	return executeRequest(req)
 }
-
-func executeRequest(req *http.Request) *httptest.ResponseRecorder {
-	rr := httptest.NewRecorder()
-	a.Router.ServeHTTP(rr, req)
-
-	return rr
-}

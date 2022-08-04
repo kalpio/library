@@ -42,6 +42,15 @@ func GetByID(db *gorm.DB, id uint) (*models.Author, error) {
 	return &result, nil
 }
 
+func GetAll(db *gorm.DB) ([]models.Author, error) {
+	result, err := repository.GetAll[models.Author](db)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
 func exists(db *gorm.DB, firstName, middleName, lastName string) (bool, error) {
 	columns := map[string]interface{}{
 		"FirstName":  firstName,
