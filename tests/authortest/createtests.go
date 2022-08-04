@@ -9,7 +9,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/matryer/is"
+	"github.com/stretchr/testify/assert"
 )
 
 var a application.App
@@ -19,68 +19,68 @@ func SetApp(app application.App) {
 }
 
 func PostNewAuthor(t *testing.T) {
-	iss := is.New(t)
+	ass := assert.New(t)
 
 	buff := prepareAuthorRequestData(random.RandomString(10), random.RandomString(10), random.RandomString(10))
 	resp := postAuthorData(buff)
 
-	iss.True(resp != nil)
-	iss.Equal(resp.Code, http.StatusCreated)
+	ass.NotNil(resp)
+	ass.Equal(resp.Code, http.StatusCreated)
 }
 
 func PostDuplicatedAuthor(t *testing.T) {
-	iss := is.New(t)
+	ass := assert.New(t)
 
 	buff := prepareAuthorRequestData(random.RandomString(10), random.RandomString(10), random.RandomString(10))
 	resp0 := postAuthorData(buff)
 
-	iss.True(resp0 != nil)
-	iss.Equal(resp0.Code, http.StatusCreated)
+	ass.NotNil(resp0)
+	ass.Equal(resp0.Code, http.StatusCreated)
 
 	resp1 := postAuthorData(buff)
 
-	iss.True(resp1 != nil)
-	iss.Equal(resp1.Code, http.StatusBadRequest)
+	ass.NotNil(resp1)
+	ass.Equal(resp1.Code, http.StatusBadRequest)
 }
 
 func PostAuthorWithEmptyFirstNameShouldFail(t *testing.T) {
-	iss := is.New(t)
+	ass := assert.New(t)
 
 	buff := prepareAuthorRequestData("", random.RandomString(10), random.RandomString(10))
 	resp := postAuthorData(buff)
 
-	iss.True(resp != nil)
-	iss.Equal(resp.Code, http.StatusBadRequest)
+	ass.NotNil(resp)
+	ass.Equal(resp.Code, http.StatusBadRequest)
 }
 
 func PostAuthorWithEmptyLastNameShouldFail(t *testing.T) {
-	iss := is.New(t)
+	ass := assert.New(t)
 
 	buff := prepareAuthorRequestData(random.RandomString(10), random.RandomString(10), "")
 	resp := postAuthorData(buff)
 
-	iss.True(resp != nil)
-	iss.Equal(resp.Code, http.StatusBadRequest)
+	ass.NotNil(resp)
+	ass.Equal(resp.Code, http.StatusBadRequest)
 }
 
 func PostAuthorWithEmptyMiddleNameShouldPass(t *testing.T) {
-	iss := is.New(t)
+	ass := assert.New(t)
 
 	buff := prepareAuthorRequestData(random.RandomString(10), "", random.RandomString(10))
 	resp := postAuthorData(buff)
 
-	iss.True(resp != nil)
-	iss.Equal(resp.Code, http.StatusCreated)
+	ass.NotNil(resp)
+	ass.Equal(resp.Code, http.StatusCreated)
 }
 
 func PostAuthorWithEmptyPropsShouldFail(t *testing.T) {
-	iss := is.New(t)
+	ass := assert.New(t)
 
 	buff := prepareAuthorRequestData("", "", "")
 	resp := postAuthorData(buff)
 
-	iss.True(resp != nil)
-	iss.Equal(resp.Code, http.StatusBadRequest)
+	ass.NotNil(resp)
+	ass.Equal(resp.Code, http.StatusBadRequest)
 }
 
 func prepareAuthorRequestData(firstName, middleName, lastName string) *bytes.Buffer {

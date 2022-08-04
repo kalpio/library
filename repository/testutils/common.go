@@ -6,8 +6,8 @@ import (
 	"library/random"
 	"testing"
 
-	"github.com/matryer/is"
 	_ "github.com/mattn/go-sqlite3"
+	"github.com/stretchr/testify/assert"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
@@ -18,23 +18,23 @@ func BeforeTest(t *testing.T) (*gorm.DB, func(t *testing.T)) {
 		err error
 		db  *gorm.DB
 	)
-	iss := is.New(t)
+	ass := assert.New(t)
 
 	dsn := fmt.Sprintf("file:%s.db?cache=shared&mode=rwc", randomDBName)
 	db, err = gorm.Open(sqlite.Open(dsn), &gorm.Config{})
-	iss.NoErr(err)
+	ass.NoError(err)
 
 	if err := migrations.CreateAndUseDatabase(db, randomDBName); err != nil {
-		iss.NoErr(err)
+		ass.NoError(err)
 	}
 
 	if err := migrations.UpdateDatabase(db); err != nil {
-		iss.NoErr(err)
+		ass.NoError(err)
 	}
 
 	return db, func(t *testing.T) {
 		if err := migrations.DropDatabase(db, randomDBName); err != nil {
-			iss.NoErr(err)
+			ass.NoError(err)
 		}
 	}
 }

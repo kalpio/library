@@ -7,7 +7,7 @@ import (
 	"library/repository/testutils"
 	"testing"
 
-	"github.com/matryer/is"
+	"github.com/stretchr/testify/assert"
 	"gorm.io/gorm"
 )
 
@@ -26,90 +26,90 @@ func TestSaveNewBook(t *testing.T) {
 		LastName:   random.RandomString(10),
 	}
 
-	book0 := models.NewBook(title, isbn, format, author)
-	book0.Content = content
-	book0.Version = version
-	iss := is.New(t)
-	result0, err := repository.Save(db, *book0)
+	book := models.NewBook(title, isbn, format, author)
+	book.Content = content
+	book.Version = version
+	ass := assert.New(t)
+	result, err := repository.Save(db, *book)
 
-	iss.NoErr(err)
-	iss.True(result0.ID > 0)
-	iss.Equal(result0.Title, title)
-	iss.Equal(result0.ISBN, isbn)
-	iss.Equal(result0.Content, content)
-	iss.Equal(result0.Format, format)
-	iss.Equal(result0.Version, version)
-	iss.Equal(result0.AuthorID, author.ID)
-	iss.Equal(result0.Author, author)
+	ass.NoError(err)
+	ass.Greater(result.ID, uint(0))
+	ass.Equal(result.Title, title)
+	ass.Equal(result.ISBN, isbn)
+	ass.Equal(result.Content, content)
+	ass.Equal(result.Format, format)
+	ass.Equal(result.Version, version)
+	ass.Equal(result.AuthorID, author.ID)
+	ass.Equal(result.Author, author)
 }
 
 func TestGetByISBN(t *testing.T) {
 	db, afterTest := testutils.BeforeTest(t)
 	defer afterTest(t)
-	iss := is.New(t)
+	ass := assert.New(t)
 
 	expected := createNewBookInDB(db, t)
 	columnValue := map[string]interface{}{"ISBN": expected.ISBN}
 	got, err := repository.GetByColumns[models.Book](db, columnValue)
 
-	iss.NoErr(err)
-	iss.Equal(got.ID, expected.ID)
+	ass.NoError(err)
+	ass.Equal(got.ID, expected.ID)
 }
 
 func TestGetAll(t *testing.T) {
 	db, afterTest := testutils.BeforeTest(t)
 	defer afterTest(t)
 
-	iss := is.New(t)
+	ass := assert.New(t)
 	var expected []*models.Book
 	expected = append(expected, createNewBookInDB(db, t))
 	expected = append(expected, createNewBookInDB(db, t))
 	expected = append(expected, createNewBookInDB(db, t))
 
 	results, err := repository.GetAll[models.Book](db)
-	iss.NoErr(err)
-	iss.Equal(len(results), 3)
+	ass.NoError(err)
+	ass.Equal(len(results), 3)
 
 	for _, v := range expected {
-		assertThatContainsBook(t, results, v)
+		assertThatContainsBook(ass, results, v)
 	}
 }
 
-func assertThatContainsBook(t *testing.T, results []models.Book, expected *models.Book) {
+func assertThatContainsBook(ass *assert.Assertions, results []models.Book, expected *models.Book) {
 	for _, v := range results {
 		if v.ID == expected.ID {
-			assertThatTheyAreSameBook(t, v, expected)
+			assertThatTheyAreSameBook(ass, v, expected)
 			return
 		}
 	}
 }
 
-func assertThatTheyAreSameBook(t *testing.T, get models.Book, expected *models.Book) {
-	iss := is.New(t)
-	iss.Equal(get.Title, expected.Title)
-	iss.Equal(get.ISBN, expected.ISBN)
-	iss.Equal(get.Content, expected.Content)
-	iss.Equal(get.Format, expected.Format)
-	iss.Equal(get.Version, expected.Version)
-	iss.Equal(get.AuthorID, expected.AuthorID)
+func assertThatTheyAreSameBook(ass *assert.Assertions, get models.Book, expected *models.Book) {
+	ass.Equal(get.Title, expected.Title)
+	ass.Equal(get.ISBN, expected.ISBN)
+	ass.Equal(get.Content, expected.Content)
+	ass.Equal(get.Format, expected.Format)
+	ass.Equal(get.Version, expected.Version)
+	ass.Equal(get.AuthorID, expected.AuthorID)
 
-	iss.Equal(get.CreatedAt.UTC(), expected.CreatedAt.UTC())
-	iss.Equal(get.UpdatedAt.UTC(), expected.UpdatedAt.UTC())
+	ass.Equal(get.CreatedAt.UTC(), expected.CreatedAt.UTC())
+	ass.Equal(get.UpdatedAt.UTC(), expected.UpdatedAt.UTC())
+
 	if expected.DeletedAt.Valid {
-		iss.True(get.DeletedAt.Valid)
-		iss.Equal(get.DeletedAt.Time.UTC(), expected.DeletedAt.Time.UTC())
+		ass.True(get.DeletedAt.Valid)
+		ass.Equal(get.DeletedAt.Time.UTC(), expected.DeletedAt.Time.UTC())
 	}
 }
 
 func TestDelete(t *testing.T) {
 	db, afterTest := testutils.BeforeTest(t)
 	defer afterTest(t)
-	iss := is.New(t)
+	ass := assert.New(t)
 
 	book := createNewBookInDB(db, t)
 	err := repository.Delete[models.Book](db, book.ID)
 
-	iss.NoErr(err)
+	ass.NoError(err)
 }
 
 func createNewBookInDB(db *gorm.DB, t *testing.T) *models.Book {
@@ -121,9 +121,10 @@ func createNewBookInDB(db *gorm.DB, t *testing.T) *models.Book {
 			random.RandomString(6),
 			random.RandomString(6),
 			random.RandomString(6)))
-	iss := is.New(t)
+
+	ass := assert.New(t)
 	result, err := repository.Save(db, *b)
-	iss.NoErr(err)
+	ass.NoError(err)
 
 	return &result
 }
