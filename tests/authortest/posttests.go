@@ -1,8 +1,9 @@
-package main
+package authortest
 
 import (
 	"bytes"
 	"encoding/json"
+	"library/application"
 	"library/random"
 	"net/http"
 	"net/http/httptest"
@@ -11,7 +12,13 @@ import (
 	"github.com/matryer/is"
 )
 
-func addNewAuthor(t *testing.T) {
+var a application.App
+
+func SetApp(app application.App) {
+	a = app
+}
+
+func PostNewAuthor(t *testing.T) {
 	iss := is.New(t)
 
 	buff := prepareAuthorRequestData(random.RandomString(10), random.RandomString(10), random.RandomString(10))
@@ -21,7 +28,7 @@ func addNewAuthor(t *testing.T) {
 	iss.Equal(resp.Code, http.StatusCreated)
 }
 
-func addDuplicatedAuthor(t *testing.T) {
+func PostDuplicatedAuthor(t *testing.T) {
 	iss := is.New(t)
 
 	buff := prepareAuthorRequestData(random.RandomString(10), random.RandomString(10), random.RandomString(10))
@@ -36,7 +43,7 @@ func addDuplicatedAuthor(t *testing.T) {
 	iss.Equal(resp1.Code, http.StatusBadRequest)
 }
 
-func creatingAuthorWithEmptyFirstNameShouldFail(t *testing.T) {
+func PostAuthorWithEmptyFirstNameShouldFail(t *testing.T) {
 	iss := is.New(t)
 
 	buff := prepareAuthorRequestData("", random.RandomString(10), random.RandomString(10))
@@ -46,7 +53,7 @@ func creatingAuthorWithEmptyFirstNameShouldFail(t *testing.T) {
 	iss.Equal(resp.Code, http.StatusBadRequest)
 }
 
-func creatingAuthorWithEmptyLastNameShouldFail(t *testing.T) {
+func PostAuthorWithEmptyLastNameShouldFail(t *testing.T) {
 	iss := is.New(t)
 
 	buff := prepareAuthorRequestData(random.RandomString(10), random.RandomString(10), "")
@@ -56,7 +63,7 @@ func creatingAuthorWithEmptyLastNameShouldFail(t *testing.T) {
 	iss.Equal(resp.Code, http.StatusBadRequest)
 }
 
-func creatingAuthorWithEmptyMiddleNameShouldPass(t *testing.T) {
+func PostAuthorWithEmptyMiddleNameShouldPass(t *testing.T) {
 	iss := is.New(t)
 
 	buff := prepareAuthorRequestData(random.RandomString(10), "", random.RandomString(10))
@@ -66,7 +73,7 @@ func creatingAuthorWithEmptyMiddleNameShouldPass(t *testing.T) {
 	iss.Equal(resp.Code, http.StatusCreated)
 }
 
-func creatingAuthorWithEmptyPropsShouldFail(t *testing.T) {
+func PostAuthorWithEmptyPropsShouldFail(t *testing.T) {
 	iss := is.New(t)
 
 	buff := prepareAuthorRequestData("", "", "")
@@ -90,4 +97,11 @@ func prepareAuthorRequestData(firstName, middleName, lastName string) *bytes.Buf
 func postAuthorData(buff *bytes.Buffer) *httptest.ResponseRecorder {
 	req, _ := http.NewRequest("POST", "/api/v1/author", buff)
 	return executeRequest(req)
+}
+
+func executeRequest(req *http.Request) *httptest.ResponseRecorder {
+	rr := httptest.NewRecorder()
+	a.Router.ServeHTTP(rr, req)
+
+	return rr
 }

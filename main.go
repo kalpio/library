@@ -1,7 +1,9 @@
 package main
 
+import "library/application"
+
 func main() {
-	app := &App{}
+	app := &application.App{}
 
 	app.Host("127.0.0.1")
 	app.Port("8089")

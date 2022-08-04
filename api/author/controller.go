@@ -3,6 +3,7 @@ package author
 import (
 	"library/services/author"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
@@ -39,7 +40,22 @@ func (a *authorCtrl) Add(ctx *gin.Context) {
 	ctx.JSON(http.StatusCreated, result)
 }
 
-func (a *authorCtrl) Get(ctx *gin.Context) {}
+func (a *authorCtrl) Get(ctx *gin.Context) {
+	paramID := ctx.Param("id")
+	id, err := strconv.ParseUint(paramID, 10, 64)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	result, err := author.GetByID(a.db, uint(id))
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, result)
+}
 
 func (a *authorCtrl) GetAll(ctx *gin.Context) {}
 

@@ -3,15 +3,16 @@ package main
 import (
 	"library/migrations"
 	"log"
-	"net/http"
-	"net/http/httptest"
 	"os"
 	"testing"
+
+	"library/application"
+	"library/tests/authortest"
 
 	"gorm.io/gorm"
 )
 
-var a App
+var a application.App
 
 func TestMain(m *testing.M) {
 	dsn := "test.db"
@@ -21,7 +22,7 @@ func TestMain(m *testing.M) {
 
 	code := m.Run()
 
-	dropDatabase(a.db, "test")
+	dropDatabase(a.DB, "test")
 
 	os.Exit(code)
 }
@@ -33,17 +34,14 @@ func dropDatabase(db *gorm.DB, dsn string) {
 }
 
 func TestAuthorAPI(t *testing.T) {
-	t.Run("authorAddNewAuthor", addNewAuthor)
-	t.Run("authorAddDuplicatedAuthor", addDuplicatedAuthor)
-	t.Run("creatingAuthorWithEmptyFirstNameShouldFail", creatingAuthorWithEmptyFirstNameShouldFail)
-	t.Run("creatingAuthorWithEmptyLastNameShouldFail", creatingAuthorWithEmptyLastNameShouldFail)
-	t.Run("creatingAuthorWithEmptyMiddleNameShouldPass", creatingAuthorWithEmptyMiddleNameShouldPass)
-	t.Run("creatingAuthorWithEmptyPropsShouldFail", creatingAuthorWithEmptyPropsShouldFail)
-}
+	authortest.SetApp(a)
+	t.Run("PostNewAuthor", authortest.PostNewAuthor)
+	t.Run("PostDuplicatedAuthor", authortest.PostDuplicatedAuthor)
+	t.Run("PostAuthorWithEmptyFirstNameShouldFail", authortest.PostAuthorWithEmptyFirstNameShouldFail)
+	t.Run("PostAuthorWithEmptyLastNameShouldFail", authortest.PostAuthorWithEmptyLastNameShouldFail)
+	t.Run("PostAuthorWithEmptyMiddleNameShouldPass", authortest.PostAuthorWithEmptyMiddleNameShouldPass)
+	t.Run("PostAuthorWithEmptyPropsShouldFail", authortest.PostAuthorWithEmptyPropsShouldFail)
 
-func executeRequest(req *http.Request) *httptest.ResponseRecorder {
-	rr := httptest.NewRecorder()
-	a.router.ServeHTTP(rr, req)
-
-	return rr
+	t.Run("GetExistingAuthorByID", authortest.GetExistingAuthorByID)
+	t.Run("GetNotExistingAuthorByID", authortest.GetNotExistingAuthorByID)
 }
