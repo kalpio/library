@@ -57,7 +57,15 @@ func (a *authorCtrl) Get(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, result)
 }
 
-func (a *authorCtrl) GetAll(ctx *gin.Context) {}
+func (a *authorCtrl) GetAll(ctx *gin.Context) {
+	result, err := author.GetAll(a.db)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, result)
+}
 
 func (a *authorCtrl) Edit(ctx *gin.Context) {}
 
