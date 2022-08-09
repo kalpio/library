@@ -13,10 +13,18 @@ import (
 )
 
 type App struct {
-	DB     *gorm.DB
-	Router *gin.Engine
+	db     *gorm.DB
+	router *gin.Engine
 	host   string
 	port   string
+}
+
+func (a *App) DB() *gorm.DB {
+	return a.db
+}
+
+func (a *App) Router() *gin.Engine {
+	return a.router
 }
 
 func (a *App) Host(host string) {
@@ -38,22 +46,22 @@ func (a *App) initializeDB(dsn string) {
 		log.Fatalln(err)
 	}
 
-	a.DB = db
+	a.db = db
 
-	if err := migrations.CreateAndUseDatabase(a.DB, dsn); err != nil {
+	if err := migrations.CreateAndUseDatabase(a.db, dsn); err != nil {
 		log.Fatalln(err)
 	}
-	if err := migrations.UpdateDatabase(a.DB); err != nil {
+	if err := migrations.UpdateDatabase(a.db); err != nil {
 		log.Fatalln(err)
 	}
 }
 
 func (a *App) initializeRouter() {
-	a.Router = gin.Default()
+	a.router = gin.Default()
 
-	authorCtrl := author.NewAuthorController(a.DB)
+	authorCtrl := author.NewAuthorController(a.db)
 
-	v1 := a.Router.Group("/api/v1")
+	v1 := a.router.Group("/api/v1")
 	{
 		v1.GET("/author", authorCtrl.GetAll)
 		v1.GET("/author/:id", authorCtrl.Get)
@@ -64,7 +72,7 @@ func (a *App) initializeRouter() {
 }
 
 func (a *App) Run() {
-	if err := a.Router.Run(net.JoinHostPort(a.host, a.port)); err != nil {
+	if err := a.router.Run(net.JoinHostPort(a.host, a.port)); err != nil {
 		log.Fatalln(err)
 	}
 }

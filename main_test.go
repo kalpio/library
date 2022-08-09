@@ -22,7 +22,7 @@ func TestMain(m *testing.M) {
 
 	code := m.Run()
 
-	dropDatabase(a.DB, "test")
+	dropDatabase(a.DB(), "test")
 
 	os.Exit(code)
 }
