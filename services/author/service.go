@@ -51,6 +51,18 @@ func GetAll(db *gorm.DB) ([]models.Author, error) {
 	return result, nil
 }
 
+func Delete(db *gorm.DB, id uint) (bool, error) {
+	var (
+		rowsAffected int64
+		err          error
+	)
+	if rowsAffected, err = repository.Delete[models.Author](db, id); err != nil {
+		return false, err
+	}
+
+	return rowsAffected > 0, nil
+}
+
 func exists(db *gorm.DB, firstName, middleName, lastName string) (bool, error) {
 	columns := map[string]interface{}{
 		"FirstName":  firstName,

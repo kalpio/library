@@ -46,4 +46,7 @@ func TestAuthorAPI(t *testing.T) {
 	t.Run("GetNotExistingAuthorByID", authortest.GetNotExistingAuthorByID)
 
 	t.Run("GetExistingAuthors", authortest.GetExistingAuthors)
+
+	t.Run("DeleteExistingAuthor", authortest.DeleteExistingAuthor)
+	t.Run("DeleteNotExistingAuthor", authortest.DeleteNotExistingAuthor)
 }

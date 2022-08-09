@@ -107,9 +107,10 @@ func TestDelete(t *testing.T) {
 	ass := assert.New(t)
 
 	book := createNewBookInDB(db, t)
-	err := repository.Delete[models.Book](db, book.ID)
+	rowsAffected, err := repository.Delete[models.Book](db, book.ID)
 
 	ass.NoError(err)
+	ass.Greater(rowsAffected, int64(0))
 }
 
 func createNewBookInDB(db *gorm.DB, t *testing.T) *models.Book {
