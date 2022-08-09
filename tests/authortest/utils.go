@@ -12,13 +12,13 @@ import (
 
 func executeRequest(req *http.Request) *httptest.ResponseRecorder {
 	rr := httptest.NewRecorder()
-	a.Router.ServeHTTP(rr, req)
+	a.Router().ServeHTTP(rr, req)
 
 	return rr
 }
 
 func clearAuthorsTable(ass *assert.Assertions) {
-	if err := a.DB.Where("1 = 1").Delete(&models.Author{}); err != nil {
+	if err := a.DB().Where("1 = 1").Delete(&models.Author{}); err != nil {
 		ass.NoError(err.Error)
 	}
 }

@@ -69,4 +69,24 @@ func (a *authorCtrl) GetAll(ctx *gin.Context) {
 
 func (a *authorCtrl) Edit(ctx *gin.Context) {}
 
-func (a *authorCtrl) Delete(ctx *gin.Context) {}
+func (a *authorCtrl) Delete(ctx *gin.Context) {
+	paramID := ctx.Param("id")
+	id, err := strconv.ParseUint(paramID, 10, 64)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	succeeded := false
+	if succeeded, err = author.Delete(a.db, uint(id)); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	if succeeded {
+		ctx.JSON(http.StatusOK, gin.H{})
+		return
+	}
+
+	ctx.JSON(http.StatusBadRequest, gin.H{})
+}

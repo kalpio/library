@@ -53,10 +53,11 @@ func GetByID[T Models](db *gorm.DB, id uint) (T, error) {
 	return result, nil
 }
 
-func Delete[T Models](db *gorm.DB, id uint) error {
-	if tx := db.Delete(new(T), id); tx.Error != nil {
-		return fmt.Errorf("repository: could not delete: %w", tx.Error)
+func Delete[T Models](db *gorm.DB, id uint) (int64, error) {
+	var tx *gorm.DB
+	if tx = db.Delete(new(T), id); tx.Error != nil {
+		return 0, fmt.Errorf("repository: could not delete: %w", tx.Error)
 	}
 
-	return nil
+	return tx.RowsAffected, nil
 }

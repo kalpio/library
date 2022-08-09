@@ -22,7 +22,7 @@ func TestMain(m *testing.M) {
 
 	code := m.Run()
 
-	dropDatabase(a.DB, "test")
+	dropDatabase(a.DB(), "test")
 
 	os.Exit(code)
 }
@@ -46,4 +46,7 @@ func TestAuthorAPI(t *testing.T) {
 	t.Run("GetNotExistingAuthorByID", authortest.GetNotExistingAuthorByID)
 
 	t.Run("GetExistingAuthors", authortest.GetExistingAuthors)
+
+	t.Run("DeleteExistingAuthor", authortest.DeleteExistingAuthor)
+	t.Run("DeleteNotExistingAuthor", authortest.DeleteNotExistingAuthor)
 }

@@ -141,12 +141,13 @@ func assertThatTheyAreSameAuthor(ass *assert.Assertions, got models.Author, expe
 func TestDelete(t *testing.T) {
 	db, afterTest := testutils.BeforeTest(t)
 	defer afterTest(t)
-	assert := assert.New(t)
+	ass := assert.New(t)
 
 	a := createNewAuthorInDB(db, t)
-	err := repository.Delete[models.Author](db, a.ID)
+	rowsAffected, err := repository.Delete[models.Author](db, a.ID)
 
-	assert.NoError(err)
+	ass.NoError(err)
+	ass.Greater(rowsAffected, int64(0))
 }
 
 func createNewAuthorInDB(db *gorm.DB, t *testing.T) models.Author {
@@ -154,9 +155,9 @@ func createNewAuthorInDB(db *gorm.DB, t *testing.T) models.Author {
 		random.RandomString(6),
 		random.RandomString(6),
 		random.RandomString(6))
-	assert := assert.New(t)
+	ass := assert.New(t)
 	result, err := repository.Save(db, *a)
-	assert.NoError(err)
+	ass.NoError(err)
 
 	return result
 }
