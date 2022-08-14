@@ -1,11 +1,13 @@
 package author
 
 import (
+	"library/authors/commands"
 	"library/services/author"
 	"net/http"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"github.com/mehdihadeli/go-mediatr"
 	"gorm.io/gorm"
 )
 
@@ -31,13 +33,15 @@ func (a *authorCtrl) Add(ctx *gin.Context) {
 		return
 	}
 
-	result, err := author.Create(a.db, json.FirstName, json.MiddleName, json.LastName)
+	command := commands.NewCreateAuthorCommand(json.FirstName, json.MiddleName, json.LastName)
+	response, err := mediatr.Send[*commands.CreateAuthorCommand, *commands.CreateAuthorCommandResponse](ctx.Request.Context(), command)
+
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	ctx.JSON(http.StatusCreated, result)
+	ctx.JSON(http.StatusCreated, response)
 }
 
 func (a *authorCtrl) Get(ctx *gin.Context) {
