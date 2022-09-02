@@ -1,0 +1,36 @@
+package queries
+
+import (
+	"context"
+	"library/domain"
+	"library/services/author"
+)
+
+type GetAllAuthorsQueryHandler struct {
+	db domain.Database
+}
+
+func NewGetAllAuthorsQueryHandler(db domain.Database) *GetAllAuthorsQueryHandler {
+	return &GetAllAuthorsQueryHandler{db: db}
+}
+
+func (c *GetAllAuthorsQueryHandler) Handle(ctx context.Context, query *GetAllAuthorsQuery) (*GetAllAuthorsQueryResponse, error) {
+	res, err := author.GetAll(c.db)
+	if err != nil {
+		return nil, err
+	}
+
+	var results []result
+	for _, r := range res {
+		results = append(results, *&result{
+			AuthorID:   r.ID,
+			FirstName:  r.FirstName,
+			MiddleName: r.MiddleName,
+			LastName:   r.LastName,
+		})
+	}
+
+	return &GetAllAuthorsQueryResponse{
+		Result: results,
+	}, nil
+}

@@ -1,17 +1,16 @@
 package commands
 
 import (
+	"context"
+	"library/domain"
 	"library/services/author"
-
-	"golang.org/x/net/context"
-	"gorm.io/gorm"
 )
 
 type CreateAuthorCommandHandler struct {
-	db *gorm.DB
+	db domain.Database
 }
 
-func NewCreateAuthorCommandHandler(db *gorm.DB) *CreateAuthorCommandHandler {
+func NewCreateAuthorCommandHandler(db domain.Database) *CreateAuthorCommandHandler {
 	return &CreateAuthorCommandHandler{db: db}
 }
 

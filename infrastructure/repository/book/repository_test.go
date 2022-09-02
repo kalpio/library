@@ -1,14 +1,13 @@
 package book
 
 import (
-	"library/models"
+	"library/domain"
+	"library/infrastructure/repository"
+	"library/infrastructure/repository/testutils"
 	"library/random"
-	"library/repository"
-	"library/repository/testutils"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"gorm.io/gorm"
 )
 
 func TestSaveNewBook(t *testing.T) {
@@ -20,13 +19,13 @@ func TestSaveNewBook(t *testing.T) {
 	content := []byte(random.RandomString(256))
 	format := random.RandomString(3)
 	version := random.RandomString(4)
-	author := &models.Author{
+	author := &domain.Author{
 		FirstName:  random.RandomString(10),
 		MiddleName: random.RandomString(10),
 		LastName:   random.RandomString(10),
 	}
 
-	book := models.NewBook(title, isbn, format, author)
+	book := domain.NewBook(title, isbn, format, author)
 	book.Content = content
 	book.Version = version
 	ass := assert.New(t)
@@ -50,7 +49,7 @@ func TestGetByISBN(t *testing.T) {
 
 	expected := createNewBookInDB(db, t)
 	columnValue := map[string]interface{}{"ISBN": expected.ISBN}
-	got, err := repository.GetByColumns[models.Book](db, columnValue)
+	got, err := repository.GetByColumns[domain.Book](db, columnValue)
 
 	ass.NoError(err)
 	ass.Equal(got.ID, expected.ID)
@@ -61,12 +60,12 @@ func TestGetAll(t *testing.T) {
 	defer afterTest(t)
 
 	ass := assert.New(t)
-	var expected []*models.Book
+	var expected []*domain.Book
 	expected = append(expected, createNewBookInDB(db, t))
 	expected = append(expected, createNewBookInDB(db, t))
 	expected = append(expected, createNewBookInDB(db, t))
 
-	results, err := repository.GetAll[models.Book](db)
+	results, err := repository.GetAll[domain.Book](db)
 	ass.NoError(err)
 	ass.Equal(len(results), 3)
 
@@ -75,7 +74,7 @@ func TestGetAll(t *testing.T) {
 	}
 }
 
-func assertThatContainsBook(ass *assert.Assertions, results []models.Book, expected *models.Book) {
+func assertThatContainsBook(ass *assert.Assertions, results []domain.Book, expected *domain.Book) {
 	for _, v := range results {
 		if v.ID == expected.ID {
 			assertThatTheyAreSameBook(ass, v, expected)
@@ -84,7 +83,7 @@ func assertThatContainsBook(ass *assert.Assertions, results []models.Book, expec
 	}
 }
 
-func assertThatTheyAreSameBook(ass *assert.Assertions, get models.Book, expected *models.Book) {
+func assertThatTheyAreSameBook(ass *assert.Assertions, get domain.Book, expected *domain.Book) {
 	ass.Equal(get.Title, expected.Title)
 	ass.Equal(get.ISBN, expected.ISBN)
 	ass.Equal(get.Content, expected.Content)
@@ -107,18 +106,18 @@ func TestDelete(t *testing.T) {
 	ass := assert.New(t)
 
 	book := createNewBookInDB(db, t)
-	rowsAffected, err := repository.Delete[models.Book](db, book.ID)
+	rowsAffected, err := repository.Delete[domain.Book](db, book.ID)
 
 	ass.NoError(err)
 	ass.Greater(rowsAffected, int64(0))
 }
 
-func createNewBookInDB(db *gorm.DB, t *testing.T) *models.Book {
-	b := models.NewBook(
+func createNewBookInDB(db domain.Database, t *testing.T) *domain.Book {
+	b := domain.NewBook(
 		random.RandomString(100),
 		random.RandomString(13),
 		random.RandomString(3),
-		models.NewAuthor(
+		domain.NewAuthor(
 			random.RandomString(6),
 			random.RandomString(6),
 			random.RandomString(6)))

@@ -1,10 +1,11 @@
 module library
 
-go 1.18
+go 1.19
 
 require (
 	github.com/gin-gonic/gin v1.8.1
 	github.com/mattn/go-sqlite3 v1.14.12
+	golang.org/x/net v0.0.0-20220812174116-3211cb980234
 	gorm.io/driver/sqlite v1.3.4
 	gorm.io/gorm v1.23.4
 )
@@ -28,7 +29,6 @@ require (
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/ugorji/go/codec v1.2.7 // indirect
 	golang.org/x/crypto v0.0.0-20220411220226-7b82a4e95df4 // indirect
-	golang.org/x/net v0.0.0-20220812174116-3211cb980234 // indirect
 	golang.org/x/sys v0.0.0-20220728004956-3c1f35247d10 // indirect
 	golang.org/x/text v0.3.7 // indirect
 	google.golang.org/protobuf v1.28.0 // indirect

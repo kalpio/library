@@ -3,6 +3,8 @@ package application
 import (
 	"fmt"
 	"library/api/author"
+	"library/application/authors"
+	"library/domain"
 	"library/migrations"
 	"log"
 	"net"
@@ -13,13 +15,21 @@ import (
 )
 
 type App struct {
-	db     *gorm.DB
+	db     domain.Database
 	router *gin.Engine
 	host   string
 	port   string
 }
 
-func (a *App) DB() *gorm.DB {
+type database struct {
+	db *gorm.DB
+}
+
+func (d *database) GetDB() *gorm.DB {
+	return d.db
+}
+
+func (a *App) DB() domain.Database {
 	return a.db
 }
 
@@ -46,7 +56,7 @@ func (a *App) initializeDB(dsn string) {
 		log.Fatalln(err)
 	}
 
-	a.db = db
+	a.db = &database{db}
 
 	if err := migrations.CreateAndUseDatabase(a.db, dsn); err != nil {
 		log.Fatalln(err)
@@ -56,10 +66,14 @@ func (a *App) initializeDB(dsn string) {
 	}
 }
 
+func (a *App) initializeMediatr() {
+	authors.Register(a.db)
+}
+
 func (a *App) initializeRouter() {
 	a.router = gin.Default()
 
-	authorCtrl := author.NewAuthorController(a.db)
+	authorCtrl := author.NewAuthorController()
 
 	v1 := a.router.Group("/api/v1")
 	{

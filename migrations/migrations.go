@@ -4,21 +4,19 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"library/models"
+	"library/domain"
 	"os"
 	"strings"
-
-	"gorm.io/gorm"
 )
 
 var ErrAutoMigration = errors.New("could not auto migrate")
 
-func CreateAndUseDatabase(db *gorm.DB, name string) error {
-	if !strings.Contains(db.Dialector.Name(), "sqlite") {
-		if tx := db.Exec(fmt.Sprintf("CREATE DATABASE %s;", name)); tx.Error != nil {
+func CreateAndUseDatabase(db domain.Database, name string) error {
+	if !strings.Contains(db.GetDB().Dialector.Name(), "sqlite") {
+		if tx := db.GetDB().Exec(fmt.Sprintf("CREATE DATABASE %s;", name)); tx.Error != nil {
 			return tx.Error
 		}
-		if tx := db.Exec(fmt.Sprintf("USE %s;", name)); tx.Error != nil {
+		if tx := db.GetDB().Exec(fmt.Sprintf("USE %s;", name)); tx.Error != nil {
 			return tx.Error
 		}
 	}
@@ -26,15 +24,15 @@ func CreateAndUseDatabase(db *gorm.DB, name string) error {
 	return nil
 }
 
-func DropDatabase(db *gorm.DB, name string) error {
-	if !strings.Contains(db.Dialector.Name(), "sqlite") {
+func DropDatabase(db domain.Database, name string) error {
+	if !strings.Contains(db.GetDB().Dialector.Name(), "sqlite") {
 		query := fmt.Sprintf(`
 USE master;
 ALTER DATABASE [%s] SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
 DROP DATABASE [%s];
 `, name, name)
 
-		if tx := db.Exec(query); tx.Error != nil {
+		if tx := db.GetDB().Exec(query); tx.Error != nil {
 			return tx.Error
 		}
 	} else {
@@ -42,7 +40,7 @@ DROP DATABASE [%s];
 			database *sql.DB
 			err      error
 		)
-		if database, err = db.DB(); err != nil {
+		if database, err = db.GetDB().DB(); err != nil {
 			return err
 		}
 
@@ -56,11 +54,11 @@ DROP DATABASE [%s];
 	return nil
 }
 
-func UpdateDatabase(db *gorm.DB) error {
-	if err := db.AutoMigrate(&models.Author{}); err != nil {
+func UpdateDatabase(db domain.Database) error {
+	if err := db.GetDB().AutoMigrate(&domain.Author{}); err != nil {
 		return fmt.Errorf("models: %w: %v", ErrAutoMigration, err)
 	}
-	if err := db.AutoMigrate(&models.Book{}); err != nil {
+	if err := db.GetDB().AutoMigrate(&domain.Book{}); err != nil {
 		return fmt.Errorf("book: %w: %v", ErrAutoMigration, err)
 	}
 

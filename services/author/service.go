@@ -2,14 +2,12 @@ package author
 
 import (
 	"errors"
-	"library/models"
-	"library/repository"
-
-	"gorm.io/gorm"
+	"library/domain"
+	"library/infrastructure/repository"
 )
 
-func Create(db *gorm.DB, firstName, middleName, lastName string) (*models.Author, error) {
-	model := &models.Author{
+func Create(db domain.Database, firstName, middleName, lastName string) (*domain.Author, error) {
+	model := &domain.Author{
 		FirstName:  firstName,
 		MiddleName: middleName,
 		LastName:   lastName,
@@ -33,8 +31,8 @@ func Create(db *gorm.DB, firstName, middleName, lastName string) (*models.Author
 	return &result, nil
 }
 
-func GetByID(db *gorm.DB, id uint) (*models.Author, error) {
-	result, err := repository.GetByID[models.Author](db, id)
+func GetByID(db domain.Database, id uint) (*domain.Author, error) {
+	result, err := repository.GetByID[domain.Author](db, id)
 	if err != nil {
 		return nil, err
 	}
@@ -42,8 +40,8 @@ func GetByID(db *gorm.DB, id uint) (*models.Author, error) {
 	return &result, nil
 }
 
-func GetAll(db *gorm.DB) ([]models.Author, error) {
-	result, err := repository.GetAll[models.Author](db)
+func GetAll(db domain.Database) ([]domain.Author, error) {
+	result, err := repository.GetAll[domain.Author](db)
 	if err != nil {
 		return nil, err
 	}
@@ -51,26 +49,26 @@ func GetAll(db *gorm.DB) ([]models.Author, error) {
 	return result, nil
 }
 
-func Delete(db *gorm.DB, id uint) (bool, error) {
+func Delete(db domain.Database, id uint) (bool, error) {
 	var (
 		rowsAffected int64
 		err          error
 	)
-	if rowsAffected, err = repository.Delete[models.Author](db, id); err != nil {
+	if rowsAffected, err = repository.Delete[domain.Author](db, id); err != nil {
 		return false, err
 	}
 
 	return rowsAffected > 0, nil
 }
 
-func exists(db *gorm.DB, firstName, middleName, lastName string) (bool, error) {
+func exists(db domain.Database, firstName, middleName, lastName string) (bool, error) {
 	columns := map[string]interface{}{
 		"FirstName":  firstName,
 		"MiddleName": middleName,
 		"LastName":   lastName,
 	}
 
-	result, err := repository.GetByColumns[models.Author](db, columns)
+	result, err := repository.GetByColumns[domain.Author](db, columns)
 	if err != nil {
 		return false, err
 	}
