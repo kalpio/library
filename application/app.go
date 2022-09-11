@@ -48,6 +48,7 @@ func (a *App) Port(port string) {
 func (a *App) Initialize(dsn string) {
 	a.initializeDB(dsn)
 	a.initializeRouter()
+	a.initializeMediatr()
 }
 
 func (a *App) initializeDB(dsn string) {
@@ -67,7 +68,9 @@ func (a *App) initializeDB(dsn string) {
 }
 
 func (a *App) initializeMediatr() {
-	authors.Register(a.db)
+	if err := authors.Register(a.db); err != nil {
+		log.Fatalln(err)
+	}
 }
 
 func (a *App) initializeRouter() {

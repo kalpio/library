@@ -1,10 +1,11 @@
 package authors
 
 import (
-	"github.com/mehdihadeli/go-mediatr"
 	"library/application/authors/commands"
 	"library/application/authors/queries"
 	"library/domain"
+
+	"github.com/mehdihadeli/go-mediatr"
 )
 
 func Register(db domain.Database) error {
@@ -20,8 +21,8 @@ func Register(db domain.Database) error {
 		lastErr = err
 	}
 
-	getAuthorQueryHandler := queries.NewGetAuthorQueryHandler(db)
-	if err := mediatr.RegisterRequestHandler[*queries.GetAuthorQuery, *queries.GetAuthorQueryResponse](getAuthorQueryHandler); err != nil {
+	getAuthorByIDQueryHandler := queries.NewGetAuthorByIDQueryHandler(db)
+	if err := mediatr.RegisterRequestHandler[*queries.GetAuthorByIDQuery, *queries.GetAuthorByIDQueryResponse](getAuthorByIDQueryHandler); err != nil {
 		lastErr = err
 	}
 

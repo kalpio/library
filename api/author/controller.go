@@ -50,8 +50,8 @@ func (a *authorCtrl) Get(ctx *gin.Context) {
 		return
 	}
 
-	query := queries.NewGetAuthorQuery(uint(authorID))
-	result, err := mediatr.Send[*queries.GetAuthorQuery, *queries.GetAllAuthorsQueryResponse](ctx.Request.Context(), query)
+	query := queries.NewGetAuthorByIDQuery(uint(authorID))
+	result, err := mediatr.Send[*queries.GetAuthorByIDQuery, *queries.GetAuthorByIDQueryResponse](ctx.Request.Context(), query)
 
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -73,7 +73,7 @@ func (a *authorCtrl) GetAll(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, response.Result)
 }
 
-func (a *authorCtrl) Edit(ctx *gin.Context) {}
+func (a *authorCtrl) Edit(_ *gin.Context) {}
 
 func (a *authorCtrl) Delete(ctx *gin.Context) {
 	paramID := ctx.Param("id")

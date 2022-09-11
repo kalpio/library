@@ -6,21 +6,21 @@ import (
 	"library/services/author"
 )
 
-type GetAuthorQueryHandler struct {
+type GetAuthorByIDQueryHandler struct {
 	db domain.Database
 }
 
-func NewGetAuthorQueryHandler(db domain.Database) *GetAuthorQueryHandler {
-	return &GetAuthorQueryHandler{db: db}
+func NewGetAuthorByIDQueryHandler(db domain.Database) *GetAuthorByIDQueryHandler {
+	return &GetAuthorByIDQueryHandler{db: db}
 }
 
-func (c *GetAuthorQueryHandler) Handle(ctx context.Context, query *GetAuthorQuery) (*GetAuthorQueryResponse, error) {
+func (c *GetAuthorByIDQueryHandler) Handle(_ context.Context, query *GetAuthorByIDQuery) (*GetAuthorByIDQueryResponse, error) {
 	result, err := author.GetByID(c.db, query.AuthorID)
 	if err != nil {
 		return nil, err
 	}
 
-	return &GetAuthorQueryResponse{
+	return &GetAuthorByIDQueryResponse{
 		AuthorID:   result.ID,
 		FirstName:  result.FirstName,
 		MiddleName: result.MiddleName,

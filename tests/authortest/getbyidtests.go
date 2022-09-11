@@ -17,7 +17,7 @@ func GetExistingAuthorByID(t *testing.T) {
 	resp := requestGetByID(author.ID)
 
 	ass.NotNil(resp)
-	ass.Equal(resp.Code, http.StatusOK)
+	ass.Equal(http.StatusOK, resp.Code)
 }
 
 func GetNotExistingAuthorByID(t *testing.T) {
@@ -26,7 +26,7 @@ func GetNotExistingAuthorByID(t *testing.T) {
 	resp := requestGetByID(2137)
 
 	ass.NotNil(resp)
-	ass.Equal(resp.Code, http.StatusBadRequest)
+	ass.Equal(http.StatusBadRequest, resp.Code)
 }
 
 func requestGetByID(id uint) *httptest.ResponseRecorder {

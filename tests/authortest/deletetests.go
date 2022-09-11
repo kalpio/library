@@ -22,7 +22,7 @@ func DeleteExistingAuthor(t *testing.T) {
 
 	resp := requestDelete(values[1].ID)
 	ass.NotNil(resp)
-	ass.Equal(resp.Code, http.StatusOK)
+	ass.Equal(http.StatusOK, resp.Code)
 	valuesWithoutDeleted := []domain.Author{values[0], values[2]}
 
 	respAuthors := requestGetAll()
@@ -43,7 +43,7 @@ func DeleteNotExistingAuthor(t *testing.T) {
 
 	resp := requestDelete(values[2].ID + 2137)
 	ass.NotNil(resp)
-	ass.Equal(resp.Code, http.StatusBadRequest)
+	ass.Equal(http.StatusBadRequest, resp.Code)
 
 	respAuthors := requestGetAll()
 	var result []domain.Author
