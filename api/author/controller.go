@@ -1,20 +1,20 @@
 package author
 
 import (
-	"library/services/author"
+	"library/application/authors/commands"
+	"library/application/authors/queries"
 	"net/http"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
+	"github.com/mehdihadeli/go-mediatr"
 )
 
 type authorCtrl struct {
-	db *gorm.DB
 }
 
-func NewAuthorController(db *gorm.DB) *authorCtrl {
-	return &authorCtrl{db: db}
+func NewAuthorController() *authorCtrl {
+	return &authorCtrl{}
 }
 
 type authorDto struct {
@@ -31,24 +31,28 @@ func (a *authorCtrl) Add(ctx *gin.Context) {
 		return
 	}
 
-	result, err := author.Create(a.db, json.FirstName, json.MiddleName, json.LastName)
+	command := commands.NewCreateAuthorCommand(json.FirstName, json.MiddleName, json.LastName)
+	response, err := mediatr.Send[*commands.CreateAuthorCommand, *commands.CreateAuthorCommandResponse](ctx.Request.Context(), command)
+
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	ctx.JSON(http.StatusCreated, result)
+	ctx.JSON(http.StatusCreated, response)
 }
 
 func (a *authorCtrl) Get(ctx *gin.Context) {
 	paramID := ctx.Param("id")
-	id, err := strconv.ParseUint(paramID, 10, 64)
+	authorID, err := strconv.ParseUint(paramID, 10, 64)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	result, err := author.GetByID(a.db, uint(id))
+	query := queries.NewGetAuthorByIDQuery(uint(authorID))
+	result, err := mediatr.Send[*queries.GetAuthorByIDQuery, *queries.GetAuthorByIDQueryResponse](ctx.Request.Context(), query)
+
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -58,32 +62,36 @@ func (a *authorCtrl) Get(ctx *gin.Context) {
 }
 
 func (a *authorCtrl) GetAll(ctx *gin.Context) {
-	result, err := author.GetAll(a.db)
+	query := queries.NewGetAllAuthorsQuery()
+	response, err := mediatr.Send[*queries.GetAllAuthorsQuery, *queries.GetAllAuthorsQueryResponse](ctx.Request.Context(), query)
+
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	ctx.JSON(http.StatusOK, result)
+	ctx.JSON(http.StatusOK, response.Result)
 }
 
-func (a *authorCtrl) Edit(ctx *gin.Context) {}
+func (a *authorCtrl) Edit(_ *gin.Context) {}
 
 func (a *authorCtrl) Delete(ctx *gin.Context) {
 	paramID := ctx.Param("id")
-	id, err := strconv.ParseUint(paramID, 10, 64)
+	authorID, err := strconv.ParseUint(paramID, 10, 64)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	succeeded := false
-	if succeeded, err = author.Delete(a.db, uint(id)); err != nil {
+	command := commands.NewDeleteAuthorCommand(uint(authorID))
+	response, err := mediatr.Send[*commands.DeleteAuthorCommand, *commands.DeleteAuthorCommandResponse](ctx.Request.Context(), command)
+
+	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	if succeeded {
+	if response.Succeeded {
 		ctx.JSON(http.StatusOK, gin.H{})
 		return
 	}

@@ -25,7 +25,7 @@ func PostNewAuthor(t *testing.T) {
 	resp := postAuthorData(buff)
 
 	ass.NotNil(resp)
-	ass.Equal(resp.Code, http.StatusCreated)
+	ass.Equal(http.StatusCreated, resp.Code)
 }
 
 func PostDuplicatedAuthor(t *testing.T) {
@@ -35,12 +35,12 @@ func PostDuplicatedAuthor(t *testing.T) {
 	resp0 := postAuthorData(buff)
 
 	ass.NotNil(resp0)
-	ass.Equal(resp0.Code, http.StatusCreated)
+	ass.Equal(http.StatusCreated, resp0.Code)
 
 	resp1 := postAuthorData(buff)
 
 	ass.NotNil(resp1)
-	ass.Equal(resp1.Code, http.StatusBadRequest)
+	ass.Equal(http.StatusBadRequest, resp1.Code)
 }
 
 func PostAuthorWithEmptyFirstNameShouldFail(t *testing.T) {
@@ -50,7 +50,7 @@ func PostAuthorWithEmptyFirstNameShouldFail(t *testing.T) {
 	resp := postAuthorData(buff)
 
 	ass.NotNil(resp)
-	ass.Equal(resp.Code, http.StatusBadRequest)
+	ass.Equal(http.StatusBadRequest, resp.Code)
 }
 
 func PostAuthorWithEmptyLastNameShouldFail(t *testing.T) {
@@ -60,7 +60,7 @@ func PostAuthorWithEmptyLastNameShouldFail(t *testing.T) {
 	resp := postAuthorData(buff)
 
 	ass.NotNil(resp)
-	ass.Equal(resp.Code, http.StatusBadRequest)
+	ass.Equal(http.StatusBadRequest, resp.Code)
 }
 
 func PostAuthorWithEmptyMiddleNameShouldPass(t *testing.T) {
@@ -70,7 +70,7 @@ func PostAuthorWithEmptyMiddleNameShouldPass(t *testing.T) {
 	resp := postAuthorData(buff)
 
 	ass.NotNil(resp)
-	ass.Equal(resp.Code, http.StatusCreated)
+	ass.Equal(http.StatusCreated, resp.Code)
 }
 
 func PostAuthorWithEmptyPropsShouldFail(t *testing.T) {
@@ -80,7 +80,7 @@ func PostAuthorWithEmptyPropsShouldFail(t *testing.T) {
 	resp := postAuthorData(buff)
 
 	ass.NotNil(resp)
-	ass.Equal(resp.Code, http.StatusBadRequest)
+	ass.Equal(http.StatusBadRequest, resp.Code)
 }
 
 func prepareAuthorRequestData(firstName, middleName, lastName string) *bytes.Buffer {

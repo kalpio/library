@@ -1,13 +1,11 @@
 package author
 
 import (
-	"library/models"
+	"library/domain"
+	"library/infrastructure/repository"
+	"library/infrastructure/repository/testutils"
 	"library/random"
-	"library/repository"
-	"library/repository/testutils"
 	"testing"
-
-	"gorm.io/gorm"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -19,7 +17,7 @@ func TestSaveNewAuthor(t *testing.T) {
 	firstName := random.RandomString(10)
 	middleName := random.RandomString(10)
 	lastName := random.RandomString(10)
-	author0 := models.NewAuthor(firstName, middleName, lastName)
+	author0 := domain.NewAuthor(firstName, middleName, lastName)
 
 	ass := assert.New(t)
 	result, err := repository.Save(db, *author0)
@@ -40,7 +38,7 @@ func TestTryAddExistingAuthor(t *testing.T) {
 	middleName := random.RandomString(10)
 	lastName := random.RandomString(10)
 
-	author0 := models.NewAuthor(firstName, middleName, lastName)
+	author0 := domain.NewAuthor(firstName, middleName, lastName)
 	result0, err := repository.Save(db, *author0)
 
 	ass.NoError(err)
@@ -48,7 +46,7 @@ func TestTryAddExistingAuthor(t *testing.T) {
 	ass.Equal(result0.MiddleName, middleName)
 	ass.Equal(result0.LastName, lastName)
 
-	author1 := models.NewAuthor(firstName, middleName, lastName)
+	author1 := domain.NewAuthor(firstName, middleName, lastName)
 	result1, err := repository.Save(db, *author1)
 	ass.Error(err)
 	ass.Equal(result1.ID, uint(0))
@@ -63,7 +61,7 @@ func TestTryAddEmptyFirstName(t *testing.T) {
 	middleName := random.RandomString(10)
 	lastName := random.RandomString(10)
 
-	author := models.NewAuthor(firstName, middleName, lastName)
+	author := domain.NewAuthor(firstName, middleName, lastName)
 	result, err := repository.Save(db, *author)
 	ass.Error(err)
 	ass.Equal(result.ID, uint(0))
@@ -78,7 +76,7 @@ func TestTryAddEmptyLastName(t *testing.T) {
 	middleName := random.RandomString(10)
 	lastName := ""
 
-	author := models.NewAuthor(firstName, middleName, lastName)
+	author := domain.NewAuthor(firstName, middleName, lastName)
 	result, err := repository.Save(db, *author)
 	ass.Error(err)
 	ass.Equal(result.ID, uint(0))
@@ -90,7 +88,7 @@ func TestGetByID(t *testing.T) {
 
 	ass := assert.New(t)
 	expect := createNewAuthorInDB(db, t)
-	got, err := repository.GetByID[models.Author](db, expect.ID)
+	got, err := repository.GetByID[domain.Author](db, expect.ID)
 
 	ass.NoError(err)
 	assertThatTheyAreSameAuthor(ass, got, expect)
@@ -101,12 +99,12 @@ func TestGetAll(t *testing.T) {
 	defer afterTest(t)
 
 	ass := assert.New(t)
-	var expects []models.Author
+	var expects []domain.Author
 	expects = append(expects, createNewAuthorInDB(db, t))
 	expects = append(expects, createNewAuthorInDB(db, t))
 	expects = append(expects, createNewAuthorInDB(db, t))
 
-	results, err := repository.GetAll[models.Author](db)
+	results, err := repository.GetAll[domain.Author](db)
 
 	ass.NoError(err)
 	ass.Equal(len(expects), 3)
@@ -116,7 +114,7 @@ func TestGetAll(t *testing.T) {
 	}
 }
 
-func assertThatContainsAuthor(ass *assert.Assertions, results []models.Author, expect models.Author) {
+func assertThatContainsAuthor(ass *assert.Assertions, results []domain.Author, expect domain.Author) {
 	for _, v := range results {
 		if v.ID == expect.ID {
 			assertThatTheyAreSameAuthor(ass, v, expect)
@@ -125,7 +123,7 @@ func assertThatContainsAuthor(ass *assert.Assertions, results []models.Author, e
 	}
 }
 
-func assertThatTheyAreSameAuthor(ass *assert.Assertions, got models.Author, expect models.Author) {
+func assertThatTheyAreSameAuthor(ass *assert.Assertions, got domain.Author, expect domain.Author) {
 	ass.Equal(got.FirstName, expect.FirstName)
 	ass.Equal(got.MiddleName, expect.MiddleName)
 	ass.Equal(got.LastName, expect.LastName)
@@ -144,14 +142,14 @@ func TestDelete(t *testing.T) {
 	ass := assert.New(t)
 
 	a := createNewAuthorInDB(db, t)
-	rowsAffected, err := repository.Delete[models.Author](db, a.ID)
+	rowsAffected, err := repository.Delete[domain.Author](db, a.ID)
 
 	ass.NoError(err)
 	ass.Greater(rowsAffected, int64(0))
 }
 
-func createNewAuthorInDB(db *gorm.DB, t *testing.T) models.Author {
-	a := models.NewAuthor(
+func createNewAuthorInDB(db domain.Database, t *testing.T) domain.Author {
+	a := domain.NewAuthor(
 		random.RandomString(6),
 		random.RandomString(6),
 		random.RandomString(6))

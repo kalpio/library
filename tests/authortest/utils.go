@@ -2,7 +2,7 @@ package authortest
 
 import (
 	"encoding/json"
-	"library/models"
+	"library/domain"
 	"library/random"
 	"net/http"
 	"net/http/httptest"
@@ -18,19 +18,19 @@ func executeRequest(req *http.Request) *httptest.ResponseRecorder {
 }
 
 func clearAuthorsTable(ass *assert.Assertions) {
-	if err := a.DB().Where("1 = 1").Delete(&models.Author{}); err != nil {
+	if err := a.DB().GetDB().Where("1 = 1").Delete(&domain.Author{}); err != nil {
 		ass.NoError(err.Error)
 	}
 }
 
-func createNewAuthor(ass *assert.Assertions) *models.Author {
+func createNewAuthor(ass *assert.Assertions) *domain.Author {
 	buff := prepareAuthorRequestData(random.RandomString(10), random.RandomString(10), random.RandomString(10))
 	resp := postAuthorData(buff)
 
 	ass.NotNil(resp)
 	ass.Equal(resp.Code, http.StatusCreated)
 
-	var result *models.Author
+	var result *domain.Author
 	if err := json.Unmarshal(resp.Body.Bytes(), &result); err != nil {
 		ass.NoError(err)
 	}

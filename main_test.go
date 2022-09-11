@@ -1,6 +1,7 @@
 package main
 
 import (
+	"library/domain"
 	"library/migrations"
 	"log"
 	"os"
@@ -8,8 +9,6 @@ import (
 
 	"library/application"
 	"library/tests/authortest"
-
-	"gorm.io/gorm"
 )
 
 var a application.App
@@ -27,7 +26,7 @@ func TestMain(m *testing.M) {
 	os.Exit(code)
 }
 
-func dropDatabase(db *gorm.DB, dsn string) {
+func dropDatabase(db domain.Database, dsn string) {
 	if err := migrations.DropDatabase(db, dsn); err != nil {
 		log.Fatalln(err)
 	}

@@ -3,7 +3,7 @@ package authortest
 import (
 	"encoding/json"
 	"fmt"
-	"library/models"
+	"library/domain"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -15,18 +15,18 @@ func DeleteExistingAuthor(t *testing.T) {
 	ass := assert.New(t)
 	clearAuthorsTable(ass)
 
-	var values []models.Author
+	var values []domain.Author
 	values = append(values, *createNewAuthor(ass))
 	values = append(values, *createNewAuthor(ass))
 	values = append(values, *createNewAuthor(ass))
 
 	resp := requestDelete(values[1].ID)
 	ass.NotNil(resp)
-	ass.Equal(resp.Code, http.StatusOK)
-	valuesWithoutDeleted := []models.Author{values[0], values[2]}
+	ass.Equal(http.StatusOK, resp.Code)
+	valuesWithoutDeleted := []domain.Author{values[0], values[2]}
 
 	respAuthors := requestGetAll()
-	var result []models.Author
+	var result []domain.Author
 	err := json.Unmarshal(respAuthors.Body.Bytes(), &result)
 	ass.NoError(err)
 	ass.ElementsMatch(valuesWithoutDeleted, result)
@@ -36,17 +36,17 @@ func DeleteNotExistingAuthor(t *testing.T) {
 	ass := assert.New(t)
 	clearAuthorsTable(ass)
 
-	var values []models.Author
+	var values []domain.Author
 	values = append(values, *createNewAuthor(ass))
 	values = append(values, *createNewAuthor(ass))
 	values = append(values, *createNewAuthor(ass))
 
 	resp := requestDelete(values[2].ID + 2137)
 	ass.NotNil(resp)
-	ass.Equal(resp.Code, http.StatusBadRequest)
+	ass.Equal(http.StatusBadRequest, resp.Code)
 
 	respAuthors := requestGetAll()
-	var result []models.Author
+	var result []domain.Author
 	err := json.Unmarshal(respAuthors.Body.Bytes(), &result)
 	ass.NoError(err)
 	ass.ElementsMatch(values, result)

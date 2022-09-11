@@ -2,6 +2,7 @@ package testutils
 
 import (
 	"fmt"
+	"library/domain"
 	"library/migrations"
 	"library/random"
 	"testing"
@@ -12,7 +13,15 @@ import (
 	"gorm.io/gorm"
 )
 
-func BeforeTest(t *testing.T) (*gorm.DB, func(t *testing.T)) {
+type database struct {
+	db *gorm.DB
+}
+
+func (d *database) GetDB() *gorm.DB {
+	return d.db
+}
+
+func BeforeTest(t *testing.T) (domain.Database, func(t *testing.T)) {
 	randomDBName := getRandomDBName()
 	var (
 		err error
@@ -24,16 +33,18 @@ func BeforeTest(t *testing.T) (*gorm.DB, func(t *testing.T)) {
 	db, err = gorm.Open(sqlite.Open(dsn), &gorm.Config{})
 	ass.NoError(err)
 
-	if err := migrations.CreateAndUseDatabase(db, randomDBName); err != nil {
+	ddb := &database{db}
+
+	if err := migrations.CreateAndUseDatabase(ddb, randomDBName); err != nil {
 		ass.NoError(err)
 	}
 
-	if err := migrations.UpdateDatabase(db); err != nil {
+	if err := migrations.UpdateDatabase(ddb); err != nil {
 		ass.NoError(err)
 	}
 
-	return db, func(t *testing.T) {
-		if err := migrations.DropDatabase(db, randomDBName); err != nil {
+	return ddb, func(t *testing.T) {
+		if err := migrations.DropDatabase(ddb, randomDBName); err != nil {
 			ass.NoError(err)
 		}
 	}

@@ -2,7 +2,7 @@ package authortest
 
 import (
 	"encoding/json"
-	"library/models"
+	"library/domain"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -14,13 +14,13 @@ func GetExistingAuthors(t *testing.T) {
 	ass := assert.New(t)
 	clearAuthorsTable(ass)
 
-	values := []models.Author{}
+	values := []domain.Author{}
 	values = append(values, *createNewAuthor(ass))
 	values = append(values, *createNewAuthor(ass))
 	values = append(values, *createNewAuthor(ass))
 
 	resp := requestGetAll()
-	var result []models.Author
+	var result []domain.Author
 	err := json.Unmarshal(resp.Body.Bytes(), &result)
 	ass.NoError(err)
 	ass.ElementsMatch(values, result)
