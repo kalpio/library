@@ -51,5 +51,5 @@ func BeforeTest(t *testing.T) (domain.Database, func(t *testing.T)) {
 }
 
 func getRandomDBName() string {
-	return fmt.Sprintf("library_%s", random.RandomString(6))
+	return fmt.Sprintf("library_%s", random.String(6))
 }

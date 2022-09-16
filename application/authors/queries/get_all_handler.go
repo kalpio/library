@@ -27,6 +27,7 @@ func (c *GetAllAuthorsQueryHandler) Handle(_ context.Context, _ *GetAllAuthorsQu
 			FirstName:  r.FirstName,
 			MiddleName: r.MiddleName,
 			LastName:   r.LastName,
+			CreatedAt:  r.CreatedAt,
 		})
 	}
 

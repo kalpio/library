@@ -24,7 +24,7 @@ func clearAuthorsTable(ass *assert.Assertions) {
 }
 
 func createNewAuthor(ass *assert.Assertions) *domain.Author {
-	buff := prepareAuthorRequestData(random.RandomString(10), random.RandomString(10), random.RandomString(10))
+	buff := prepareAddAuthorRequestData(random.String(10), random.String(10), random.String(10))
 	resp := postAuthorData(buff)
 
 	ass.NotNil(resp)

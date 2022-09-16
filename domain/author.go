@@ -27,3 +27,7 @@ func (a Author) Validate() error {
 		validation.Field(&a.LastName, validation.Required),
 	)
 }
+
+func (a Author) GetID() uint {
+	return a.ID
+}

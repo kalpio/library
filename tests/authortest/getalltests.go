@@ -14,7 +14,7 @@ func GetExistingAuthors(t *testing.T) {
 	ass := assert.New(t)
 	clearAuthorsTable(ass)
 
-	values := []domain.Author{}
+	var values []domain.Author
 	values = append(values, *createNewAuthor(ass))
 	values = append(values, *createNewAuthor(ass))
 	values = append(values, *createNewAuthor(ass))

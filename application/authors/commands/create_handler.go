@@ -25,6 +25,7 @@ func (c *CreateAuthorCommandHandler) Handle(_ context.Context, command *CreateAu
 		FirstName:  model.FirstName,
 		MiddleName: model.MiddleName,
 		LastName:   model.LastName,
+		CreatedAt:  model.CreatedAt,
 	}
 
 	return response, nil

@@ -34,3 +34,7 @@ func (b Book) Validate() error {
 		validation.Field(&b.ISBN, validation.Required),
 		validation.Field(&b.Author, validation.Required))
 }
+
+func (b Book) GetID() uint {
+	return b.ID
+}
