@@ -10,6 +10,7 @@ import (
 type Models interface {
 	domain.Author | domain.Book
 	Validate() error
+	GetID() uint
 }
 
 func Save[T Models](db domain.Database, model T) (T, error) {
@@ -19,6 +20,21 @@ func Save[T Models](db domain.Database, model T) (T, error) {
 
 	tx := db.GetDB().Create(&model)
 	return model, tx.Error
+}
+
+func Update[T Models](db domain.Database, model T) error {
+	if err := model.Validate(); err != nil {
+		return err
+	}
+	if model.GetID() <= 0 {
+		return errors.New("ID must be set")
+	}
+
+	tx := db.GetDB().Model(model).
+		Where("id = ?", model.GetID()).
+		Updates(model)
+
+	return tx.Error
 }
 
 func GetByColumns[T Models](db domain.Database, columnValue map[string]interface{}) (T, error) {

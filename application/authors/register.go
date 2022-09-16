@@ -31,5 +31,10 @@ func Register(db domain.Database) error {
 		lastErr = err
 	}
 
+	editAuthorCommandHandler := commands.NewEditAuthorCommandHandler(db)
+	if err := mediatr.RegisterRequestHandler[*commands.EditAuthorCommand, *commands.EditAuthorCommandResponse](editAuthorCommandHandler); err != nil {
+		lastErr = err
+	}
+
 	return lastErr
 }

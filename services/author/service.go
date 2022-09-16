@@ -31,6 +31,30 @@ func Create(db domain.Database, firstName, middleName, lastName string) (*domain
 	return &result, nil
 }
 
+func Edit(db domain.Database, id uint, firstName, middleName, lastName string) (*domain.Author, error) {
+	model := &domain.Author{
+		Entity: domain.Entity{
+			ID: id,
+		},
+		FirstName:  firstName,
+		MiddleName: middleName,
+		LastName:   lastName,
+		Books:      nil,
+	}
+
+	err := repository.Update(db, *model)
+	if err != nil {
+		return nil, err
+	}
+
+	result, err := GetByID(db, id)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
 func GetByID(db domain.Database, id uint) (*domain.Author, error) {
 	result, err := repository.GetByID[domain.Author](db, id)
 	if err != nil {

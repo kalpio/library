@@ -10,21 +10,21 @@ import (
 	"github.com/mehdihadeli/go-mediatr"
 )
 
-type authorCtrl struct {
+type Controller struct {
 }
 
-func NewAuthorController() *authorCtrl {
-	return &authorCtrl{}
+func NewAuthorController() *Controller {
+	return &Controller{}
 }
 
-type authorDto struct {
+type createAuthorDto struct {
 	FirstName  string `json:"first_name"`
 	MiddleName string `json:"middle_name"`
 	LastName   string `json:"last_name"`
 }
 
-func (a *authorCtrl) Add(ctx *gin.Context) {
-	var json authorDto
+func (a *Controller) Add(ctx *gin.Context) {
+	var json createAuthorDto
 
 	if err := ctx.ShouldBindJSON(&json); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -32,7 +32,9 @@ func (a *authorCtrl) Add(ctx *gin.Context) {
 	}
 
 	command := commands.NewCreateAuthorCommand(json.FirstName, json.MiddleName, json.LastName)
-	response, err := mediatr.Send[*commands.CreateAuthorCommand, *commands.CreateAuthorCommandResponse](ctx.Request.Context(), command)
+	response, err := mediatr.Send[*commands.CreateAuthorCommand, *commands.CreateAuthorCommandResponse](
+		ctx.Request.Context(),
+		command)
 
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -42,7 +44,7 @@ func (a *authorCtrl) Add(ctx *gin.Context) {
 	ctx.JSON(http.StatusCreated, response)
 }
 
-func (a *authorCtrl) Get(ctx *gin.Context) {
+func (a *Controller) Get(ctx *gin.Context) {
 	paramID := ctx.Param("id")
 	authorID, err := strconv.ParseUint(paramID, 10, 64)
 	if err != nil {
@@ -51,7 +53,9 @@ func (a *authorCtrl) Get(ctx *gin.Context) {
 	}
 
 	query := queries.NewGetAuthorByIDQuery(uint(authorID))
-	result, err := mediatr.Send[*queries.GetAuthorByIDQuery, *queries.GetAuthorByIDQueryResponse](ctx.Request.Context(), query)
+	result, err := mediatr.Send[*queries.GetAuthorByIDQuery, *queries.GetAuthorByIDQueryResponse](
+		ctx.Request.Context(),
+		query)
 
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -61,9 +65,11 @@ func (a *authorCtrl) Get(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, result)
 }
 
-func (a *authorCtrl) GetAll(ctx *gin.Context) {
+func (a *Controller) GetAll(ctx *gin.Context) {
 	query := queries.NewGetAllAuthorsQuery()
-	response, err := mediatr.Send[*queries.GetAllAuthorsQuery, *queries.GetAllAuthorsQueryResponse](ctx.Request.Context(), query)
+	response, err := mediatr.Send[*queries.GetAllAuthorsQuery, *queries.GetAllAuthorsQueryResponse](
+		ctx.Request.Context(),
+		query)
 
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -73,9 +79,33 @@ func (a *authorCtrl) GetAll(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, response.Result)
 }
 
-func (a *authorCtrl) Edit(_ *gin.Context) {}
+type editAuthorDto struct {
+	ID uint `json:"id"`
+	createAuthorDto
+}
 
-func (a *authorCtrl) Delete(ctx *gin.Context) {
+func (a *Controller) Edit(ctx *gin.Context) {
+	var json editAuthorDto
+
+	if err := ctx.ShouldBindJSON(&json); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	command := commands.NewEditAuthorCommand(json.ID, json.FirstName, json.MiddleName, json.LastName)
+	response, err := mediatr.Send[*commands.EditAuthorCommand, *commands.EditAuthorCommandResponse](
+		ctx.Request.Context(),
+		command)
+
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, response)
+}
+
+func (a *Controller) Delete(ctx *gin.Context) {
 	paramID := ctx.Param("id")
 	authorID, err := strconv.ParseUint(paramID, 10, 64)
 	if err != nil {
@@ -84,7 +114,9 @@ func (a *authorCtrl) Delete(ctx *gin.Context) {
 	}
 
 	command := commands.NewDeleteAuthorCommand(uint(authorID))
-	response, err := mediatr.Send[*commands.DeleteAuthorCommand, *commands.DeleteAuthorCommandResponse](ctx.Request.Context(), command)
+	response, err := mediatr.Send[*commands.DeleteAuthorCommand, *commands.DeleteAuthorCommandResponse](
+		ctx.Request.Context(),
+		command)
 
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})

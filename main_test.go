@@ -48,4 +48,6 @@ func TestAuthorAPI(t *testing.T) {
 
 	t.Run("DeleteExistingAuthor", authortest.DeleteExistingAuthor)
 	t.Run("DeleteNotExistingAuthor", authortest.DeleteNotExistingAuthor)
+
+	t.Run("EditExistingAuthor", authortest.EditExistingAuthor)
 }

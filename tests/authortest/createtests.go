@@ -21,7 +21,7 @@ func SetApp(app application.App) {
 func PostNewAuthor(t *testing.T) {
 	ass := assert.New(t)
 
-	buff := prepareAuthorRequestData(random.RandomString(10), random.RandomString(10), random.RandomString(10))
+	buff := prepareAddAuthorRequestData(random.RandomString(10), random.RandomString(10), random.RandomString(10))
 	resp := postAuthorData(buff)
 
 	ass.NotNil(resp)
@@ -31,7 +31,7 @@ func PostNewAuthor(t *testing.T) {
 func PostDuplicatedAuthor(t *testing.T) {
 	ass := assert.New(t)
 
-	buff := prepareAuthorRequestData(random.RandomString(10), random.RandomString(10), random.RandomString(10))
+	buff := prepareAddAuthorRequestData(random.RandomString(10), random.RandomString(10), random.RandomString(10))
 	resp0 := postAuthorData(buff)
 
 	ass.NotNil(resp0)
@@ -46,7 +46,7 @@ func PostDuplicatedAuthor(t *testing.T) {
 func PostAuthorWithEmptyFirstNameShouldFail(t *testing.T) {
 	ass := assert.New(t)
 
-	buff := prepareAuthorRequestData("", random.RandomString(10), random.RandomString(10))
+	buff := prepareAddAuthorRequestData("", random.RandomString(10), random.RandomString(10))
 	resp := postAuthorData(buff)
 
 	ass.NotNil(resp)
@@ -56,7 +56,7 @@ func PostAuthorWithEmptyFirstNameShouldFail(t *testing.T) {
 func PostAuthorWithEmptyLastNameShouldFail(t *testing.T) {
 	ass := assert.New(t)
 
-	buff := prepareAuthorRequestData(random.RandomString(10), random.RandomString(10), "")
+	buff := prepareAddAuthorRequestData(random.RandomString(10), random.RandomString(10), "")
 	resp := postAuthorData(buff)
 
 	ass.NotNil(resp)
@@ -66,7 +66,7 @@ func PostAuthorWithEmptyLastNameShouldFail(t *testing.T) {
 func PostAuthorWithEmptyMiddleNameShouldPass(t *testing.T) {
 	ass := assert.New(t)
 
-	buff := prepareAuthorRequestData(random.RandomString(10), "", random.RandomString(10))
+	buff := prepareAddAuthorRequestData(random.RandomString(10), "", random.RandomString(10))
 	resp := postAuthorData(buff)
 
 	ass.NotNil(resp)
@@ -76,14 +76,14 @@ func PostAuthorWithEmptyMiddleNameShouldPass(t *testing.T) {
 func PostAuthorWithEmptyPropsShouldFail(t *testing.T) {
 	ass := assert.New(t)
 
-	buff := prepareAuthorRequestData("", "", "")
+	buff := prepareAddAuthorRequestData("", "", "")
 	resp := postAuthorData(buff)
 
 	ass.NotNil(resp)
 	ass.Equal(http.StatusBadRequest, resp.Code)
 }
 
-func prepareAuthorRequestData(firstName, middleName, lastName string) *bytes.Buffer {
+func prepareAddAuthorRequestData(firstName, middleName, lastName string) *bytes.Buffer {
 	values := map[string]string{
 		"first_name":  firstName,
 		"middle_name": middleName,
