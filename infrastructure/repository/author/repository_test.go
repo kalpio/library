@@ -14,9 +14,9 @@ func TestSaveNewAuthor(t *testing.T) {
 	db, afterTest := testutils.BeforeTest(t)
 	defer afterTest(t)
 
-	firstName := random.RandomString(10)
-	middleName := random.RandomString(10)
-	lastName := random.RandomString(10)
+	firstName := random.String(10)
+	middleName := random.String(10)
+	lastName := random.String(10)
 	author0 := domain.NewAuthor(firstName, middleName, lastName)
 
 	ass := assert.New(t)
@@ -34,9 +34,9 @@ func TestTryAddExistingAuthor(t *testing.T) {
 	defer afterTest(t)
 
 	ass := assert.New(t)
-	firstName := random.RandomString(10)
-	middleName := random.RandomString(10)
-	lastName := random.RandomString(10)
+	firstName := random.String(10)
+	middleName := random.String(10)
+	lastName := random.String(10)
 
 	author0 := domain.NewAuthor(firstName, middleName, lastName)
 	result0, err := repository.Save(db, *author0)
@@ -58,8 +58,8 @@ func TestTryAddEmptyFirstName(t *testing.T) {
 
 	ass := assert.New(t)
 	firstName := ""
-	middleName := random.RandomString(10)
-	lastName := random.RandomString(10)
+	middleName := random.String(10)
+	lastName := random.String(10)
 
 	author := domain.NewAuthor(firstName, middleName, lastName)
 	result, err := repository.Save(db, *author)
@@ -72,8 +72,8 @@ func TestTryAddEmptyLastName(t *testing.T) {
 	defer afterTest(t)
 
 	ass := assert.New(t)
-	firstName := random.RandomString(10)
-	middleName := random.RandomString(10)
+	firstName := random.String(10)
+	middleName := random.String(10)
 	lastName := ""
 
 	author := domain.NewAuthor(firstName, middleName, lastName)
@@ -150,9 +150,9 @@ func TestDelete(t *testing.T) {
 
 func createNewAuthorInDB(db domain.Database, t *testing.T) domain.Author {
 	a := domain.NewAuthor(
-		random.RandomString(6),
-		random.RandomString(6),
-		random.RandomString(6))
+		random.String(6),
+		random.String(6),
+		random.String(6))
 	ass := assert.New(t)
 	result, err := repository.Save(db, *a)
 	ass.NoError(err)

@@ -16,7 +16,7 @@ func EditExistingAuthor(t *testing.T) {
 	ass := assert.New(t)
 
 	author := createNewAuthor(ass)
-	firstName, middleName, lastname := random.RandomString(10), random.RandomString(10), random.RandomString(10)
+	firstName, middleName, lastname := random.String(10), random.String(10), random.String(10)
 
 	buff := prepareEditAuthorRequestData(author.ID, firstName, middleName, lastname)
 	resp := patchAuthorData(buff, author.ID)

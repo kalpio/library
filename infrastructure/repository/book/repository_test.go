@@ -14,15 +14,15 @@ func TestSaveNewBook(t *testing.T) {
 	db, afterTest := testutils.BeforeTest(t)
 	defer afterTest(t)
 
-	title := random.RandomString(100)
-	isbn := random.RandomString(13)
-	content := []byte(random.RandomString(256))
-	format := random.RandomString(3)
-	version := random.RandomString(4)
+	title := random.String(100)
+	isbn := random.String(13)
+	content := []byte(random.String(256))
+	format := random.String(3)
+	version := random.String(4)
 	author := &domain.Author{
-		FirstName:  random.RandomString(10),
-		MiddleName: random.RandomString(10),
-		LastName:   random.RandomString(10),
+		FirstName:  random.String(10),
+		MiddleName: random.String(10),
+		LastName:   random.String(10),
 	}
 
 	book := domain.NewBook(title, isbn, format, author)
@@ -114,13 +114,13 @@ func TestDelete(t *testing.T) {
 
 func createNewBookInDB(db domain.Database, t *testing.T) *domain.Book {
 	b := domain.NewBook(
-		random.RandomString(100),
-		random.RandomString(13),
-		random.RandomString(3),
+		random.String(100),
+		random.String(13),
+		random.String(3),
 		domain.NewAuthor(
-			random.RandomString(6),
-			random.RandomString(6),
-			random.RandomString(6)))
+			random.String(6),
+			random.String(6),
+			random.String(6)))
 
 	ass := assert.New(t)
 	result, err := repository.Save(db, *b)
