@@ -2,22 +2,23 @@ package domain
 
 import (
 	validation "github.com/go-ozzo/ozzo-validation/v4"
-	"gorm.io/gorm"
+	"github.com/google/uuid"
 )
 
 type Book struct {
-	gorm.Model
+	Entity
 	Title    string
 	ISBN     string `gorm:"uniqueIndex;size:13"`
 	Content  []byte
 	Format   string
 	Version  string
-	AuthorID uint
+	AuthorID uuid.UUID
 	Author   *Author
 }
 
-func NewBook(title, isbn, format string, author *Author) *Book {
+func NewBook(id uuid.UUID, title, isbn, format string, author *Author) *Book {
 	return &Book{
+		Entity:   Entity{ID: id},
 		Title:    title,
 		ISBN:     isbn,
 		Content:  []byte{},
@@ -30,11 +31,12 @@ func NewBook(title, isbn, format string, author *Author) *Book {
 
 func (b Book) Validate() error {
 	return validation.ValidateStruct(&b,
+		validation.Field(&b.ID, validation.Required),
 		validation.Field(&b.Title, validation.Required),
 		validation.Field(&b.ISBN, validation.Required),
 		validation.Field(&b.Author, validation.Required))
 }
 
-func (b Book) GetID() uint {
+func (b Book) GetID() uuid.UUID {
 	return b.ID
 }

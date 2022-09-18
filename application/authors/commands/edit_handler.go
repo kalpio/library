@@ -2,6 +2,7 @@ package commands
 
 import (
 	"context"
+	"github.com/google/uuid"
 	"library/domain"
 	"library/services/author"
 )
@@ -15,8 +16,12 @@ func NewEditAuthorCommandHandler(db domain.Database) *EditAuthorCommandHandler {
 }
 
 func (c *EditAuthorCommandHandler) Handle(_ context.Context, command *EditAuthorCommand) (*EditAuthorCommandResponse, error) {
-	model, err := author.Edit(c.db, command.ID, command.FirstName,
-		command.MiddleName, command.LastName)
+	authorID, err := uuid.Parse(string(command.ID))
+	if err != nil {
+		return nil, err
+	}
+
+	model, err := author.Edit(c.db, authorID, command.FirstName, command.MiddleName, command.LastName)
 	if err != nil {
 		return nil, err
 	}

@@ -2,6 +2,7 @@ package queries
 
 import (
 	"context"
+	"github.com/google/uuid"
 	"library/domain"
 	"library/services/author"
 )
@@ -15,7 +16,11 @@ func NewGetAuthorByIDQueryHandler(db domain.Database) *GetAuthorByIDQueryHandler
 }
 
 func (c *GetAuthorByIDQueryHandler) Handle(_ context.Context, query *GetAuthorByIDQuery) (*GetAuthorByIDQueryResponse, error) {
-	result, err := author.GetByID(c.db, query.AuthorID)
+	authorID, err := uuid.Parse(string(query.AuthorID))
+	if err != nil {
+		return nil, err
+	}
+	result, err := author.GetByID(c.db, authorID)
 	if err != nil {
 		return nil, err
 	}

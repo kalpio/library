@@ -2,6 +2,7 @@ package commands
 
 import (
 	"context"
+	"github.com/google/uuid"
 	"library/domain"
 	"library/services/author"
 )
@@ -14,8 +15,13 @@ func NewDeleteAuthorCommandHandler(db domain.Database) *DeleteAuthorCommandHandl
 	return &DeleteAuthorCommandHandler{db: db}
 }
 
-func (c *DeleteAuthorCommandHandler) Handle(ctx context.Context, command *DeleteAuthorCommand) (*DeleteAuthorCommandResponse, error) {
-	succeeded, err := author.Delete(c.db, command.AuthorID)
+func (c *DeleteAuthorCommandHandler) Handle(_ context.Context, command *DeleteAuthorCommand) (*DeleteAuthorCommandResponse, error) {
+	authorID, err := uuid.Parse(string(command.AuthorID))
+	if err != nil {
+		return nil, err
+	}
+
+	succeeded, err := author.Delete(c.db, authorID)
 	if err != nil {
 		return nil, err
 	}

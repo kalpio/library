@@ -1,16 +1,20 @@
 package commands
 
-import "time"
+import (
+	"github.com/google/uuid"
+	"library/domain"
+	"time"
+)
 
 type EditAuthorCommand struct {
-	ID         uint
+	ID         domain.AuthorID
 	FirstName  string
 	MiddleName string
 	LastName   string
 }
 
 type EditAuthorCommandResponse struct {
-	AuthorID   uint      `json:"id"`
+	AuthorID   uuid.UUID `json:"id"`
 	FirstName  string    `json:"first_name"`
 	MiddleName string    `json:"middle_name"`
 	LastName   string    `json:"last_name"`
@@ -19,7 +23,7 @@ type EditAuthorCommandResponse struct {
 	DeletedAt  time.Time `json:"deleted_at"`
 }
 
-func NewEditAuthorCommand(id uint, firstName, middleName, lastName string) *EditAuthorCommand {
+func NewEditAuthorCommand(id domain.AuthorID, firstName, middleName, lastName string) *EditAuthorCommand {
 	return &EditAuthorCommand{
 		ID:         id,
 		FirstName:  firstName,

@@ -1,10 +1,14 @@
 package commands
 
+import (
+	"library/domain"
+)
+
 type DeleteAuthorCommand struct {
-	AuthorID uint
+	AuthorID domain.AuthorID
 }
 
-func NewDeleteAuthorCommand(authorID uint) *DeleteAuthorCommand {
+func NewDeleteAuthorCommand(authorID domain.AuthorID) *DeleteAuthorCommand {
 	return &DeleteAuthorCommand{AuthorID: authorID}
 }
 

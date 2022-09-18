@@ -1,6 +1,7 @@
 package book
 
 import (
+	"github.com/google/uuid"
 	"library/domain"
 	"library/infrastructure/repository"
 	"library/infrastructure/repository/testutils"
@@ -14,25 +15,26 @@ func TestSaveNewBook(t *testing.T) {
 	db, afterTest := testutils.BeforeTest(t)
 	defer afterTest(t)
 
+	id := uuid.New()
 	title := random.String(100)
 	isbn := random.String(13)
 	content := []byte(random.String(256))
 	format := random.String(3)
 	version := random.String(4)
-	author := &domain.Author{
-		FirstName:  random.String(10),
-		MiddleName: random.String(10),
-		LastName:   random.String(10),
-	}
+	author := domain.NewAuthor(
+		uuid.New(),
+		random.String(10),
+		random.String(10),
+		random.String(10))
 
-	book := domain.NewBook(title, isbn, format, author)
+	book := domain.NewBook(id, title, isbn, format, author)
 	book.Content = content
 	book.Version = version
 	ass := assert.New(t)
 	result, err := repository.Save(db, *book)
 
 	ass.NoError(err)
-	ass.Greater(result.ID, uint(0))
+	ass.Equal(result.ID, book.ID)
 	ass.Equal(result.Title, title)
 	ass.Equal(result.ISBN, isbn)
 	ass.Equal(result.Content, content)
@@ -114,10 +116,12 @@ func TestDelete(t *testing.T) {
 
 func createNewBookInDB(db domain.Database, t *testing.T) *domain.Book {
 	b := domain.NewBook(
+		uuid.New(),
 		random.String(100),
 		random.String(13),
 		random.String(3),
 		domain.NewAuthor(
+			uuid.New(),
 			random.String(6),
 			random.String(6),
 			random.String(6)))

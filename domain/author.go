@@ -2,7 +2,10 @@ package domain
 
 import (
 	validation "github.com/go-ozzo/ozzo-validation/v4"
+	"github.com/google/uuid"
 )
+
+type AuthorID string
 
 type Author struct {
 	Entity
@@ -12,8 +15,9 @@ type Author struct {
 	Books      []Book `json:"books"`
 }
 
-func NewAuthor(firstName, middleName, lastName string) *Author {
+func NewAuthor(id uuid.UUID, firstName, middleName, lastName string) *Author {
 	return &Author{
+		Entity:     Entity{ID: id},
 		FirstName:  firstName,
 		MiddleName: middleName,
 		LastName:   lastName,
@@ -23,11 +27,12 @@ func NewAuthor(firstName, middleName, lastName string) *Author {
 
 func (a Author) Validate() error {
 	return validation.ValidateStruct(&a,
+		validation.Field(&a.ID, validation.Required),
 		validation.Field(&a.FirstName, validation.Required),
 		validation.Field(&a.LastName, validation.Required),
 	)
 }
 
-func (a Author) GetID() uint {
+func (a Author) GetID() uuid.UUID {
 	return a.ID
 }

@@ -3,6 +3,7 @@ package repository
 import (
 	"errors"
 	"fmt"
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 	"library/domain"
 )
@@ -10,7 +11,7 @@ import (
 type Models interface {
 	domain.Author | domain.Book
 	Validate() error
-	GetID() uint
+	GetID() uuid.UUID
 }
 
 func Save[T Models](db domain.Database, model T) (T, error) {
@@ -26,7 +27,8 @@ func Update[T Models](db domain.Database, model T) error {
 	if err := model.Validate(); err != nil {
 		return err
 	}
-	if model.GetID() <= 0 {
+
+	if model.GetID() == domain.EmptyUUID() {
 		return errors.New("ID must be set")
 	}
 
@@ -59,7 +61,7 @@ func GetAll[T Models](db domain.Database) ([]T, error) {
 	return results, nil
 }
 
-func GetByID[T Models](db domain.Database, id uint) (T, error) {
+func GetByID[T Models](db domain.Database, id uuid.UUID) (T, error) {
 	var result T
 	if tx := db.GetDB().First(&result, id); tx.Error != nil {
 		return *new(T), fmt.Errorf("repository: could not find %q by ID: %d: %w", new(T), id, tx.Error)
@@ -68,7 +70,7 @@ func GetByID[T Models](db domain.Database, id uint) (T, error) {
 	return result, nil
 }
 
-func Delete[T Models](db domain.Database, id uint) (int64, error) {
+func Delete[T Models](db domain.Database, id uuid.UUID) (int64, error) {
 	var tx *gorm.DB
 	if tx = db.GetDB().Delete(new(T), id); tx.Error != nil {
 		return 0, fmt.Errorf("repository: could not delete: %w", tx.Error)

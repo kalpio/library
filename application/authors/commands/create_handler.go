@@ -2,6 +2,7 @@ package commands
 
 import (
 	"context"
+	"github.com/google/uuid"
 	"library/domain"
 	"library/services/author"
 )
@@ -15,7 +16,7 @@ func NewCreateAuthorCommandHandler(db domain.Database) *CreateAuthorCommandHandl
 }
 
 func (c *CreateAuthorCommandHandler) Handle(_ context.Context, command *CreateAuthorCommand) (*CreateAuthorCommandResponse, error) {
-	model, err := author.Create(c.db, command.FirstName, command.MiddleName, command.LastName)
+	model, err := author.Create(c.db, uuid.New(), command.FirstName, command.MiddleName, command.LastName)
 	if err != nil {
 		return nil, err
 	}

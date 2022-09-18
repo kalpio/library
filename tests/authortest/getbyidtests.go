@@ -2,6 +2,7 @@ package authortest
 
 import (
 	"fmt"
+	"github.com/google/uuid"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -23,13 +24,13 @@ func GetExistingAuthorByID(t *testing.T) {
 func GetNotExistingAuthorByID(t *testing.T) {
 	ass := assert.New(t)
 
-	resp := requestGetByID(2137)
+	resp := requestGetByID(uuid.New())
 
 	ass.NotNil(resp)
 	ass.Equal(http.StatusBadRequest, resp.Code)
 }
 
-func requestGetByID(id uint) *httptest.ResponseRecorder {
-	req, _ := http.NewRequest("GET", fmt.Sprintf("/api/v1/author/%d", id), nil)
+func requestGetByID(id uuid.UUID) *httptest.ResponseRecorder {
+	req, _ := http.NewRequest("GET", fmt.Sprintf("/api/v1/author/%s", id.String()), nil)
 	return executeRequest(req)
 }
