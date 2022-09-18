@@ -1,6 +1,7 @@
 package author
 
 import (
+	"github.com/google/uuid"
 	"library/domain"
 	"library/infrastructure/repository"
 	"library/infrastructure/repository/testutils"
@@ -14,16 +15,17 @@ func TestSaveNewAuthor(t *testing.T) {
 	db, afterTest := testutils.BeforeTest(t)
 	defer afterTest(t)
 
+	id := uuid.New()
 	firstName := random.String(10)
 	middleName := random.String(10)
 	lastName := random.String(10)
-	author0 := domain.NewAuthor(firstName, middleName, lastName)
+	author0 := domain.NewAuthor(id, firstName, middleName, lastName)
 
 	ass := assert.New(t)
 	result, err := repository.Save(db, *author0)
 
 	ass.NoError(err)
-	ass.Greater(result.ID, uint(0))
+	ass.Equal(result.ID, id)
 	ass.Equal(result.FirstName, firstName)
 	ass.Equal(result.MiddleName, middleName)
 	ass.Equal(result.LastName, lastName)
@@ -34,22 +36,24 @@ func TestTryAddExistingAuthor(t *testing.T) {
 	defer afterTest(t)
 
 	ass := assert.New(t)
+	id := uuid.New()
 	firstName := random.String(10)
 	middleName := random.String(10)
 	lastName := random.String(10)
 
-	author0 := domain.NewAuthor(firstName, middleName, lastName)
+	author0 := domain.NewAuthor(id, firstName, middleName, lastName)
 	result0, err := repository.Save(db, *author0)
 
 	ass.NoError(err)
+	ass.Equal(result0.ID, id)
 	ass.Equal(result0.FirstName, firstName)
 	ass.Equal(result0.MiddleName, middleName)
 	ass.Equal(result0.LastName, lastName)
 
-	author1 := domain.NewAuthor(firstName, middleName, lastName)
+	author1 := domain.NewAuthor(id, firstName, middleName, lastName)
 	result1, err := repository.Save(db, *author1)
 	ass.Error(err)
-	ass.Equal(result1.ID, uint(0))
+	ass.Equal(result1.ID, id)
 }
 
 func TestTryAddEmptyFirstName(t *testing.T) {
@@ -57,14 +61,15 @@ func TestTryAddEmptyFirstName(t *testing.T) {
 	defer afterTest(t)
 
 	ass := assert.New(t)
+	id := uuid.New()
 	firstName := ""
 	middleName := random.String(10)
 	lastName := random.String(10)
 
-	author := domain.NewAuthor(firstName, middleName, lastName)
+	author := domain.NewAuthor(id, firstName, middleName, lastName)
 	result, err := repository.Save(db, *author)
 	ass.Error(err)
-	ass.Equal(result.ID, uint(0))
+	ass.Equal(result.ID, domain.EmptyUUID())
 }
 
 func TestTryAddEmptyLastName(t *testing.T) {
@@ -72,14 +77,15 @@ func TestTryAddEmptyLastName(t *testing.T) {
 	defer afterTest(t)
 
 	ass := assert.New(t)
+	id := uuid.New()
 	firstName := random.String(10)
 	middleName := random.String(10)
 	lastName := ""
 
-	author := domain.NewAuthor(firstName, middleName, lastName)
+	author := domain.NewAuthor(id, firstName, middleName, lastName)
 	result, err := repository.Save(db, *author)
 	ass.Error(err)
-	ass.Equal(result.ID, uint(0))
+	ass.Equal(result.ID, domain.EmptyUUID())
 }
 
 func TestGetByID(t *testing.T) {
@@ -150,6 +156,7 @@ func TestDelete(t *testing.T) {
 
 func createNewAuthorInDB(db domain.Database, t *testing.T) domain.Author {
 	a := domain.NewAuthor(
+		uuid.New(),
 		random.String(6),
 		random.String(6),
 		random.String(6))

@@ -23,6 +23,7 @@ func GetExistingAuthors(t *testing.T) {
 	var result []domain.Author
 	err := json.Unmarshal(resp.Body.Bytes(), &result)
 	ass.NoError(err)
+	ass.Equal(len(values), len(result))
 	ass.ElementsMatch(values, result)
 }
 

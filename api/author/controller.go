@@ -1,13 +1,12 @@
 package author
 
 import (
-	"library/application/authors/commands"
-	"library/application/authors/queries"
-	"net/http"
-	"strconv"
-
 	"github.com/gin-gonic/gin"
 	"github.com/mehdihadeli/go-mediatr"
+	"library/application/authors/commands"
+	"library/application/authors/queries"
+	"library/domain"
+	"net/http"
 )
 
 type Controller struct {
@@ -46,13 +45,8 @@ func (a *Controller) Add(ctx *gin.Context) {
 
 func (a *Controller) Get(ctx *gin.Context) {
 	paramID := ctx.Param("id")
-	authorID, err := strconv.ParseUint(paramID, 10, 64)
-	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
 
-	query := queries.NewGetAuthorByIDQuery(uint(authorID))
+	query := queries.NewGetAuthorByIDQuery(domain.AuthorID(paramID))
 	result, err := mediatr.Send[*queries.GetAuthorByIDQuery, *queries.GetAuthorByIDQueryResponse](
 		ctx.Request.Context(),
 		query)
@@ -80,7 +74,7 @@ func (a *Controller) GetAll(ctx *gin.Context) {
 }
 
 type editAuthorDto struct {
-	ID uint `json:"id"`
+	ID string `json:"id"`
 	createAuthorDto
 }
 
@@ -92,7 +86,7 @@ func (a *Controller) Edit(ctx *gin.Context) {
 		return
 	}
 
-	command := commands.NewEditAuthorCommand(json.ID, json.FirstName, json.MiddleName, json.LastName)
+	command := commands.NewEditAuthorCommand(domain.AuthorID(json.ID), json.FirstName, json.MiddleName, json.LastName)
 	response, err := mediatr.Send[*commands.EditAuthorCommand, *commands.EditAuthorCommandResponse](
 		ctx.Request.Context(),
 		command)
@@ -107,13 +101,8 @@ func (a *Controller) Edit(ctx *gin.Context) {
 
 func (a *Controller) Delete(ctx *gin.Context) {
 	paramID := ctx.Param("id")
-	authorID, err := strconv.ParseUint(paramID, 10, 64)
-	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
 
-	command := commands.NewDeleteAuthorCommand(uint(authorID))
+	command := commands.NewDeleteAuthorCommand(domain.AuthorID(paramID))
 	response, err := mediatr.Send[*commands.DeleteAuthorCommand, *commands.DeleteAuthorCommandResponse](
 		ctx.Request.Context(),
 		command)

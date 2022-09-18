@@ -1,6 +1,9 @@
 package commands
 
-import "time"
+import (
+	"github.com/google/uuid"
+	"time"
+)
 
 type CreateAuthorCommand struct {
 	FirstName  string
@@ -9,7 +12,7 @@ type CreateAuthorCommand struct {
 }
 
 type CreateAuthorCommandResponse struct {
-	AuthorID   uint      `json:"id"`
+	AuthorID   uuid.UUID `json:"id"`
 	FirstName  string    `json:"first_name"`
 	MiddleName string    `json:"middle_name"`
 	LastName   string    `json:"last_name"`

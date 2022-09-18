@@ -2,17 +2,13 @@ package author
 
 import (
 	"errors"
+	"github.com/google/uuid"
 	"library/domain"
 	"library/infrastructure/repository"
 )
 
-func Create(db domain.Database, firstName, middleName, lastName string) (*domain.Author, error) {
-	model := &domain.Author{
-		FirstName:  firstName,
-		MiddleName: middleName,
-		LastName:   lastName,
-		Books:      nil,
-	}
+func Create(db domain.Database, id uuid.UUID, firstName, middleName, lastName string) (*domain.Author, error) {
+	model := domain.NewAuthor(id, firstName, middleName, lastName)
 
 	exists, err := exists(db, firstName, middleName, lastName)
 	if err != nil {
@@ -20,7 +16,7 @@ func Create(db domain.Database, firstName, middleName, lastName string) (*domain
 	}
 
 	if exists {
-		return nil, errors.New("author with that names alredy exists")
+		return nil, errors.New("author with that names already exists")
 	}
 
 	result, err := repository.Save(db, *model)
@@ -31,7 +27,7 @@ func Create(db domain.Database, firstName, middleName, lastName string) (*domain
 	return &result, nil
 }
 
-func Edit(db domain.Database, id uint, firstName, middleName, lastName string) (*domain.Author, error) {
+func Edit(db domain.Database, id uuid.UUID, firstName, middleName, lastName string) (*domain.Author, error) {
 	model := &domain.Author{
 		Entity: domain.Entity{
 			ID: id,
@@ -55,7 +51,7 @@ func Edit(db domain.Database, id uint, firstName, middleName, lastName string) (
 	return result, nil
 }
 
-func GetByID(db domain.Database, id uint) (*domain.Author, error) {
+func GetByID(db domain.Database, id uuid.UUID) (*domain.Author, error) {
 	result, err := repository.GetByID[domain.Author](db, id)
 	if err != nil {
 		return nil, err
@@ -73,7 +69,7 @@ func GetAll(db domain.Database) ([]domain.Author, error) {
 	return result, nil
 }
 
-func Delete(db domain.Database, id uint) (bool, error) {
+func Delete(db domain.Database, id uuid.UUID) (bool, error) {
 	var (
 		rowsAffected int64
 		err          error
