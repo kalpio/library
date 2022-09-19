@@ -30,5 +30,8 @@ func (c *GetAuthorByIDQueryHandler) Handle(_ context.Context, query *GetAuthorBy
 		FirstName:  result.FirstName,
 		MiddleName: result.MiddleName,
 		LastName:   result.LastName,
+		CreatedAt:  result.CreatedAt,
+		UpdatedAt:  result.UpdatedAt,
+		DeletedAt:  result.DeletedAt,
 	}, nil
 }

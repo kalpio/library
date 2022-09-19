@@ -3,6 +3,7 @@ package authortest
 import (
 	"fmt"
 	"github.com/google/uuid"
+	"library/domain"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -19,6 +20,10 @@ func GetExistingAuthorByID(t *testing.T) {
 
 	ass.NotNil(resp)
 	ass.Equal(http.StatusOK, resp.Code)
+
+	result, err := getAuthorFromResult(resp.Body)
+	ass.NoError(err)
+	assertAuthor(ass, author, result)
 }
 
 func GetNotExistingAuthorByID(t *testing.T) {
@@ -33,4 +38,14 @@ func GetNotExistingAuthorByID(t *testing.T) {
 func requestGetByID(id uuid.UUID) *httptest.ResponseRecorder {
 	req, _ := http.NewRequest("GET", fmt.Sprintf("/api/v1/author/%s", id.String()), nil)
 	return executeRequest(req)
+}
+
+func assertAuthor(ass *assert.Assertions, expected, actual *domain.Author) {
+	ass.Equal(expected.ID, actual.ID)
+	ass.Equal(expected.FirstName, actual.FirstName)
+	ass.Equal(expected.MiddleName, actual.MiddleName)
+	ass.Equal(expected.LastName, actual.LastName)
+	ass.Equal(expected.CreatedAt, actual.CreatedAt)
+	ass.Equal(expected.UpdatedAt, actual.UpdatedAt)
+	ass.Equal(expected.DeletedAt, actual.DeletedAt)
 }
