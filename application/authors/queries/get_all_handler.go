@@ -28,6 +28,8 @@ func (c *GetAllAuthorsQueryHandler) Handle(_ context.Context, _ *GetAllAuthorsQu
 			MiddleName: r.MiddleName,
 			LastName:   r.LastName,
 			CreatedAt:  r.CreatedAt,
+			UpdatedAt:  r.UpdatedAt,
+			DeletedAt:  r.DeletedAt,
 		})
 	}
 
