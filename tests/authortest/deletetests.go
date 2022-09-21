@@ -17,19 +17,26 @@ func DeleteExistingAuthor(t *testing.T) {
 	ass := assert.New(t)
 	clearAuthorsTable(ass)
 
-	var values []*domain.Author
-	values = append(values, createNewAuthor(ass))
-	values = append(values, createNewAuthor(ass))
-	values = append(values, createNewAuthor(ass))
+	var (
+		values []domain.Author
+		model  *domain.Author
+		err    error
+	)
+	for i := 0; i < 3; i++ {
+		if model, err = createNewAuthor(); err != nil {
+			ass.FailNow(err.Error())
+		}
+		values = append(values, *model)
+	}
 
 	resp := requestDelete(values[1].ID)
 	ass.NotNil(resp)
 	ass.Equal(http.StatusOK, resp.Code)
-	valuesWithoutDeleted := []domain.Author{*values[0], *values[2]}
+	valuesWithoutDeleted := []domain.Author{values[0], values[2]}
 
 	respAuthors := requestGetAll()
 	var result []domain.Author
-	err := json.Unmarshal(respAuthors.Body.Bytes(), &result)
+	err = json.Unmarshal(respAuthors.Body.Bytes(), &result)
 	ass.NoError(err)
 	ass.Equal(len(valuesWithoutDeleted), len(result))
 	ass.ElementsMatch(valuesWithoutDeleted, result)
@@ -39,10 +46,17 @@ func DeleteNotExistingAuthor(t *testing.T) {
 	ass := assert.New(t)
 	clearAuthorsTable(ass)
 
-	var values []domain.Author
-	values = append(values, *createNewAuthor(ass))
-	values = append(values, *createNewAuthor(ass))
-	values = append(values, *createNewAuthor(ass))
+	var (
+		values []domain.Author
+		model  *domain.Author
+		err    error
+	)
+	for i := 0; i < 3; i++ {
+		if model, err = createNewAuthor(); err != nil {
+			ass.FailNow(err.Error())
+		}
+		values = append(values, *model)
+	}
 
 	resp := requestDelete(uuid.New())
 	ass.NotNil(resp)
@@ -50,7 +64,7 @@ func DeleteNotExistingAuthor(t *testing.T) {
 
 	respAuthors := requestGetAll()
 	var result []domain.Author
-	err := json.Unmarshal(respAuthors.Body.Bytes(), &result)
+	err = json.Unmarshal(respAuthors.Body.Bytes(), &result)
 	ass.NoError(err)
 	ass.Equal(len(values), len(result))
 	ass.ElementsMatch(values, result)
@@ -60,10 +74,17 @@ func DeletePermanentlyAuthor(t *testing.T) {
 	ass := assert.New(t)
 	clearAuthorsTable(ass)
 
-	var values []domain.Author
-	values = append(values, *createNewAuthor(ass))
-	values = append(values, *createNewAuthor(ass))
-	values = append(values, *createNewAuthor(ass))
+	var (
+		values []domain.Author
+		model  *domain.Author
+		err    error
+	)
+	for i := 0; i < 3; i++ {
+		if model, err = createNewAuthor(); err != nil {
+			ass.FailNow(err.Error())
+		}
+		values = append(values, *model)
+	}
 
 	notDeletedValues := []domain.Author{values[0], values[2]}
 
@@ -73,7 +94,7 @@ func DeletePermanentlyAuthor(t *testing.T) {
 
 	responseAllAuthors := requestGetAll()
 	var result []domain.Author
-	err := json.Unmarshal(responseAllAuthors.Body.Bytes(), &result)
+	err = json.Unmarshal(responseAllAuthors.Body.Bytes(), &result)
 	ass.NoError(err)
 	ass.Equal(len(notDeletedValues), len(result))
 	ass.ElementsMatch(notDeletedValues, result)

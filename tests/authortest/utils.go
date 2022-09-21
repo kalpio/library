@@ -2,6 +2,8 @@ package authortest
 
 import (
 	"encoding/json"
+	"errors"
+	"fmt"
 	"library/domain"
 	"library/random"
 	"net/http"
@@ -23,18 +25,22 @@ func clearAuthorsTable(ass *assert.Assertions) {
 	}
 }
 
-// TODO: shouldn't take param Assertions. In case of exception just return error
-func createNewAuthor(ass *assert.Assertions) *domain.Author {
+func createNewAuthor() (*domain.Author, error) {
 	buff := prepareAddAuthorRequestData(random.String(10), random.String(10), random.String(10))
 	resp := postAuthorData(buff)
 
-	ass.NotNil(resp)
-	ass.Equal(resp.Code, http.StatusCreated)
+	if resp == nil {
+		return nil, errors.New("createNewAuthor: POST response is nil")
+	}
+
+	if resp.Code != http.StatusCreated {
+		return nil, fmt.Errorf("createNewAuthor: POST response status code is %q", resp.Code)
+	}
 
 	var result *domain.Author
 	if err := json.Unmarshal(resp.Body.Bytes(), &result); err != nil {
-		ass.NoError(err)
+		return nil, fmt.Errorf("createNewAuthor: deserialize response body: %w", err)
 	}
 
-	return result
+	return result, nil
 }
