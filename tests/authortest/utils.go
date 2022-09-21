@@ -23,6 +23,7 @@ func clearAuthorsTable(ass *assert.Assertions) {
 	}
 }
 
+// TODO: shouldn't take param Assertions. In case of exception just return error
 func createNewAuthor(ass *assert.Assertions) *domain.Author {
 	buff := prepareAddAuthorRequestData(random.String(10), random.String(10), random.String(10))
 	resp := postAuthorData(buff)
