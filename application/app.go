@@ -85,6 +85,7 @@ func (a *App) initializeRouter() {
 		v1.POST("/author", authorCtrl.Add)
 		v1.PATCH("/author/:id", authorCtrl.Edit)
 		v1.DELETE("/author/:id", authorCtrl.Delete)
+		v1.DELETE("/author/delete/:id", authorCtrl.DeletePermanently)
 	}
 }
 

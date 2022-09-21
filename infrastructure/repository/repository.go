@@ -78,3 +78,12 @@ func Delete[T Models](db domain.Database, id uuid.UUID) (int64, error) {
 
 	return tx.RowsAffected, nil
 }
+
+func DeletePermanently[T Models](db domain.Database, id uuid.UUID) (int64, error) {
+	var tx *gorm.DB
+	if tx = db.GetDB().Unscoped().Delete(new(T), id); tx.Error != nil {
+		return 0, fmt.Errorf("repository: could not delete permanently: %w", tx.Error)
+	}
+
+	return tx.RowsAffected, nil
+}

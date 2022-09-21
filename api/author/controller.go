@@ -1,12 +1,13 @@
 package author
 
 import (
-	"github.com/gin-gonic/gin"
-	"github.com/mehdihadeli/go-mediatr"
 	"library/application/authors/commands"
 	"library/application/authors/queries"
 	"library/domain"
 	"net/http"
+
+	"github.com/gin-gonic/gin"
+	"github.com/mehdihadeli/go-mediatr"
 )
 
 type Controller struct {
@@ -104,6 +105,27 @@ func (a *Controller) Delete(ctx *gin.Context) {
 
 	command := commands.NewDeleteAuthorCommand(domain.AuthorID(paramID))
 	response, err := mediatr.Send[*commands.DeleteAuthorCommand, *commands.DeleteAuthorCommandResponse](
+		ctx.Request.Context(),
+		command)
+
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	if response.Succeeded {
+		ctx.JSON(http.StatusOK, gin.H{})
+		return
+	}
+
+	ctx.JSON(http.StatusBadRequest, gin.H{})
+}
+
+func (a *Controller) DeletePermanently(ctx *gin.Context) {
+	paramID := ctx.Param("id")
+
+	command := commands.NewDeletePermanentlyCommand(domain.AuthorID(paramID))
+	response, err := mediatr.Send[*commands.DeletePermanentlyCommand, *commands.DeletePermanentlyCommandResponse](
 		ctx.Request.Context(),
 		command)
 

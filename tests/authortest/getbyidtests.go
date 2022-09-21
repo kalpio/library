@@ -14,7 +14,8 @@ import (
 func GetExistingAuthorByID(t *testing.T) {
 	ass := assert.New(t)
 
-	author := createNewAuthor(ass)
+	author, err := createNewAuthor()
+	ass.NoError(err)
 
 	resp := requestGetByID(author.ID)
 
