@@ -2,9 +2,12 @@ package commands
 
 import (
 	"context"
-	"github.com/google/uuid"
+	"library/application/authors/events"
 	"library/domain"
 	"library/services/author"
+
+	"github.com/google/uuid"
+	"github.com/mehdihadeli/go-mediatr"
 )
 
 type DeleteAuthorCommandHandler struct {
@@ -15,7 +18,7 @@ func NewDeleteAuthorCommandHandler(db domain.Database) *DeleteAuthorCommandHandl
 	return &DeleteAuthorCommandHandler{db: db}
 }
 
-func (c *DeleteAuthorCommandHandler) Handle(_ context.Context, command *DeleteAuthorCommand) (*DeleteAuthorCommandResponse, error) {
+func (c *DeleteAuthorCommandHandler) Handle(ctx context.Context, command *DeleteAuthorCommand) (*DeleteAuthorCommandResponse, error) {
 	authorID, err := uuid.Parse(string(command.AuthorID))
 	if err != nil {
 		return nil, err
@@ -27,6 +30,9 @@ func (c *DeleteAuthorCommandHandler) Handle(_ context.Context, command *DeleteAu
 	}
 
 	response := &DeleteAuthorCommandResponse{Succeeded: succeeded}
+	if succeeded {
+		mediatr.Publish(ctx, &events.AuthorDeletedEvent{AuthorID: authorID})
+	}
 
 	return response, nil
 }
