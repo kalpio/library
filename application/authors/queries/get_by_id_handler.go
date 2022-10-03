@@ -32,6 +32,5 @@ func (c *GetAuthorByIDQueryHandler) Handle(_ context.Context, query *GetAuthorBy
 		LastName:   result.LastName,
 		CreatedAt:  result.CreatedAt,
 		UpdatedAt:  result.UpdatedAt,
-		DeletedAt:  result.DeletedAt,
 	}, nil
 }

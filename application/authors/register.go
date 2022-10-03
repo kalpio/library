@@ -35,14 +35,6 @@ func Register(db domain.Database) error {
 		lastErr = err
 	}
 
-	deletePermanentlyCommandHandler := commands.NewDeletePermanentlyCommandHandler(db)
-	if err := mediatr.RegisterRequestHandler[
-		*commands.DeletePermanentlyCommand,
-		*commands.DeletePermanentlyCommandResponse](
-		deletePermanentlyCommandHandler); err != nil {
-		lastErr = err
-	}
-
 	getAuthorByIDQueryHandler := queries.NewGetAuthorByIDQueryHandler(db)
 	if err := mediatr.RegisterRequestHandler[
 		*queries.GetAuthorByIDQuery,

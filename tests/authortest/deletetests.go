@@ -15,13 +15,15 @@ import (
 
 func DeleteExistingAuthor(t *testing.T) {
 	ass := assert.New(t)
-	clearAuthorsTable(ass)
 
 	var (
 		values []domain.Author
 		model  *domain.Author
 		err    error
 	)
+	err = clearAuthorsTable()
+	ass.NoError(err)
+
 	for i := 0; i < 3; i++ {
 		if model, err = createNewAuthor(); err != nil {
 			ass.FailNow(err.Error())
@@ -44,13 +46,15 @@ func DeleteExistingAuthor(t *testing.T) {
 
 func DeleteNotExistingAuthor(t *testing.T) {
 	ass := assert.New(t)
-	clearAuthorsTable(ass)
 
 	var (
 		values []domain.Author
 		model  *domain.Author
 		err    error
 	)
+	err = clearAuthorsTable()
+	ass.NoError(err)
+
 	for i := 0; i < 3; i++ {
 		if model, err = createNewAuthor(); err != nil {
 			ass.FailNow(err.Error())
@@ -70,42 +74,7 @@ func DeleteNotExistingAuthor(t *testing.T) {
 	ass.ElementsMatch(values, result)
 }
 
-func DeletePermanentlyAuthor(t *testing.T) {
-	ass := assert.New(t)
-	clearAuthorsTable(ass)
-
-	var (
-		values []domain.Author
-		model  *domain.Author
-		err    error
-	)
-	for i := 0; i < 3; i++ {
-		if model, err = createNewAuthor(); err != nil {
-			ass.FailNow(err.Error())
-		}
-		values = append(values, *model)
-	}
-
-	notDeletedValues := []domain.Author{values[0], values[2]}
-
-	resp := requestDeletePermanently(values[1].ID)
-	ass.NotNil(resp)
-	ass.Equal(http.StatusOK, resp.Code)
-
-	responseAllAuthors := requestGetAll()
-	var result []domain.Author
-	err = json.Unmarshal(responseAllAuthors.Body.Bytes(), &result)
-	ass.NoError(err)
-	ass.Equal(len(notDeletedValues), len(result))
-	ass.ElementsMatch(notDeletedValues, result)
-}
-
 func requestDelete(id uuid.UUID) *httptest.ResponseRecorder {
 	req, _ := http.NewRequest("DELETE", fmt.Sprintf("/api/v1/author/%s", id.String()), nil)
-	return executeRequest(req)
-}
-
-func requestDeletePermanently(id uuid.UUID) *httptest.ResponseRecorder {
-	req, _ := http.NewRequest("DELETE", fmt.Sprintf("/api/v1/author/delete/%s", id.String()), nil)
 	return executeRequest(req)
 }

@@ -2,7 +2,6 @@ package queries
 
 import (
 	"github.com/google/uuid"
-	"gorm.io/gorm"
 	"time"
 )
 
@@ -20,7 +19,6 @@ type result struct {
 	LastName   string         `json:"last_name"`
 	CreatedAt  time.Time      `json:"created_at"`
 	UpdatedAt  time.Time      `json:"updated_at"`
-	DeletedAt  gorm.DeletedAt `json:"deleted_at"`
 }
 
 func NewGetAllAuthorsQuery() *GetAllAuthorsQuery {

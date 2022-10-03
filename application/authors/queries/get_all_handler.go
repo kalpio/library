@@ -15,8 +15,11 @@ func NewGetAllAuthorsQueryHandler(db domain.Database) *GetAllAuthorsQueryHandler
 }
 
 func (c *GetAllAuthorsQueryHandler) Handle(_ context.Context, _ *GetAllAuthorsQuery) (*GetAllAuthorsQueryResponse, error) {
-	res, err := author.GetAll(c.db)
-	if err != nil {
+	var (
+		res []domain.Author
+		err error
+	)
+	if res, err = author.GetAll(c.db); err != nil {
 		return nil, err
 	}
 
@@ -29,7 +32,6 @@ func (c *GetAllAuthorsQueryHandler) Handle(_ context.Context, _ *GetAllAuthorsQu
 			LastName:   r.LastName,
 			CreatedAt:  r.CreatedAt,
 			UpdatedAt:  r.UpdatedAt,
-			DeletedAt:  r.DeletedAt,
 		})
 	}
 
