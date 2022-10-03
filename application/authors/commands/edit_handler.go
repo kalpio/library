@@ -33,7 +33,6 @@ func (c *EditAuthorCommandHandler) Handle(_ context.Context, command *EditAuthor
 		LastName:   model.LastName,
 		CreatedAt:  model.CreatedAt,
 		UpdatedAt:  model.UpdatedAt,
-		DeletedAt:  model.DeletedAt.Time.UTC(),
 	}
 
 	return response, nil

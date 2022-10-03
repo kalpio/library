@@ -81,18 +81,6 @@ func Delete(db domain.Database, id uuid.UUID) (bool, error) {
 	return rowsAffected > 0, nil
 }
 
-func DeletePermanently(db domain.Database, id uuid.UUID) (bool, error) {
-	var (
-		rowsAffected int64
-		err          error
-	)
-	if rowsAffected, err = repository.DeletePermanently[domain.Author](db, id); err != nil {
-		return false, err
-	}
-
-	return rowsAffected > 0, nil
-}
-
 func exists(db domain.Database, firstName, middleName, lastName string) (bool, error) {
 	columns := map[string]interface{}{
 		"FirstName":  firstName,

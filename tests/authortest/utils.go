@@ -8,8 +8,6 @@ import (
 	"library/random"
 	"net/http"
 	"net/http/httptest"
-
-	"github.com/stretchr/testify/assert"
 )
 
 func executeRequest(req *http.Request) *httptest.ResponseRecorder {
@@ -19,10 +17,12 @@ func executeRequest(req *http.Request) *httptest.ResponseRecorder {
 	return rr
 }
 
-func clearAuthorsTable(ass *assert.Assertions) {
-	if err := a.DB().GetDB().Where("1 = 1").Delete(&domain.Author{}); err != nil {
-		ass.NoError(err.Error)
-	}
+func clearAuthorsTable() error {
+	return a.DB().GetDB().
+		Unscoped().
+		Where("1 = 1").
+		Delete(&domain.Author{}).
+		Error
 }
 
 func createNewAuthor() (*domain.Author, error) {

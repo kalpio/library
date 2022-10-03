@@ -95,11 +95,6 @@ func assertThatTheyAreSameBook(ass *assert.Assertions, get domain.Book, expected
 
 	ass.Equal(get.CreatedAt.UTC(), expected.CreatedAt.UTC())
 	ass.Equal(get.UpdatedAt.UTC(), expected.UpdatedAt.UTC())
-
-	if expected.DeletedAt.Valid {
-		ass.True(get.DeletedAt.Valid)
-		ass.Equal(get.DeletedAt.Time.UTC(), expected.DeletedAt.Time.UTC())
-	}
 }
 
 func TestDelete(t *testing.T) {

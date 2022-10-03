@@ -61,6 +61,15 @@ func GetAll[T Models](db domain.Database) ([]T, error) {
 	return results, nil
 }
 
+func GetAllWithDeleted[T Models](db domain.Database) ([]T, error) {
+	var results []T
+	if tx := db.GetDB().Unscoped().Find(&results); tx.Error != nil {
+		return *new([]T), fmt.Errorf("repository: could not read %q: %w", new(T), tx.Error)
+	}
+
+	return results, nil
+}
+
 func GetByID[T Models](db domain.Database, id uuid.UUID) (T, error) {
 	var result T
 	if tx := db.GetDB().First(&result, id); tx.Error != nil {
@@ -74,15 +83,6 @@ func Delete[T Models](db domain.Database, id uuid.UUID) (int64, error) {
 	var tx *gorm.DB
 	if tx = db.GetDB().Delete(new(T), id); tx.Error != nil {
 		return 0, fmt.Errorf("repository: could not delete: %w", tx.Error)
-	}
-
-	return tx.RowsAffected, nil
-}
-
-func DeletePermanently[T Models](db domain.Database, id uuid.UUID) (int64, error) {
-	var tx *gorm.DB
-	if tx = db.GetDB().Unscoped().Delete(new(T), id); tx.Error != nil {
-		return 0, fmt.Errorf("repository: could not delete permanently: %w", tx.Error)
 	}
 
 	return tx.RowsAffected, nil

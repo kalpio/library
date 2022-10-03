@@ -113,11 +113,23 @@ func TestGetAll(t *testing.T) {
 	results, err := repository.GetAll[domain.Author](db)
 
 	ass.NoError(err)
-	ass.Equal(len(expects), 3)
+	ass.Equal(len(results), 3)
 
 	for _, v := range expects {
 		assertThatContainsAuthor(ass, results, v)
 	}
+}
+
+func TestDelete(t *testing.T) {
+	db, afterTest := testutils.BeforeTest(t)
+	defer afterTest(t)
+	ass := assert.New(t)
+
+	a := createNewAuthorInDB(db, t)
+	rowsAffected, err := repository.Delete[domain.Author](db, a.ID)
+
+	ass.NoError(err)
+	ass.Greater(rowsAffected, int64(0))
 }
 
 func assertThatContainsAuthor(ass *assert.Assertions, results []domain.Author, expect domain.Author) {
@@ -135,23 +147,6 @@ func assertThatTheyAreSameAuthor(ass *assert.Assertions, got domain.Author, expe
 	ass.Equal(got.LastName, expect.LastName)
 	ass.Equal(got.CreatedAt.UTC(), expect.CreatedAt.UTC())
 	ass.Equal(got.UpdatedAt.UTC(), expect.UpdatedAt.UTC())
-
-	if expect.DeletedAt.Valid {
-		ass.True(got.DeletedAt.Valid)
-		ass.Equal(got.DeletedAt.Time.UTC(), expect.DeletedAt.Time.UTC())
-	}
-}
-
-func TestDelete(t *testing.T) {
-	db, afterTest := testutils.BeforeTest(t)
-	defer afterTest(t)
-	ass := assert.New(t)
-
-	a := createNewAuthorInDB(db, t)
-	rowsAffected, err := repository.Delete[domain.Author](db, a.ID)
-
-	ass.NoError(err)
-	ass.Greater(rowsAffected, int64(0))
 }
 
 func createNewAuthorInDB(db domain.Database, t *testing.T) domain.Author {

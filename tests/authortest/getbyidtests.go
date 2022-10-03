@@ -48,5 +48,4 @@ func assertAuthor(ass *assert.Assertions, expected, actual *domain.Author) {
 	ass.Equal(expected.LastName, actual.LastName)
 	ass.Equal(expected.CreatedAt, actual.CreatedAt)
 	ass.Equal(expected.UpdatedAt, actual.UpdatedAt)
-	ass.Equal(expected.DeletedAt, actual.DeletedAt)
 }
