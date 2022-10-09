@@ -4,18 +4,19 @@ import (
 	"context"
 	"library/application/authors/events"
 	"library/domain"
+	domain_events "library/domain/events"
 	"library/services/author"
 
 	"github.com/google/uuid"
-	"github.com/mehdihadeli/go-mediatr"
 )
 
 type DeleteAuthorCommandHandler struct {
-	db domain.Database
+	db        domain.IDatabase
+	authorSrv author.IAuthorService
 }
 
-func NewDeleteAuthorCommandHandler(db domain.Database) *DeleteAuthorCommandHandler {
-	return &DeleteAuthorCommandHandler{db: db}
+func NewDeleteAuthorCommandHandler(db domain.IDatabase, authorSrv author.IAuthorService) *DeleteAuthorCommandHandler {
+	return &DeleteAuthorCommandHandler{db: db, authorSrv: authorSrv}
 }
 
 func (c *DeleteAuthorCommandHandler) Handle(ctx context.Context, command *DeleteAuthorCommand) (*DeleteAuthorCommandResponse, error) {
@@ -24,14 +25,14 @@ func (c *DeleteAuthorCommandHandler) Handle(ctx context.Context, command *Delete
 		return nil, err
 	}
 
-	succeeded, err := author.Delete(c.db, authorID)
+	succeeded, err := c.authorSrv.Delete(authorID)
 	if err != nil {
 		return nil, err
 	}
 
 	response := &DeleteAuthorCommandResponse{Succeeded: succeeded}
 	if succeeded {
-		mediatr.Publish(ctx, &events.AuthorDeletedEvent{AuthorID: authorID})
+		domain_events.Publish(ctx, &events.AuthorDeletedEvent{AuthorID: authorID})
 	}
 
 	return response, nil

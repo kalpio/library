@@ -8,11 +8,12 @@ import (
 )
 
 type GetAuthorByIDQueryHandler struct {
-	db domain.Database
+	db domain.IDatabase
+	authorSrv author.IAuthorService
 }
 
-func NewGetAuthorByIDQueryHandler(db domain.Database) *GetAuthorByIDQueryHandler {
-	return &GetAuthorByIDQueryHandler{db: db}
+func NewGetAuthorByIDQueryHandler(db domain.IDatabase, authorSrv author.IAuthorService) *GetAuthorByIDQueryHandler {
+	return &GetAuthorByIDQueryHandler{db: db, authorSrv: authorSrv}
 }
 
 func (c *GetAuthorByIDQueryHandler) Handle(_ context.Context, query *GetAuthorByIDQuery) (*GetAuthorByIDQueryResponse, error) {
@@ -20,7 +21,7 @@ func (c *GetAuthorByIDQueryHandler) Handle(_ context.Context, query *GetAuthorBy
 	if err != nil {
 		return nil, err
 	}
-	result, err := author.GetByID(c.db, authorID)
+	result, err := c.authorSrv.GetByID(authorID)
 	if err != nil {
 		return nil, err
 	}

@@ -7,10 +7,26 @@ import (
 	"library/infrastructure/repository"
 )
 
-func Create(db domain.Database, id uuid.UUID, firstName, middleName, lastName string) (*domain.Author, error) {
+type IAuthorService interface {
+	Create(id uuid.UUID, firstName, middleName, lastName string) (*domain.Author, error)
+	Edit(id uuid.UUID, firstName, middleName, lastName string) (*domain.Author, error)
+	GetByID(id uuid.UUID) (*domain.Author, error)
+	GetAll() ([]domain.Author, error)
+	Delete(id uuid.UUID) (bool, error)
+}
+
+type authorSrv struct {
+	db domain.IDatabase
+}
+
+func NewAuthorService(db domain.IDatabase) IAuthorService {
+	return &authorSrv{db}
+}
+
+func (a *authorSrv) Create(id uuid.UUID, firstName, middleName, lastName string) (*domain.Author, error) {
 	model := domain.NewAuthor(id, firstName, middleName, lastName)
 
-	exists, err := exists(db, firstName, middleName, lastName)
+	exists, err := exists(a.db, firstName, middleName, lastName)
 	if err != nil {
 		return nil, err
 	}
@@ -19,7 +35,7 @@ func Create(db domain.Database, id uuid.UUID, firstName, middleName, lastName st
 		return nil, errors.New("author with that names already exists")
 	}
 
-	result, err := repository.Save(db, *model)
+	result, err := repository.Save(a.db, *model)
 	if err != nil {
 		return nil, err
 	}
@@ -27,7 +43,7 @@ func Create(db domain.Database, id uuid.UUID, firstName, middleName, lastName st
 	return &result, nil
 }
 
-func Edit(db domain.Database, id uuid.UUID, firstName, middleName, lastName string) (*domain.Author, error) {
+func (a *authorSrv) Edit(id uuid.UUID, firstName, middleName, lastName string) (*domain.Author, error) {
 	model := &domain.Author{
 		Entity: domain.Entity{
 			ID: id,
@@ -38,12 +54,12 @@ func Edit(db domain.Database, id uuid.UUID, firstName, middleName, lastName stri
 		Books:      nil,
 	}
 
-	err := repository.Update(db, *model)
+	err := repository.Update(a.db, *model)
 	if err != nil {
 		return nil, err
 	}
 
-	result, err := GetByID(db, id)
+	result, err := a.GetByID(id)
 	if err != nil {
 		return nil, err
 	}
@@ -51,8 +67,8 @@ func Edit(db domain.Database, id uuid.UUID, firstName, middleName, lastName stri
 	return result, nil
 }
 
-func GetByID(db domain.Database, id uuid.UUID) (*domain.Author, error) {
-	result, err := repository.GetByID[domain.Author](db, id)
+func (a *authorSrv) GetByID(id uuid.UUID) (*domain.Author, error) {
+	result, err := repository.GetByID[domain.Author](a.db, id)
 	if err != nil {
 		return nil, err
 	}
@@ -60,8 +76,8 @@ func GetByID(db domain.Database, id uuid.UUID) (*domain.Author, error) {
 	return &result, nil
 }
 
-func GetAll(db domain.Database) ([]domain.Author, error) {
-	result, err := repository.GetAll[domain.Author](db)
+func (a *authorSrv) GetAll() ([]domain.Author, error) {
+	result, err := repository.GetAll[domain.Author](a.db)
 	if err != nil {
 		return nil, err
 	}
@@ -69,19 +85,19 @@ func GetAll(db domain.Database) ([]domain.Author, error) {
 	return result, nil
 }
 
-func Delete(db domain.Database, id uuid.UUID) (bool, error) {
+func (a *authorSrv) Delete(id uuid.UUID) (bool, error) {
 	var (
 		rowsAffected int64
 		err          error
 	)
-	if rowsAffected, err = repository.Delete[domain.Author](db, id); err != nil {
+	if rowsAffected, err = repository.Delete[domain.Author](a.db, id); err != nil {
 		return false, err
 	}
 
 	return rowsAffected > 0, nil
 }
 
-func exists(db domain.Database, firstName, middleName, lastName string) (bool, error) {
+func exists(db domain.IDatabase, firstName, middleName, lastName string) (bool, error) {
 	columns := map[string]interface{}{
 		"FirstName":  firstName,
 		"MiddleName": middleName,

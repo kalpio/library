@@ -149,7 +149,7 @@ func assertThatTheyAreSameAuthor(ass *assert.Assertions, got domain.Author, expe
 	ass.Equal(got.UpdatedAt.UTC(), expect.UpdatedAt.UTC())
 }
 
-func createNewAuthorInDB(db domain.Database, t *testing.T) domain.Author {
+func createNewAuthorInDB(db domain.IDatabase, t *testing.T) domain.Author {
 	a := domain.NewAuthor(
 		uuid.New(),
 		random.String(6),

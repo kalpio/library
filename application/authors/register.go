@@ -2,16 +2,19 @@ package authors
 
 import (
 	"library/application/authors/commands"
+	"library/application/authors/events"
 	"library/application/authors/queries"
 	"library/domain"
+	"library/services/author"
 
 	"github.com/mehdihadeli/go-mediatr"
 )
 
-func Register(db domain.Database) error {
-	var lastErr error
-
-	createAuthorCommandHandler := commands.NewCreateAuthorCommandHandler(db)
+func Register(db domain.IDatabase) error {
+	var (lastErr error
+		authorSrv = author.NewAuthorService(db)
+	)
+	createAuthorCommandHandler := commands.NewCreateAuthorCommandHandler(db, authorSrv)
 	if err := mediatr.RegisterRequestHandler[
 		*commands.CreateAuthorCommand,
 		*commands.CreateAuthorCommandResponse](
@@ -19,7 +22,7 @@ func Register(db domain.Database) error {
 		lastErr = err
 	}
 
-	deleteAuthorCommandHandler := commands.NewDeleteAuthorCommandHandler(db)
+	deleteAuthorCommandHandler := commands.NewDeleteAuthorCommandHandler(db, authorSrv)
 	if err := mediatr.RegisterRequestHandler[
 		*commands.DeleteAuthorCommand,
 		*commands.DeleteAuthorCommandResponse](
@@ -27,7 +30,7 @@ func Register(db domain.Database) error {
 		lastErr = err
 	}
 
-	editAuthorCommandHandler := commands.NewEditAuthorCommandHandler(db)
+	editAuthorCommandHandler := commands.NewEditAuthorCommandHandler(db, authorSrv)
 	if err := mediatr.RegisterRequestHandler[
 		*commands.EditAuthorCommand,
 		*commands.EditAuthorCommandResponse](
@@ -35,7 +38,7 @@ func Register(db domain.Database) error {
 		lastErr = err
 	}
 
-	getAuthorByIDQueryHandler := queries.NewGetAuthorByIDQueryHandler(db)
+	getAuthorByIDQueryHandler := queries.NewGetAuthorByIDQueryHandler(db, authorSrv)
 	if err := mediatr.RegisterRequestHandler[
 		*queries.GetAuthorByIDQuery,
 		*queries.GetAuthorByIDQueryResponse](
@@ -43,11 +46,26 @@ func Register(db domain.Database) error {
 		lastErr = err
 	}
 
-	getAllAuthorsQueryHandler := queries.NewGetAllAuthorsQueryHandler(db)
+	getAllAuthorsQueryHandler := queries.NewGetAllAuthorsQueryHandler(db, authorSrv)
 	if err := mediatr.RegisterRequestHandler[
 		*queries.GetAllAuthorsQuery,
 		*queries.GetAllAuthorsQueryResponse](
 		getAllAuthorsQueryHandler); err != nil {
+		lastErr = err
+	}
+
+	if err := mediatr.RegisterNotificationHandler[*events.AuthorCreatedEvent](
+		&events.AuthorCreatedEventHandler{}); err != nil {
+		lastErr = err
+	}
+
+	if err := mediatr.RegisterNotificationHandler[*events.AuthorDeletedEvent](
+		&events.AuthorDeletedEventHandler{}); err != nil {
+		lastErr = err
+	}
+
+	if err := mediatr.RegisterNotificationHandler[*events.AuthorEditedEvent](
+		&events.AuthorEditedEventHandler{}); err != nil {
 		lastErr = err
 	}
 

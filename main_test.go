@@ -26,7 +26,7 @@ func TestMain(m *testing.M) {
 	os.Exit(code)
 }
 
-func dropDatabase(db domain.Database, dsn string) {
+func dropDatabase(db domain.IDatabase, dsn string) {
 	if err := migrations.DropDatabase(db, dsn); err != nil {
 		log.Fatalln(err)
 	}

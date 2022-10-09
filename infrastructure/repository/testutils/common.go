@@ -21,7 +21,7 @@ func (d *database) GetDB() *gorm.DB {
 	return d.db
 }
 
-func BeforeTest(t *testing.T) (domain.Database, func(t *testing.T)) {
+func BeforeTest(t *testing.T) (domain.IDatabase, func(t *testing.T)) {
 	randomDBName := getRandomDBName()
 	var (
 		err error

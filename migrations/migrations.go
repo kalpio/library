@@ -11,7 +11,7 @@ import (
 
 var ErrAutoMigration = errors.New("could not auto migrate")
 
-func CreateAndUseDatabase(db domain.Database, name string) error {
+func CreateAndUseDatabase(db domain.IDatabase, name string) error {
 	if !strings.Contains(db.GetDB().Dialector.Name(), "sqlite") {
 		if tx := db.GetDB().Exec(fmt.Sprintf("CREATE DATABASE %s;", name)); tx.Error != nil {
 			return tx.Error
@@ -24,7 +24,7 @@ func CreateAndUseDatabase(db domain.Database, name string) error {
 	return nil
 }
 
-func DropDatabase(db domain.Database, name string) error {
+func DropDatabase(db domain.IDatabase, name string) error {
 	if !strings.Contains(db.GetDB().Dialector.Name(), "sqlite") {
 		query := fmt.Sprintf(`
 USE master;
@@ -54,7 +54,7 @@ DROP DATABASE [%s];
 	return nil
 }
 
-func UpdateDatabase(db domain.Database) error {
+func UpdateDatabase(db domain.IDatabase) error {
 	if err := db.GetDB().AutoMigrate(&domain.Author{}); err != nil {
 		return fmt.Errorf("models: %w: %v", ErrAutoMigration, err)
 	}
