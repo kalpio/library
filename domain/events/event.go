@@ -2,8 +2,9 @@ package events
 
 import (
 	"context"
-	"github.com/mehdihadeli/go-mediatr"
 	"reflect"
+
+	"github.com/mehdihadeli/go-mediatr"
 )
 
 type notifications struct {
@@ -26,11 +27,17 @@ func (n *notifications) add(notification any) {
 	n.events[notificationType] = []any{notification}
 }
 
-var Notifications = newNotifications()
+func (n *notifications) clear() {
+	for t := range n.events {
+		delete(n.events, t)
+	}
+}
+
+var notificationsObj = newNotifications()
 
 func GetEvents[TNotification any](forType TNotification) []TNotification {
 	notificationType := reflect.TypeOf(forType)
-	if events, ok := Notifications.events[notificationType]; ok {
+	if events, ok := notificationsObj.events[notificationType]; ok {
 		result := []TNotification{}
 		for _, event := range events {
 			eventValue := event.(TNotification)
@@ -42,8 +49,12 @@ func GetEvents[TNotification any](forType TNotification) []TNotification {
 	return nil
 }
 
+func Clear() {
+	notificationsObj.clear()
+}
+
 func Publish[TNotification any](ctx context.Context, notification TNotification) {
 	if err := mediatr.Publish(ctx, notification); err == nil {
-		Notifications.add(notification)
+		notificationsObj.add(notification)
 	}
 }
