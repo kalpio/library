@@ -2,30 +2,31 @@ package commands
 
 import (
 	"context"
-	"github.com/google/uuid"
-	"github.com/stretchr/testify/assert"
 	"library/application/authors/events"
 	"library/domain"
 	domain_events "library/domain/events"
 	"testing"
+
+	"github.com/google/uuid"
+	"github.com/stretchr/testify/assert"
 )
 
-func TestAuthor_Delete(t *testing.T) {
+func TestAuthor_DeleteCommandHandler_RaisedAuthorDeletedEvent(t *testing.T) {
 	ass := assert.New(t)
 	registerEvents(ass)
-	mck := new(authorServiceMock)
+	mckSevice := new(authorServiceMock)
 
 	authorID := uuid.New()
 	expectedAuthorID := domain.AuthorID(authorID.String())
-	mck.
+	mckSevice.
 		On("Delete", authorID).
 		Return(true, nil)
 
-	commandHandler := NewDeleteAuthorCommandHandler(nil, mck)
+	commandHandler := NewDeleteAuthorCommandHandler(nil, mckSevice)
 	response, err := commandHandler.Handle(context.Background(), NewDeleteAuthorCommand(expectedAuthorID))
 
 	ass.NoError(err)
-	mck.AssertExpectations(t)
+	mckSevice.AssertExpectations(t)
 	ass.True(response.Succeeded)
 
 	notifications := domain_events.GetEvents(&events.AuthorDeletedEvent{})
