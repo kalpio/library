@@ -14,7 +14,7 @@ type Models interface {
 	GetID() uuid.UUID
 }
 
-func Save[T Models](db domain.Database, model T) (T, error) {
+func Save[T Models](db domain.IDatabase, model T) (T, error) {
 	if err := model.Validate(); err != nil {
 		return *new(T), err
 	}
@@ -23,7 +23,7 @@ func Save[T Models](db domain.Database, model T) (T, error) {
 	return model, tx.Error
 }
 
-func Update[T Models](db domain.Database, model T) error {
+func Update[T Models](db domain.IDatabase, model T) error {
 	if err := model.Validate(); err != nil {
 		return err
 	}
@@ -39,7 +39,7 @@ func Update[T Models](db domain.Database, model T) error {
 	return tx.Error
 }
 
-func GetByColumns[T Models](db domain.Database, columnValue map[string]interface{}) (T, error) {
+func GetByColumns[T Models](db domain.IDatabase, columnValue map[string]interface{}) (T, error) {
 	if len(columnValue) == 0 {
 		return *new(T), errors.New("repository: column and value cannot be empty")
 	}
@@ -52,7 +52,7 @@ func GetByColumns[T Models](db domain.Database, columnValue map[string]interface
 	return result, nil
 }
 
-func GetAll[T Models](db domain.Database) ([]T, error) {
+func GetAll[T Models](db domain.IDatabase) ([]T, error) {
 	var results []T
 	if tx := db.GetDB().Find(&results); tx.Error != nil {
 		return *new([]T), fmt.Errorf("repository: could not read %q: %w", new(T), tx.Error)
@@ -61,16 +61,7 @@ func GetAll[T Models](db domain.Database) ([]T, error) {
 	return results, nil
 }
 
-func GetAllWithDeleted[T Models](db domain.Database) ([]T, error) {
-	var results []T
-	if tx := db.GetDB().Unscoped().Find(&results); tx.Error != nil {
-		return *new([]T), fmt.Errorf("repository: could not read %q: %w", new(T), tx.Error)
-	}
-
-	return results, nil
-}
-
-func GetByID[T Models](db domain.Database, id uuid.UUID) (T, error) {
+func GetByID[T Models](db domain.IDatabase, id uuid.UUID) (T, error) {
 	var result T
 	if tx := db.GetDB().First(&result, id); tx.Error != nil {
 		return *new(T), fmt.Errorf("repository: could not find %q by ID: %d: %w", new(T), id, tx.Error)
@@ -79,7 +70,7 @@ func GetByID[T Models](db domain.Database, id uuid.UUID) (T, error) {
 	return result, nil
 }
 
-func Delete[T Models](db domain.Database, id uuid.UUID) (int64, error) {
+func Delete[T Models](db domain.IDatabase, id uuid.UUID) (int64, error) {
 	var tx *gorm.DB
 	if tx = db.GetDB().Delete(new(T), id); tx.Error != nil {
 		return 0, fmt.Errorf("repository: could not delete: %w", tx.Error)

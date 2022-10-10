@@ -109,7 +109,7 @@ func TestDelete(t *testing.T) {
 	ass.Greater(rowsAffected, int64(0))
 }
 
-func createNewBookInDB(db domain.Database, t *testing.T) *domain.Book {
+func createNewBookInDB(db domain.IDatabase, t *testing.T) *domain.Book {
 	b := domain.NewBook(
 		uuid.New(),
 		random.String(100),

@@ -2,6 +2,6 @@ package domain
 
 import "gorm.io/gorm"
 
-type Database interface {
+type IDatabase interface {
 	GetDB() *gorm.DB
 }

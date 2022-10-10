@@ -4,22 +4,21 @@ import (
 	"context"
 	"library/application/authors/events"
 	"library/domain"
+	domain_events "library/domain/events"
 	"library/services/author"
-
-	"github.com/google/uuid"
-	"github.com/mehdihadeli/go-mediatr"
 )
 
 type CreateAuthorCommandHandler struct {
-	db domain.Database
+	db        domain.IDatabase
+	authorSrv author.IAuthorService
 }
 
-func NewCreateAuthorCommandHandler(db domain.Database) *CreateAuthorCommandHandler {
-	return &CreateAuthorCommandHandler{db: db}
+func NewCreateAuthorCommandHandler(db domain.IDatabase, authorSrv author.IAuthorService) *CreateAuthorCommandHandler {
+	return &CreateAuthorCommandHandler{db: db, authorSrv: authorSrv}
 }
 
 func (c *CreateAuthorCommandHandler) Handle(ctx context.Context, command *CreateAuthorCommand) (*CreateAuthorCommandResponse, error) {
-	model, err := author.Create(c.db, uuid.New(), command.FirstName, command.MiddleName, command.LastName)
+	model, err := c.authorSrv.Create(command.AuthorID, command.FirstName, command.MiddleName, command.LastName)
 	if err != nil {
 		return nil, err
 	}
@@ -33,7 +32,7 @@ func (c *CreateAuthorCommandHandler) Handle(ctx context.Context, command *Create
 		UpdatedAt:  model.UpdatedAt,
 	}
 
-	mediatr.Publish(ctx, &events.AuthorCreatedEvent{
+	domain_events.Publish(ctx, &events.AuthorCreatedEvent{
 		AuthorID:   model.ID,
 		FirstName:  model.FirstName,
 		MiddleName: model.MiddleName,

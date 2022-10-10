@@ -7,11 +7,12 @@ import (
 )
 
 type GetAllAuthorsQueryHandler struct {
-	db domain.Database
+	db domain.IDatabase
+	authorSrv author.IAuthorService
 }
 
-func NewGetAllAuthorsQueryHandler(db domain.Database) *GetAllAuthorsQueryHandler {
-	return &GetAllAuthorsQueryHandler{db: db}
+func NewGetAllAuthorsQueryHandler(db domain.IDatabase, authorSrv author.IAuthorService) *GetAllAuthorsQueryHandler {
+	return &GetAllAuthorsQueryHandler{db: db, authorSrv: authorSrv}
 }
 
 func (c *GetAllAuthorsQueryHandler) Handle(_ context.Context, _ *GetAllAuthorsQuery) (*GetAllAuthorsQueryResponse, error) {
@@ -19,7 +20,7 @@ func (c *GetAllAuthorsQueryHandler) Handle(_ context.Context, _ *GetAllAuthorsQu
 		res []domain.Author
 		err error
 	)
-	if res, err = author.GetAll(c.db); err != nil {
+	if res, err = c.authorSrv.GetAll(); err != nil {
 		return nil, err
 	}
 

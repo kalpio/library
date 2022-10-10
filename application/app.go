@@ -15,7 +15,7 @@ import (
 )
 
 type App struct {
-	db     domain.Database
+	db     domain.IDatabase
 	router *gin.Engine
 	host   string
 	port   string
@@ -29,7 +29,7 @@ func (d *database) GetDB() *gorm.DB {
 	return d.db
 }
 
-func (a *App) DB() domain.Database {
+func (a *App) DB() domain.IDatabase {
 	return a.db
 }
 
