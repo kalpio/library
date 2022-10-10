@@ -2,13 +2,14 @@ package commands
 
 import (
 	"context"
-	"github.com/stretchr/testify/assert"
 	"library/application/authors/events"
 	domain_events "library/domain/events"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
-func TestAuthor_Create(t *testing.T) {
+func TestAuthor_CreateCommandHandler_RaisedAuthorCreatedEvent(t *testing.T) {
 	ass := assert.New(t)
 	registerEvents(ass)
 
@@ -32,8 +33,10 @@ func TestAuthor_Create(t *testing.T) {
 
 	ass.NoError(err)
 	mckService.AssertExpectations(t)
+
 	notifications := domain_events.GetEvents(&events.AuthorCreatedEvent{})
 	ass.Equal(1, len(notifications))
+
 	notification := notifications[0]
 	ass.Equal(expectedAuthor.ID, notification.AuthorID)
 	ass.Equal(expectedAuthor.FirstName, notification.FirstName)

@@ -6,12 +6,13 @@ import (
 	"library/domain"
 	"library/services/author"
 
+	domain_events "library/domain/events"
+
 	"github.com/google/uuid"
-	"github.com/mehdihadeli/go-mediatr"
 )
 
 type EditAuthorCommandHandler struct {
-	db domain.IDatabase
+	db        domain.IDatabase
 	authorSrv author.IAuthorService
 }
 
@@ -39,7 +40,7 @@ func (c *EditAuthorCommandHandler) Handle(ctx context.Context, command *EditAuth
 		UpdatedAt:  model.UpdatedAt,
 	}
 
-	mediatr.Publish(ctx, &events.AuthorEditedEvent{
+	domain_events.Publish(ctx, &events.AuthorEditedEvent{
 		AuthorID:   model.ID,
 		FirstName:  model.FirstName,
 		MiddleName: model.MiddleName,
