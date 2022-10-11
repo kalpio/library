@@ -6,13 +6,14 @@ import (
 	"github.com/google/uuid"
 	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
+	"library/application"
 	"library/random"
 	"testing"
 )
 
 func TestAuthorEditedEventHandler_Handle_LogValidMessage(t *testing.T) {
 	ass := assert.New(t)
-	writer := &logWriter{}
+	writer := application.NewTestLogWriter()
 
 	log.SetOutput(writer)
 
@@ -31,5 +32,5 @@ func TestAuthorEditedEventHandler_Handle_LogValidMessage(t *testing.T) {
 	err := eventHandler.Handle(context.Background(), event)
 
 	ass.NoError(err)
-	ass.Contains(writer.message, expected)
+	ass.Contains(writer.GetMessage(), expected)
 }

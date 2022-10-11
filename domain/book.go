@@ -5,27 +5,25 @@ import (
 	"github.com/google/uuid"
 )
 
+type BookID string
+
 type Book struct {
 	Entity
-	Title    string
-	ISBN     string `gorm:"uniqueIndex;size:13"`
-	Content  []byte
-	Format   string
-	Version  string
-	AuthorID uuid.UUID
-	Author   *Author
+	Title       string
+	ISBN        string `gorm:"uniqueIndex;size:13"`
+	Description string
+	AuthorID    uuid.UUID
+	Author      *Author
 }
 
-func NewBook(id uuid.UUID, title, isbn, format string, author *Author) *Book {
+func NewBook(id uuid.UUID, title, isbn, description string, author *Author) *Book {
 	return &Book{
-		Entity:   Entity{ID: id},
-		Title:    title,
-		ISBN:     isbn,
-		Content:  []byte{},
-		Format:   format,
-		Version:  "",
-		AuthorID: author.ID,
-		Author:   author,
+		Entity:      Entity{ID: id},
+		Title:       title,
+		ISBN:        isbn,
+		Description: description,
+		AuthorID:    author.ID,
+		Author:      author,
 	}
 }
 

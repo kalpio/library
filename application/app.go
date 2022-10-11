@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"library/api/author"
 	"library/application/authors"
+	"library/application/books"
 	"library/domain"
 	"library/migrations"
 	"log"
@@ -69,6 +70,10 @@ func (a *App) initializeDB(dsn string) {
 
 func (a *App) initializeMediatr() {
 	if err := authors.Register(a.db); err != nil {
+		log.Fatalln(err)
+	}
+
+	if err := books.Register(a.db); err != nil {
 		log.Fatalln(err)
 	}
 }

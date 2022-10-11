@@ -11,7 +11,8 @@ import (
 )
 
 func Register(db domain.IDatabase) error {
-	var (lastErr error
+	var (
+		lastErr   error
 		authorSrv = author.NewAuthorService(db)
 	)
 	createAuthorCommandHandler := commands.NewCreateAuthorCommandHandler(db, authorSrv)
