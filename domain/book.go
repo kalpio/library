@@ -32,6 +32,7 @@ func (b Book) Validate() error {
 		validation.Field(&b.ID, validation.Required),
 		validation.Field(&b.Title, validation.Required),
 		validation.Field(&b.ISBN, validation.Required),
+		validation.Field(&b.ISBN, validation.Length(13, 13)),
 		validation.Field(&b.Author, validation.Required))
 }
 
