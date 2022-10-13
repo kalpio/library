@@ -4,7 +4,7 @@ import (
 	"context"
 	"library/application/books/events"
 	"library/domain"
-	domain_events "library/domain/events"
+	domainEvents "library/domain/events"
 	"library/services/book"
 
 	"github.com/google/uuid"
@@ -53,7 +53,7 @@ func (c *CreateBookCommandHandler) Handle(ctx context.Context,
 		AuthorID:    domain.AuthorID(model.AuthorID.String()),
 	}
 
-	domain_events.Publish(ctx, events.NewBookCreatedEvent(
+	domainEvents.Publish(ctx, events.NewBookCreatedEvent(
 		domain.BookID(model.ID.String()),
 		model.Title,
 		model.ISBN,

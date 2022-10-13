@@ -1,9 +1,10 @@
-package commands
+package commands_test
 
 import (
 	"context"
+	"library/application/authors/commands"
 	"library/application/authors/events"
-	domain_events "library/domain/events"
+	domainEvents "library/domain/events"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -24,9 +25,9 @@ func TestAuthor_CreateCommandHandler_RaisedAuthorCreatedEvent(t *testing.T) {
 			expectedAuthor.LastName).
 		Return(expectedAuthor, nil)
 
-	commandHandler := NewCreateAuthorCommandHandler(nil, mckService)
+	commandHandler := commands.NewCreateAuthorCommandHandler(nil, mckService)
 	_, err := commandHandler.Handle(context.Background(),
-		NewCreateAuthorCommand(expectedAuthor.ID,
+		commands.NewCreateAuthorCommand(expectedAuthor.ID,
 			expectedAuthor.FirstName,
 			expectedAuthor.MiddleName,
 			expectedAuthor.LastName))
@@ -34,7 +35,7 @@ func TestAuthor_CreateCommandHandler_RaisedAuthorCreatedEvent(t *testing.T) {
 	ass.NoError(err)
 	mckService.AssertExpectations(t)
 
-	notifications := domain_events.GetEvents(&events.AuthorCreatedEvent{})
+	notifications := domainEvents.GetEvents(&events.AuthorCreatedEvent{})
 	ass.Equal(1, len(notifications))
 
 	notification := notifications[0]

@@ -1,10 +1,11 @@
-package commands
+package commands_test
 
 import (
 	"context"
+	"library/application/authors/commands"
 	"library/application/authors/events"
 	"library/domain"
-	domain_events "library/domain/events"
+	domainEvents "library/domain/events"
 	"testing"
 
 	"github.com/google/uuid"
@@ -28,9 +29,9 @@ func TestAuthor_EditCommandHandler_Raised_AuthorEditedEvent(t *testing.T) {
 			editedAuthor.LastName).
 		Return(editedAuthor, nil)
 
-	commandHandler := NewEditAuthorCommandHandler(nil, mckService)
+	commandHandler := commands.NewEditAuthorCommandHandler(nil, mckService)
 	_, err := commandHandler.Handle(context.Background(),
-		NewEditAuthorCommand(domain.AuthorID(payloadAuthorID.String()),
+		commands.NewEditAuthorCommand(domain.AuthorID(payloadAuthorID.String()),
 			editedAuthor.FirstName,
 			editedAuthor.MiddleName,
 			editedAuthor.LastName))
@@ -38,7 +39,7 @@ func TestAuthor_EditCommandHandler_Raised_AuthorEditedEvent(t *testing.T) {
 	ass.NoError(err)
 	mckService.AssertExpectations(t)
 
-	notifications := domain_events.GetEvents(&events.AuthorEditedEvent{})
+	notifications := domainEvents.GetEvents(&events.AuthorEditedEvent{})
 	ass.Equal(1, len(notifications))
 
 	notification := notifications[0]

@@ -4,7 +4,7 @@ import (
 	"context"
 	"library/application/authors/events"
 	"library/domain"
-	domain_events "library/domain/events"
+	domainEvents "library/domain/events"
 	"library/services/author"
 
 	"github.com/google/uuid"
@@ -32,7 +32,7 @@ func (c *DeleteAuthorCommandHandler) Handle(ctx context.Context, command *Delete
 
 	response := &DeleteAuthorCommandResponse{Succeeded: succeeded}
 	if succeeded {
-		domain_events.Publish(ctx, &events.AuthorDeletedEvent{AuthorID: authorID})
+		domainEvents.Publish(ctx, &events.AuthorDeletedEvent{AuthorID: authorID})
 	}
 
 	return response, nil
