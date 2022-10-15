@@ -4,7 +4,7 @@ import (
 	"context"
 	"library/application/authors/events"
 	"library/domain"
-	domain_events "library/domain/events"
+	domainEvents "library/domain/events"
 	"library/services/author"
 )
 
@@ -32,7 +32,7 @@ func (c *CreateAuthorCommandHandler) Handle(ctx context.Context, command *Create
 		UpdatedAt:  model.UpdatedAt,
 	}
 
-	domain_events.Publish(ctx, &events.AuthorCreatedEvent{
+	domainEvents.Publish(ctx, &events.AuthorCreatedEvent{
 		AuthorID:   model.ID,
 		FirstName:  model.FirstName,
 		MiddleName: model.MiddleName,

@@ -6,7 +6,7 @@ import (
 	"library/domain"
 	"library/services/author"
 
-	domain_events "library/domain/events"
+	domainEvents "library/domain/events"
 
 	"github.com/google/uuid"
 )
@@ -40,7 +40,7 @@ func (c *EditAuthorCommandHandler) Handle(ctx context.Context, command *EditAuth
 		UpdatedAt:  model.UpdatedAt,
 	}
 
-	domain_events.Publish(ctx, &events.AuthorEditedEvent{
+	domainEvents.Publish(ctx, &events.AuthorEditedEvent{
 		AuthorID:   model.ID,
 		FirstName:  model.FirstName,
 		MiddleName: model.MiddleName,

@@ -3,9 +3,13 @@ package application
 import (
 	"fmt"
 	"library/api/author"
+	booksAPI "library/api/books"
 	"library/application/authors"
+	"library/application/books"
 	"library/domain"
+	"library/ioc"
 	"library/migrations"
+	authorServices "library/services/author"
 	"log"
 	"net"
 
@@ -68,7 +72,15 @@ func (a *App) initializeDB(dsn string) {
 }
 
 func (a *App) initializeMediatr() {
+	if err := ioc.Register[authorServices.IAuthorService](authorServices.NewAuthorService(a.db)); err != nil {
+		log.Fatalln(err)
+	}
+
 	if err := authors.Register(a.db); err != nil {
+		log.Fatalln(err)
+	}
+
+	if err := books.Register(a.db); err != nil {
 		log.Fatalln(err)
 	}
 }
@@ -77,6 +89,7 @@ func (a *App) initializeRouter() {
 	a.router = gin.Default()
 
 	authorCtrl := author.NewAuthorController()
+	bookCtrl := booksAPI.NewBooksController()
 
 	v1 := a.router.Group("/api/v1")
 	{
@@ -85,6 +98,8 @@ func (a *App) initializeRouter() {
 		v1.POST("/author", authorCtrl.Add)
 		v1.PATCH("/author/:id", authorCtrl.Edit)
 		v1.DELETE("/author/:id", authorCtrl.Delete)
+
+		v1.POST("/book", bookCtrl.Create)
 	}
 }
 

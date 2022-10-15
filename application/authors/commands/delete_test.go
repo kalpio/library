@@ -1,10 +1,11 @@
-package commands
+package commands_test
 
 import (
 	"context"
+	"library/application/authors/commands"
 	"library/application/authors/events"
 	"library/domain"
-	domain_events "library/domain/events"
+	domainEvents "library/domain/events"
 	"testing"
 
 	"github.com/google/uuid"
@@ -14,22 +15,23 @@ import (
 func TestAuthor_DeleteCommandHandler_RaisedAuthorDeletedEvent(t *testing.T) {
 	ass := assert.New(t)
 	registerEvents(ass)
-	mckSevice := new(authorServiceMock)
+	mckService := new(authorServiceMock)
 
 	authorID := uuid.New()
 	expectedAuthorID := domain.AuthorID(authorID.String())
-	mckSevice.
+	mckService.
 		On("Delete", authorID).
 		Return(true, nil)
 
-	commandHandler := NewDeleteAuthorCommandHandler(nil, mckSevice)
-	response, err := commandHandler.Handle(context.Background(), NewDeleteAuthorCommand(expectedAuthorID))
+	commandHandler := commands.NewDeleteAuthorCommandHandler(nil, mckService)
+	response, err := commandHandler.Handle(context.Background(),
+		commands.NewDeleteAuthorCommand(expectedAuthorID))
 
 	ass.NoError(err)
-	mckSevice.AssertExpectations(t)
+	mckService.AssertExpectations(t)
 	ass.True(response.Succeeded)
 
-	notifications := domain_events.GetEvents(&events.AuthorDeletedEvent{})
+	notifications := domainEvents.GetEvents(&events.AuthorDeletedEvent{})
 	ass.Equal(1, len(notifications))
 
 	notification := notifications[0]

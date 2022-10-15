@@ -1,4 +1,4 @@
-package main
+package main_test
 
 import (
 	"library/domain"
@@ -8,7 +8,8 @@ import (
 	"testing"
 
 	"library/application"
-	"library/tests/authortest"
+	"library/end2endTests/authortest"
+	"library/end2endTests/bookstest"
 )
 
 var a application.App
@@ -50,4 +51,7 @@ func TestAuthorAPI(t *testing.T) {
 	t.Run("DeleteNotExistingAuthor", authortest.DeleteNotExistingAuthor)
 
 	t.Run("EditExistingAuthor", authortest.EditExistingAuthor)
+
+	bookstest.SetApp(a)
+	t.Run("POST_NewBook", bookstest.PostNewBook)
 }

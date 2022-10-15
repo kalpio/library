@@ -1,4 +1,4 @@
-package events
+package events_test
 
 import (
 	"context"
@@ -6,23 +6,25 @@ import (
 	"github.com/google/uuid"
 	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
+	"library/application"
+	"library/application/authors/events"
 	"library/random"
 	"testing"
 )
 
 func TestAuthorEditedEventHandler_Handle_LogValidMessage(t *testing.T) {
 	ass := assert.New(t)
-	writer := &logWriter{}
+	writer := application.NewTestLogWriter()
 
 	log.SetOutput(writer)
 
-	event := &AuthorEditedEvent{
+	event := &events.AuthorEditedEvent{
 		AuthorID:   uuid.UUID{},
 		FirstName:  random.String(20),
 		MiddleName: random.String(20),
 		LastName:   random.String(20),
 	}
-	eventHandler := &AuthorEditedEventHandler{}
+	eventHandler := &events.AuthorEditedEventHandler{}
 	expected := fmt.Sprintf("Author edited [%s, %s, %s, %s]",
 		event.AuthorID,
 		event.FirstName,
@@ -31,5 +33,5 @@ func TestAuthorEditedEventHandler_Handle_LogValidMessage(t *testing.T) {
 	err := eventHandler.Handle(context.Background(), event)
 
 	ass.NoError(err)
-	ass.Contains(writer.message, expected)
+	ass.Contains(writer.GetMessage(), expected)
 }

@@ -34,7 +34,6 @@ func GetExistingAuthors(t *testing.T) {
 	ass.ElementsMatch(values, result)
 }
 
-
 func requestGetAll() *httptest.ResponseRecorder {
 	req, _ := http.NewRequest("GET", "/api/v1/author", nil)
 	return executeRequest(req)
