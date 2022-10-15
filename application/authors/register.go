@@ -5,16 +5,19 @@ import (
 	"library/application/authors/events"
 	"library/application/authors/queries"
 	"library/domain"
+	"library/ioc"
 	"library/services/author"
 
 	"github.com/mehdihadeli/go-mediatr"
 )
 
 func Register(db domain.IDatabase) error {
-	var (
-		lastErr   error
-		authorSrv = author.NewAuthorService(db)
-	)
+	var lastErr error
+	authorSrv, err := ioc.Get[author.IAuthorService]()
+	if err != nil {
+		return err
+	}
+
 	createAuthorCommandHandler := commands.NewCreateAuthorCommandHandler(db, authorSrv)
 	if err := mediatr.RegisterRequestHandler[
 		*commands.CreateAuthorCommand,

@@ -9,11 +9,11 @@ type BookID string
 
 type Book struct {
 	Entity
-	Title       string
-	ISBN        string `gorm:"uniqueIndex;size:13"`
-	Description string
-	AuthorID    uuid.UUID
-	Author      *Author
+	Title       string    `gorm:"column:title" json:"title"`
+	ISBN        string    `gorm:"uniqueIndex;size:13" json:"isbn"`
+	Description string    `json:"description"`
+	AuthorID    uuid.UUID `json:"author_id"`
+	Author      *Author   `json:"-"`
 }
 
 func NewBook(id uuid.UUID, title, isbn, description string, author *Author) *Book {

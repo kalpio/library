@@ -5,14 +5,18 @@ import (
 	"library/application/books/commands"
 	"library/application/books/events"
 	"library/domain"
+	"library/ioc"
+	"library/services/author"
 	"library/services/book"
 )
 
 func Register(db domain.IDatabase) error {
-	var (
-		lastErr error
-		bookSrv = book.NewBookService(db)
-	)
+	var lastErr error
+	authorSrv, err := ioc.Get[author.IAuthorService]()
+	if err != nil {
+		return err
+	}
+	bookSrv := book.NewBookService(db, authorSrv)
 
 	createBookCommandHandler := commands.NewCreateBookCommandHandler(db, bookSrv)
 	if err := mediatr.RegisterRequestHandler[
