@@ -5,11 +5,12 @@ import (
 	"library/api/author"
 	booksAPI "library/api/books"
 	"library/application/authors"
-	"library/application/books"
 	"library/domain"
 	"library/ioc"
 	"library/migrations"
+	"library/register"
 	authorServices "library/services/author"
+	bookServices "library/services/book"
 	"log"
 	"net"
 
@@ -69,18 +70,51 @@ func (a *App) initializeDB(dsn string) {
 	if err := migrations.UpdateDatabase(a.db); err != nil {
 		log.Fatalln(err)
 	}
+
+	if err := ioc.AddSingleton[domain.IDatabase](db); err != nil {
+		log.Fatalln(err)
+	}
+}
+
+type appRegister struct {
+}
+
+func (r *appRegister) Register() error {
+	db, err := ioc.Get[domain.IDatabase]()
+	if err != nil {
+		return err
+	}
+
+	authorSrv := authorServices.NewAuthorService(db)
+	if err := ioc.AddSingleton[authorServices.IAuthorService](authorSrv); err != nil {
+		return err
+	}
+
+	if err := ioc.AddSingleton[bookServices.IBookService](
+		bookServices.NewBookService(db, authorSrv)); err != nil {
+		return err
+	}
+
+	if err := authors.Register(db); err != nil {
+		return err
+	}
+
+	reg, err := ioc.Get[register.IRegister[*domain.Book]]()
+	if err != nil {
+		return err
+	}
+	reg.Register()
+
+	return nil
 }
 
 func (a *App) initializeMediatr() {
-	if err := ioc.Register[authorServices.IAuthorService](authorServices.NewAuthorService(a.db)); err != nil {
+	reg := new(appRegister)
+	if err := ioc.AddSingleton[register.IRegister[*App]](reg); err != nil {
 		log.Fatalln(err)
 	}
 
-	if err := authors.Register(a.db); err != nil {
-		log.Fatalln(err)
-	}
-
-	if err := books.Register(a.db); err != nil {
+	if err := reg.Register(); err != nil {
 		log.Fatalln(err)
 	}
 }

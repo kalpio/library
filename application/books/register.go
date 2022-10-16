@@ -2,23 +2,36 @@ package books
 
 import (
 	"github.com/mehdihadeli/go-mediatr"
+	"github.com/pkg/errors"
 	"library/application/books/commands"
 	"library/application/books/events"
+	"library/application/books/queries"
 	"library/domain"
 	"library/ioc"
-	"library/services/author"
+	"library/register"
 	"library/services/book"
 )
 
-func Register(db domain.IDatabase) error {
-	var lastErr error
-	authorSrv, err := ioc.Get[author.IAuthorService]()
-	if err != nil {
-		return err
-	}
-	bookSrv := book.NewBookService(db, authorSrv)
+type bookRegister struct {
+}
 
-	createBookCommandHandler := commands.NewCreateBookCommandHandler(db, bookSrv)
+func NewBookRegister() register.IRegister[*domain.Book] {
+	return &bookRegister{}
+}
+
+func (r *bookRegister) Register() error {
+	database, err := ioc.Get[domain.IDatabase]()
+	if err != nil {
+		return errors.Wrap(err, "register [book]: failed to get database service")
+	}
+	bookSrv, err := ioc.Get[book.IBookService]()
+	if err != nil {
+		return errors.Wrap(err, "register [book]: failed to get book service")
+	}
+
+	var lastErr error
+
+	createBookCommandHandler := commands.NewCreateBookCommandHandler(database, bookSrv)
 	if err := mediatr.RegisterRequestHandler[
 		*commands.CreateBookCommand,
 		*commands.CreateBookCommandResponse](
@@ -31,5 +44,17 @@ func Register(db domain.IDatabase) error {
 		lastErr = err
 	}
 
-	return lastErr
+	getBookQueryHandler := queries.NewGetBookByIDQueryHandler(database, bookSrv)
+	if err := mediatr.RegisterRequestHandler[
+		*queries.GetBookByIDQuery,
+		*queries.GetBookByIDQueryResponse](
+		getBookQueryHandler); err != nil {
+		lastErr = err
+	}
+
+	if lastErr != nil {
+		return errors.Wrap(lastErr, "register [book]: failed to register mediatr")
+	}
+
+	return nil
 }

@@ -5,30 +5,40 @@ import (
 	"reflect"
 )
 
-var values = map[reflect.Type]interface{}{}
+var (
+	values               = make(map[reflect.Type]interface{}, 10)
+	ErrAlreadyRegistered = errors.New("ioc: already registered type")
+	ErrNoRegistered      = errors.New("ioc: no service is registered for type")
+	ErrInvalidType       = errors.New("ioc: ")
+)
 
-func Register[T any](value any) error {
-	var obj T
-	tType := reflect.TypeOf(obj)
-
-	_, exist := values[tType]
+func AddSingleton[T any](value any) error {
+	t := getType[T]()
+	if t.Kind() == reflect.Interface {
+		reflect.TypeOf(value).Implements(t)
+	}
+	_, exist := values[t]
 	if exist {
-		return errors.Errorf("")
+		return errors.Wrapf(ErrAlreadyRegistered, "%s", t)
 	}
 
-	values[tType] = value
+	values[t] = value
 
 	return nil
 }
 
 func Get[T any]() (T, error) {
-	var obj T
-	tType := reflect.TypeOf(obj)
+	t := getType[T]()
 
-	value, ok := values[tType]
+	value, ok := values[t]
 	if !ok {
-		return *new(T), errors.Errorf("")
+		return *new(T), errors.Wrapf(ErrNoRegistered, "%s", t)
 	}
 
 	return value.(T), nil
+}
+
+func getType[T any]() reflect.Type {
+	var obj T
+	return reflect.TypeOf(&obj).Elem()
 }
