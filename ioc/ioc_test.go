@@ -1,9 +1,10 @@
 package ioc
 
 import (
-	"github.com/stretchr/testify/assert"
 	"reflect"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 type iFakeInterface interface {
@@ -13,18 +14,34 @@ type iFakeInterface interface {
 type iFakeStruct struct {
 }
 
-func (f *iFakeStruct) DoSth() {
+func (*iFakeStruct) DoSth() {
 }
 
-func TestAddSingletonNotReturnError(t *testing.T) {
+type secondFakeStruct struct {
+}
+
+func TestAddSingleton(t *testing.T) {
+	t.Run("Add singleton not return error",
+		addSingletonNotReturnError)
+	t.Run("Add singleton no return error and has registered service",
+		addSingletonNotReturnErrorAndHasRegisteredService)
+	t.Run("Add singleton fail when register same interface second time",
+		addSingletonFailWhenRegisterSameInterfaceSecondTimes)
+	t.Run("Add singleton fail when trying add type which not implement interface",
+		addSingletonFailWhenTryingAddTypeWhichNotImplementsInterface)
+	t.Run("Add singleton fail when trying add type which is different",
+		addSingletonFailWhenTryingAddTypeWhichIsDifferent)
+}
+
+func addSingletonNotReturnError(t *testing.T) {
 	ass := assert.New(t)
 	clearValues(1)
-	err := AddSingleton[iFakeInterface](new(iFakeStruct))
+	err := AddSingleton[iFakeInterface](&iFakeStruct{})
 
 	ass.NoError(err)
 }
 
-func TestAddSingletonNotReturnErrorAndHasRegisteredService(t *testing.T) {
+func addSingletonNotReturnErrorAndHasRegisteredService(t *testing.T) {
 	ass := assert.New(t)
 	clearValues(1)
 	err := AddSingleton[iFakeInterface](new(iFakeStruct))
@@ -33,7 +50,7 @@ func TestAddSingletonNotReturnErrorAndHasRegisteredService(t *testing.T) {
 	ass.Len(values, 1)
 }
 
-func TestAddSingletonFailWhenRegisterSameInterfaceSecondTimes(t *testing.T) {
+func addSingletonFailWhenRegisterSameInterfaceSecondTimes(t *testing.T) {
 	ass := assert.New(t)
 	clearValues(1)
 
@@ -47,16 +64,32 @@ func TestAddSingletonFailWhenRegisterSameInterfaceSecondTimes(t *testing.T) {
 	ass.ErrorContains(err, reflect.TypeOf(&obj).Elem().String())
 }
 
-func TestAddSingletonFailWhenTryingAddDifferentType(t *testing.T) {
+func addSingletonFailWhenTryingAddTypeWhichNotImplementsInterface(t *testing.T) {
 	ass := assert.New(t)
 	clearValues(1)
 
-	err := AddSingleton[iFakeInterface](new(iFakeStruct))
-	ass.ErrorIs(err, Err)
-
+	err := AddSingleton[iFakeInterface](&secondFakeStruct{})
+	ass.ErrorIs(err, ErrInvalidType)
 }
 
-func TestGetReturnRegisteredInstance(t *testing.T) {
+func addSingletonFailWhenTryingAddTypeWhichIsDifferent(t *testing.T) {
+	ass := assert.New(t)
+	clearValues(1)
+
+	err := AddSingleton[iFakeStruct](&secondFakeStruct{})
+	ass.ErrorIs(err, ErrInvalidType)
+}
+
+func TestGet(t *testing.T) {
+	t.Run("Get return registered instance",
+		getReturnRegisteredInstance)
+	t.Run("Get return registered pointer",
+		getReturnRegisteredPointer)
+	t.Run("Get return registered value",
+		getReturnRegisteredValue)
+}
+
+func getReturnRegisteredInstance(t *testing.T) {
 	ass := assert.New(t)
 	clearValues(1)
 
@@ -68,16 +101,28 @@ func TestGetReturnRegisteredInstance(t *testing.T) {
 	ass.IsType(&iFakeStruct{}, instance)
 }
 
-func TestGetReturnRegisteredValue(t *testing.T) {
+func getReturnRegisteredPointer(t *testing.T) {
 	ass := assert.New(t)
 	clearValues(1)
 
-	err := AddSingleton[iFakeInterface](iFakeStruct{})
+	err := AddSingleton[*secondFakeStruct](&secondFakeStruct{})
 	ass.NoError(err)
 
-	value, err := Get[iFakeInterface]()
+	value, err := Get[*secondFakeStruct]()
 	ass.NoError(err)
-	ass.IsType(iFakeStruct{}, value)
+	ass.IsType(&secondFakeStruct{}, value)
+}
+
+func getReturnRegisteredValue(t *testing.T) {
+	ass := assert.New(t)
+	clearValues(1)
+
+	err := AddSingleton[secondFakeStruct](secondFakeStruct{})
+	ass.NoError(err)
+
+	value, err := Get[secondFakeStruct]()
+	ass.NoError(err)
+	ass.IsType(secondFakeStruct{}, value)
 }
 
 func clearValues(length int) {
