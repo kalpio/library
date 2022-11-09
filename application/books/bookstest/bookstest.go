@@ -3,15 +3,37 @@ package bookstest
 import (
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/mock"
+	"gorm.io/gorm"
 	"library/application/books"
 	"library/domain"
 	"library/ioc"
 	"library/random"
-	"library/register"
+	"library/services/book"
 )
 
-func Register() error {
-	return ioc.AddSingleton[register.IRegister[*domain.Book]](books.NewBookRegister())
+type fakeDatabase struct {
+}
+
+func (fdb *fakeDatabase) GetDB() *gorm.DB {
+	return nil
+}
+
+func Initialize() error {
+	var lastErr error
+	if err := ioc.AddSingleton[domain.IDatabase](new(fakeDatabase)); err != nil {
+		lastErr = err
+	}
+
+	if err := ioc.AddSingleton[book.IBookService](new(BookServiceMock)); err != nil {
+		lastErr = err
+	}
+
+	bookRegister := books.NewBookRegister()
+	if err := bookRegister.Register(); err != nil {
+		lastErr = err
+	}
+
+	return lastErr
 }
 
 type BookServiceMock struct {

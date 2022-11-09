@@ -6,9 +6,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"library/application/books/bookstest"
 	"library/application/books/queries"
-	"library/ioc"
-	"library/register"
-
 	"library/domain"
 	"testing"
 )
@@ -16,13 +13,7 @@ import (
 func TestBook_QueryHandler_ReturnCorrectData(t *testing.T) {
 	ass := assert.New(t)
 
-	err := bookstest.Register()
-	ass.NoError(err)
-
-	reg, err := ioc.Get[register.IRegister[*domain.Book]]()
-	ass.NoError(err)
-
-	err = reg.Register()
+	err := bookstest.Initialize()
 	ass.NoError(err)
 
 	mckService := new(bookstest.BookServiceMock)

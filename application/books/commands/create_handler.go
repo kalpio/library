@@ -24,7 +24,8 @@ func NewCreateBookCommandHandler(db domain.IDatabase,
 	}
 }
 
-func (c *CreateBookCommandHandler) Handle(ctx context.Context,
+func (c *CreateBookCommandHandler) Handle(
+	ctx context.Context,
 	command *CreateBookCommand) (*CreateBookCommandResponse, error) {
 
 	var (

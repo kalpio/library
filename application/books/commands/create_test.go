@@ -3,28 +3,20 @@ package commands_test
 import (
 	"context"
 	"github.com/google/uuid"
-	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	"library/application/books/bookstest"
 	"library/application/books/commands"
 	"library/application/books/events"
 	"library/domain"
 	domainEvents "library/domain/events"
-	"library/ioc"
-	"library/register"
 	"testing"
 )
 
-func init() {
-	err := bookstest.Register()
-	log.Fatal(err)
-}
-
 func TestBook_CreateCommandHandler_RaisedBookCreatedEvent(t *testing.T) {
 	ass := assert.New(t)
-	reg, err := ioc.Get[register.IRegister[*domain.Book]]()
+
+	err := bookstest.Initialize()
 	ass.NoError(err)
-	reg.Register()
 
 	mckService := new(bookstest.BookServiceMock)
 	expectedBook := bookstest.CreateBook()
