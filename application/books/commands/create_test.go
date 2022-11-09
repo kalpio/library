@@ -9,6 +9,8 @@ import (
 	"library/application/books/events"
 	"library/domain"
 	domainEvents "library/domain/events"
+	"library/ioc"
+	"library/services/book"
 	"testing"
 )
 
@@ -18,7 +20,10 @@ func TestBook_CreateCommandHandler_RaisedBookCreatedEvent(t *testing.T) {
 	err := bookstest.Initialize()
 	ass.NoError(err)
 
-	mckService := new(bookstest.BookServiceMock)
+	bookSrv, err := ioc.Get[book.IBookService]()
+	ass.NoError(err)
+
+	mckService := bookSrv.(*bookstest.BookServiceMock)
 	expectedBook := bookstest.CreateBook()
 
 	mckService.

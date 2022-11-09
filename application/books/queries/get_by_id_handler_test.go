@@ -7,6 +7,8 @@ import (
 	"library/application/books/bookstest"
 	"library/application/books/queries"
 	"library/domain"
+	"library/ioc"
+	"library/services/book"
 	"testing"
 )
 
@@ -16,7 +18,10 @@ func TestBook_QueryHandler_ReturnCorrectData(t *testing.T) {
 	err := bookstest.Initialize()
 	ass.NoError(err)
 
-	mckService := new(bookstest.BookServiceMock)
+	bookSrv, err := ioc.Get[book.IBookService]()
+	ass.NoError(err)
+
+	mckService := bookSrv.(*bookstest.BookServiceMock)
 	expectedBook := bookstest.CreateBook()
 
 	mckService.
