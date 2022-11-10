@@ -2,16 +2,22 @@ package migrations
 
 import (
 	"database/sql"
-	"errors"
 	"fmt"
+	"github.com/pkg/errors"
 	"library/domain"
+	"library/ioc"
 	"os"
 	"strings"
 )
 
 var ErrAutoMigration = errors.New("could not auto migrate")
 
-func CreateAndUseDatabase(db domain.IDatabase, name string) error {
+func CreateAndUseDatabase(name string) error {
+	db, err := ioc.Get[domain.IDatabase]()
+	if err != nil {
+		return errors.Wrap(err, "migrations: failed to get database service")
+	}
+
 	if !strings.Contains(db.GetDB().Dialector.Name(), "sqlite") {
 		if tx := db.GetDB().Exec(fmt.Sprintf("CREATE DATABASE %s;", name)); tx.Error != nil {
 			return tx.Error
@@ -24,7 +30,12 @@ func CreateAndUseDatabase(db domain.IDatabase, name string) error {
 	return nil
 }
 
-func DropDatabase(db domain.IDatabase, name string) error {
+func DropDatabase(name string) error {
+	db, err := ioc.Get[domain.IDatabase]()
+	if err != nil {
+		return errors.Wrap(err, "migrations: failed to get database service")
+	}
+
 	if !strings.Contains(db.GetDB().Dialector.Name(), "sqlite") {
 		query := fmt.Sprintf(`
 USE master;
@@ -54,7 +65,12 @@ DROP DATABASE [%s];
 	return nil
 }
 
-func UpdateDatabase(db domain.IDatabase) error {
+func UpdateDatabase() error {
+	db, err := ioc.Get[domain.IDatabase]()
+	if err != nil {
+		return errors.Wrap(err, "migrations: failed to get database service")
+	}
+
 	if err := db.GetDB().AutoMigrate(&domain.Author{}); err != nil {
 		return fmt.Errorf("models: %w: %v", ErrAutoMigration, err)
 	}

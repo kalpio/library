@@ -1,7 +1,6 @@
 package main_test
 
 import (
-	"library/domain"
 	"library/migrations"
 	"log"
 	"os"
@@ -22,13 +21,13 @@ func TestMain(m *testing.M) {
 
 	code := m.Run()
 
-	dropDatabase(a.DB(), "test")
+	dropDatabase("test")
 
 	os.Exit(code)
 }
 
-func dropDatabase(db domain.IDatabase, dsn string) {
-	if err := migrations.DropDatabase(db, dsn); err != nil {
+func dropDatabase(dsn string) {
+	if err := migrations.DropDatabase(dsn); err != nil {
 		log.Fatalln(err)
 	}
 }

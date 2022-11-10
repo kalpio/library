@@ -32,7 +32,7 @@ type bookService struct {
 	authorSrv author.IAuthorService
 }
 
-func NewBookService(db domain.IDatabase, authorSrv author.IAuthorService) IBookService {
+func newBookService(db domain.IDatabase, authorSrv author.IAuthorService) IBookService {
 	return &bookService{db: db, authorSrv: authorSrv}
 }
 

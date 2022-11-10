@@ -15,15 +15,15 @@ type IAuthorService interface {
 	Delete(id uuid.UUID) (bool, error)
 }
 
-type authorSrv struct {
+type authorService struct {
 	db domain.IDatabase
 }
 
-func NewAuthorService(db domain.IDatabase) IAuthorService {
-	return &authorSrv{db}
+func newAuthorService(db domain.IDatabase) IAuthorService {
+	return &authorService{db}
 }
 
-func (a *authorSrv) Create(id uuid.UUID, firstName, middleName, lastName string) (*domain.Author, error) {
+func (a *authorService) Create(id uuid.UUID, firstName, middleName, lastName string) (*domain.Author, error) {
 	model := domain.NewAuthor(id, firstName, middleName, lastName)
 
 	exists, err := exists(a.db, firstName, middleName, lastName)
@@ -43,7 +43,7 @@ func (a *authorSrv) Create(id uuid.UUID, firstName, middleName, lastName string)
 	return &result, nil
 }
 
-func (a *authorSrv) Edit(id uuid.UUID, firstName, middleName, lastName string) (*domain.Author, error) {
+func (a *authorService) Edit(id uuid.UUID, firstName, middleName, lastName string) (*domain.Author, error) {
 	model := &domain.Author{
 		Entity: domain.Entity{
 			ID: id,
@@ -67,7 +67,7 @@ func (a *authorSrv) Edit(id uuid.UUID, firstName, middleName, lastName string) (
 	return result, nil
 }
 
-func (a *authorSrv) GetByID(id uuid.UUID) (*domain.Author, error) {
+func (a *authorService) GetByID(id uuid.UUID) (*domain.Author, error) {
 	result, err := repository.GetByID[domain.Author](a.db, id)
 	if err != nil {
 		return nil, err
@@ -76,7 +76,7 @@ func (a *authorSrv) GetByID(id uuid.UUID) (*domain.Author, error) {
 	return &result, nil
 }
 
-func (a *authorSrv) GetAll() ([]domain.Author, error) {
+func (a *authorService) GetAll() ([]domain.Author, error) {
 	result, err := repository.GetAll[domain.Author](a.db)
 	if err != nil {
 		return nil, err
@@ -85,7 +85,7 @@ func (a *authorSrv) GetAll() ([]domain.Author, error) {
 	return result, nil
 }
 
-func (a *authorSrv) Delete(id uuid.UUID) (bool, error) {
+func (a *authorService) Delete(id uuid.UUID) (bool, error) {
 	var (
 		rowsAffected int64
 		err          error
