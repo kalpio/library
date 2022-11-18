@@ -54,7 +54,7 @@ func (b *bookService) Create(id uuid.UUID,
 	model := domain.NewBook(id, title, isbn, description, bookAuthor)
 
 	var result domain.Book
-	result, err = repository.Save(b.db, *model)
+	result, err = repository.Save(*model)
 	if err != nil {
 		return nil, fmt.Errorf("book service: could not save book: %w", err)
 	}
@@ -69,7 +69,7 @@ func (b *bookService) exists(isbn string) error {
 		err   error
 		value domain.Book
 	)
-	value, err = repository.GetByColumns[domain.Book](b.db, map[string]interface{}{"isbn": isbn})
+	value, err = repository.GetByColumns[domain.Book](map[string]interface{}{"isbn": isbn})
 	if err != nil {
 		return fmt.Errorf("book service: an error during check book exists %w", err)
 	}

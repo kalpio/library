@@ -13,7 +13,7 @@ import (
 )
 
 func TestSaveNewBook(t *testing.T) {
-	db, afterTest := testutils.BeforeTest(t)
+	afterTest := testutils.BeforeTest(t)
 	defer afterTest(t)
 
 	id := uuid.New()
@@ -28,7 +28,7 @@ func TestSaveNewBook(t *testing.T) {
 
 	book := domain.NewBook(id, title, isbn, format, author)
 	ass := assert.New(t)
-	result, err := repository.Save(db, *book)
+	result, err := repository.Save(*book)
 
 	ass.NoError(err)
 	ass.Equal(result.ID, book.ID)
@@ -39,29 +39,29 @@ func TestSaveNewBook(t *testing.T) {
 }
 
 func TestGetByISBN(t *testing.T) {
-	db, afterTest := testutils.BeforeTest(t)
+	afterTest := testutils.BeforeTest(t)
 	defer afterTest(t)
 	ass := assert.New(t)
 
-	expected := createNewBookInDB(db, t)
+	expected := createNewBookInDB(t)
 	columnValue := map[string]interface{}{"ISBN": expected.ISBN}
-	got, err := repository.GetByColumns[domain.Book](db, columnValue)
+	got, err := repository.GetByColumns[domain.Book](columnValue)
 
 	ass.NoError(err)
 	ass.Equal(got.ID, expected.ID)
 }
 
 func TestGetAll(t *testing.T) {
-	db, afterTest := testutils.BeforeTest(t)
+	afterTest := testutils.BeforeTest(t)
 	defer afterTest(t)
 
 	ass := assert.New(t)
 	var expected []*domain.Book
-	expected = append(expected, createNewBookInDB(db, t))
-	expected = append(expected, createNewBookInDB(db, t))
-	expected = append(expected, createNewBookInDB(db, t))
+	expected = append(expected, createNewBookInDB(t))
+	expected = append(expected, createNewBookInDB(t))
+	expected = append(expected, createNewBookInDB(t))
 
-	results, err := repository.GetAll[domain.Book](db)
+	results, err := repository.GetAll[domain.Book]()
 	ass.NoError(err)
 	ass.Equal(len(results), 3)
 
@@ -89,18 +89,18 @@ func assertThatTheyAreSameBook(ass *assert.Assertions, get domain.Book, expected
 }
 
 func TestDelete(t *testing.T) {
-	db, afterTest := testutils.BeforeTest(t)
+	afterTest := testutils.BeforeTest(t)
 	defer afterTest(t)
 	ass := assert.New(t)
 
-	book := createNewBookInDB(db, t)
-	rowsAffected, err := repository.Delete[domain.Book](db, book.ID)
+	book := createNewBookInDB(t)
+	rowsAffected, err := repository.Delete[domain.Book](book.ID)
 
 	ass.NoError(err)
 	ass.Greater(rowsAffected, int64(0))
 }
 
-func createNewBookInDB(db domain.IDatabase, t *testing.T) *domain.Book {
+func createNewBookInDB(t *testing.T) *domain.Book {
 	b := domain.NewBook(
 		uuid.New(),
 		random.String(100),
@@ -113,7 +113,7 @@ func createNewBookInDB(db domain.IDatabase, t *testing.T) *domain.Book {
 			random.String(6)))
 
 	ass := assert.New(t)
-	result, err := repository.Save(db, *b)
+	result, err := repository.Save(*b)
 	ass.NoError(err)
 
 	return &result

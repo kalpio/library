@@ -20,7 +20,7 @@ func AddSingleton[T any](value any) error {
 		return addSingletonForInterface(t, value)
 	}
 
-	return addSingletonForNotInterface(t, value)
+	return addSingletonForNoneInterface(t, value)
 }
 
 func addSingletonForInterface(t reflect.Type, value any) error {
@@ -32,7 +32,7 @@ func addSingletonForInterface(t reflect.Type, value any) error {
 	return addSingletonInternal(t, value)
 }
 
-func addSingletonForNotInterface(t reflect.Type, value any) error {
+func addSingletonForNoneInterface(t reflect.Type, value any) error {
 	valueType := reflect.TypeOf(value)
 	if valueType != t {
 		return errors.Wrapf(ErrInvalidType, "%v should be same type as %v", valueType, t)
@@ -50,6 +50,15 @@ func addSingletonInternal(t reflect.Type, value any) error {
 	values[t] = value
 
 	return nil
+}
+
+func RemoveSingleton[T any]() {
+	t := getType[T]()
+
+	_, exists := values[t]
+	if exists {
+		delete(values, t)
+	}
 }
 
 func Get[T any]() (T, error) {

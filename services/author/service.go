@@ -2,9 +2,10 @@ package author
 
 import (
 	"errors"
-	"github.com/google/uuid"
 	"library/domain"
 	"library/infrastructure/repository"
+
+	"github.com/google/uuid"
 )
 
 type IAuthorService interface {
@@ -35,7 +36,7 @@ func (a *authorService) Create(id uuid.UUID, firstName, middleName, lastName str
 		return nil, errors.New("author with that names already exists")
 	}
 
-	result, err := repository.Save(a.db, *model)
+	result, err := repository.Save(*model)
 	if err != nil {
 		return nil, err
 	}
@@ -54,7 +55,7 @@ func (a *authorService) Edit(id uuid.UUID, firstName, middleName, lastName strin
 		Books:      nil,
 	}
 
-	err := repository.Update(a.db, *model)
+	err := repository.Update(*model)
 	if err != nil {
 		return nil, err
 	}
@@ -68,7 +69,7 @@ func (a *authorService) Edit(id uuid.UUID, firstName, middleName, lastName strin
 }
 
 func (a *authorService) GetByID(id uuid.UUID) (*domain.Author, error) {
-	result, err := repository.GetByID[domain.Author](a.db, id)
+	result, err := repository.GetByID[domain.Author](id)
 	if err != nil {
 		return nil, err
 	}
@@ -77,7 +78,7 @@ func (a *authorService) GetByID(id uuid.UUID) (*domain.Author, error) {
 }
 
 func (a *authorService) GetAll() ([]domain.Author, error) {
-	result, err := repository.GetAll[domain.Author](a.db)
+	result, err := repository.GetAll[domain.Author]()
 	if err != nil {
 		return nil, err
 	}
@@ -90,7 +91,7 @@ func (a *authorService) Delete(id uuid.UUID) (bool, error) {
 		rowsAffected int64
 		err          error
 	)
-	if rowsAffected, err = repository.Delete[domain.Author](a.db, id); err != nil {
+	if rowsAffected, err = repository.Delete[domain.Author](id); err != nil {
 		return false, err
 	}
 
@@ -104,7 +105,7 @@ func exists(db domain.IDatabase, firstName, middleName, lastName string) (bool, 
 		"LastName":   lastName,
 	}
 
-	result, err := repository.GetByColumns[domain.Author](db, columns)
+	result, err := repository.GetByColumns[domain.Author](columns)
 	if err != nil {
 		return false, err
 	}

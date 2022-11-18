@@ -1,18 +1,19 @@
 package author
 
 import (
-	"github.com/google/uuid"
 	"library/domain"
 	"library/infrastructure/repository"
 	"library/infrastructure/repository/testutils"
 	"library/random"
 	"testing"
 
+	"github.com/google/uuid"
+
 	"github.com/stretchr/testify/assert"
 )
 
 func TestSaveNewAuthor(t *testing.T) {
-	db, afterTest := testutils.BeforeTest(t)
+	afterTest := testutils.BeforeTest(t)
 	defer afterTest(t)
 
 	id := uuid.New()
@@ -22,7 +23,7 @@ func TestSaveNewAuthor(t *testing.T) {
 	author0 := domain.NewAuthor(id, firstName, middleName, lastName)
 
 	ass := assert.New(t)
-	result, err := repository.Save(db, *author0)
+	result, err := repository.Save(*author0)
 
 	ass.NoError(err)
 	ass.Equal(result.ID, id)
@@ -32,7 +33,7 @@ func TestSaveNewAuthor(t *testing.T) {
 }
 
 func TestTryAddExistingAuthor(t *testing.T) {
-	db, afterTest := testutils.BeforeTest(t)
+	afterTest := testutils.BeforeTest(t)
 	defer afterTest(t)
 
 	ass := assert.New(t)
@@ -42,7 +43,7 @@ func TestTryAddExistingAuthor(t *testing.T) {
 	lastName := random.String(10)
 
 	author0 := domain.NewAuthor(id, firstName, middleName, lastName)
-	result0, err := repository.Save(db, *author0)
+	result0, err := repository.Save(*author0)
 
 	ass.NoError(err)
 	ass.Equal(result0.ID, id)
@@ -51,13 +52,13 @@ func TestTryAddExistingAuthor(t *testing.T) {
 	ass.Equal(result0.LastName, lastName)
 
 	author1 := domain.NewAuthor(id, firstName, middleName, lastName)
-	result1, err := repository.Save(db, *author1)
+	result1, err := repository.Save(*author1)
 	ass.Error(err)
 	ass.Equal(result1.ID, id)
 }
 
 func TestTryAddEmptyFirstName(t *testing.T) {
-	db, afterTest := testutils.BeforeTest(t)
+	afterTest := testutils.BeforeTest(t)
 	defer afterTest(t)
 
 	ass := assert.New(t)
@@ -67,13 +68,13 @@ func TestTryAddEmptyFirstName(t *testing.T) {
 	lastName := random.String(10)
 
 	author := domain.NewAuthor(id, firstName, middleName, lastName)
-	result, err := repository.Save(db, *author)
+	result, err := repository.Save(*author)
 	ass.Error(err)
 	ass.Equal(result.ID, domain.EmptyUUID())
 }
 
 func TestTryAddEmptyLastName(t *testing.T) {
-	db, afterTest := testutils.BeforeTest(t)
+	afterTest := testutils.BeforeTest(t)
 	defer afterTest(t)
 
 	ass := assert.New(t)
@@ -83,34 +84,34 @@ func TestTryAddEmptyLastName(t *testing.T) {
 	lastName := ""
 
 	author := domain.NewAuthor(id, firstName, middleName, lastName)
-	result, err := repository.Save(db, *author)
+	result, err := repository.Save(*author)
 	ass.Error(err)
 	ass.Equal(result.ID, domain.EmptyUUID())
 }
 
 func TestGetByID(t *testing.T) {
-	db, afterTest := testutils.BeforeTest(t)
+	afterTest := testutils.BeforeTest(t)
 	defer afterTest(t)
 
 	ass := assert.New(t)
-	expect := createNewAuthorInDB(db, t)
-	got, err := repository.GetByID[domain.Author](db, expect.ID)
+	expect := createNewAuthorInDB(t)
+	got, err := repository.GetByID[domain.Author](expect.ID)
 
 	ass.NoError(err)
 	assertThatTheyAreSameAuthor(ass, got, expect)
 }
 
 func TestGetAll(t *testing.T) {
-	db, afterTest := testutils.BeforeTest(t)
+	afterTest := testutils.BeforeTest(t)
 	defer afterTest(t)
 
 	ass := assert.New(t)
 	var expects []domain.Author
-	expects = append(expects, createNewAuthorInDB(db, t))
-	expects = append(expects, createNewAuthorInDB(db, t))
-	expects = append(expects, createNewAuthorInDB(db, t))
+	expects = append(expects, createNewAuthorInDB(t))
+	expects = append(expects, createNewAuthorInDB(t))
+	expects = append(expects, createNewAuthorInDB(t))
 
-	results, err := repository.GetAll[domain.Author](db)
+	results, err := repository.GetAll[domain.Author]()
 
 	ass.NoError(err)
 	ass.Equal(len(results), 3)
@@ -121,12 +122,12 @@ func TestGetAll(t *testing.T) {
 }
 
 func TestDelete(t *testing.T) {
-	db, afterTest := testutils.BeforeTest(t)
+	afterTest := testutils.BeforeTest(t)
 	defer afterTest(t)
 	ass := assert.New(t)
 
-	a := createNewAuthorInDB(db, t)
-	rowsAffected, err := repository.Delete[domain.Author](db, a.ID)
+	a := createNewAuthorInDB(t)
+	rowsAffected, err := repository.Delete[domain.Author](a.ID)
 
 	ass.NoError(err)
 	ass.Greater(rowsAffected, int64(0))
@@ -149,14 +150,14 @@ func assertThatTheyAreSameAuthor(ass *assert.Assertions, got domain.Author, expe
 	ass.Equal(got.UpdatedAt.UTC(), expect.UpdatedAt.UTC())
 }
 
-func createNewAuthorInDB(db domain.IDatabase, t *testing.T) domain.Author {
+func createNewAuthorInDB(t *testing.T) domain.Author {
 	a := domain.NewAuthor(
 		uuid.New(),
 		random.String(6),
 		random.String(6),
 		random.String(6))
 	ass := assert.New(t)
-	result, err := repository.Save(db, *a)
+	result, err := repository.Save(*a)
 	ass.NoError(err)
 
 	return result
