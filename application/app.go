@@ -126,6 +126,7 @@ func (a *App) initializeRouter() {
 		v1.DELETE("/author/:id", authorCtrl.Delete)
 
 		v1.POST("/book", bookCtrl.Create)
+		v1.GET("/book/:id", bookCtrl.Get)
 	}
 }
 

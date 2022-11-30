@@ -53,4 +53,7 @@ func TestAuthorAPI(t *testing.T) {
 
 	bookstest.SetApp(a)
 	t.Run("POST_NewBook", bookstest.PostNewBook)
+
+	t.Run("GetExistingBookByID", bookstest.GetExistingBookByID)
+	t.Run("GetNotExistingBookByID", bookstest.GetNotExistingBookByID)
 }

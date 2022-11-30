@@ -46,6 +46,12 @@ func postBookRR(app application.App, dto postBookDto) *httptest.ResponseRecorder
 	return executeRequest(app, req)
 }
 
+func getBookRR(app application.App, bookID string) *httptest.ResponseRecorder {
+	req, _ := http.NewRequest("GET", fmt.Sprintf("/api/v1/book/%s", bookID), nil)
+
+	return executeRequest(app, req)
+}
+
 func getBookFromResponseBody(body *bytes.Buffer) (*domain.Book, error) {
 	var result *domain.Book
 	if err := json.Unmarshal(body.Bytes(), &result); err != nil {
@@ -76,4 +82,25 @@ func postAuthor(app application.App, dto postAuthorDto) (*domain.Author, error) 
 	}
 
 	return result, nil
+}
+
+func createBookInDB(app application.App) (*postBookDto, error) {
+	bookAuthor, err := postAuthor(app, postAuthorDto{
+		FirstName:  random.String(20),
+		MiddleName: random.String(20),
+		LastName:   random.String(20),
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	bookDto := generateBookDto(bookAuthor.ID)
+	rr := postBookRR(app, bookDto)
+
+	if rr == nil || rr.Code != http.StatusCreated {
+		return nil, errors.New("test utils: cannot create book")
+	}
+
+	return &bookDto, nil
 }

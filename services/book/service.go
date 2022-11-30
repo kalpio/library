@@ -99,7 +99,12 @@ func (b *bookService) Edit(id uuid.UUID,
 }
 
 func (b *bookService) GetByID(id uuid.UUID) (*domain.Book, error) {
-	return nil, nil
+	result, err := repository.GetByID[domain.Book](id)
+	if err != nil {
+		return nil, fmt.Errorf("book service: could not find book: %w", err)
+	}
+
+	return &result, nil
 }
 
 func (b *bookService) GetAll() ([]domain.Book, error) {

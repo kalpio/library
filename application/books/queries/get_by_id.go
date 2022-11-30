@@ -10,7 +10,7 @@ type GetBookByIDQuery struct {
 }
 
 type GetBookByIDQueryResponse struct {
-	BookID      uuid.UUID `json:"book_id"`
+	BookID      uuid.UUID `json:"id"`
 	Title       string    `json:"title"`
 	ISBN        string    `json:"isbn"`
 	Description string    `json:"description"`
