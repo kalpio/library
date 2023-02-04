@@ -1,27 +1,46 @@
-package commands_test
+package bookstest
 
 import (
 	"github.com/google/uuid"
-	"github.com/mehdihadeli/go-mediatr"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
-	"library/application/books/events"
+	"gorm.io/gorm"
+	"library/application/books"
 	"library/domain"
+	"library/ioc"
 	"library/random"
+	"library/services/book"
 )
 
-func registerEvents(ass *assert.Assertions) {
-	if err := mediatr.RegisterNotificationHandler[*events.BookCreatedEvent](
-		&events.BookCreatedEventHandler{}); err != nil {
-		ass.NoError(err)
-	}
+type fakeDatabase struct {
 }
 
-type bookServiceMock struct {
+func (fdb *fakeDatabase) GetDB() *gorm.DB {
+	return nil
+}
+
+func Initialize() error {
+	var lastErr error
+	if err := ioc.AddSingleton[domain.IDatabase](new(fakeDatabase)); err != nil {
+		lastErr = err
+	}
+
+	if err := ioc.AddSingleton[book.IBookService](new(BookServiceMock)); err != nil {
+		lastErr = err
+	}
+
+	bookRegister := books.NewBookRegister()
+	if err := bookRegister.Register(); err != nil {
+		lastErr = err
+	}
+
+	return lastErr
+}
+
+type BookServiceMock struct {
 	mock.Mock
 }
 
-func (b *bookServiceMock) Create(id uuid.UUID,
+func (b *BookServiceMock) Create(id uuid.UUID,
 	title, isbn, description string,
 	authorID uuid.UUID) (*domain.Book, error) {
 
@@ -29,7 +48,7 @@ func (b *bookServiceMock) Create(id uuid.UUID,
 	return args.Get(0).(*domain.Book), args.Error(1)
 }
 
-func (b *bookServiceMock) Edit(id uuid.UUID,
+func (b *BookServiceMock) Edit(id uuid.UUID,
 	title, isbn, description string,
 	authorID uuid.UUID) (*domain.Book, error) {
 
@@ -37,22 +56,22 @@ func (b *bookServiceMock) Edit(id uuid.UUID,
 	return args.Get(0).(*domain.Book), args.Error(1)
 }
 
-func (b *bookServiceMock) GetByID(id uuid.UUID) (*domain.Book, error) {
+func (b *BookServiceMock) GetByID(id uuid.UUID) (*domain.Book, error) {
 	args := b.Called(id)
 	return args.Get(0).(*domain.Book), args.Error(1)
 }
 
-func (b *bookServiceMock) GetAll() ([]domain.Book, error) {
+func (b *BookServiceMock) GetAll() ([]domain.Book, error) {
 	args := b.Called()
 	return args.Get(0).([]domain.Book), args.Error(1)
 }
 
-func (b *bookServiceMock) Delete(id uuid.UUID) (bool, error) {
+func (b *BookServiceMock) Delete(id uuid.UUID) (bool, error) {
 	args := b.Called(id)
 	return args.Bool(0), args.Error(1)
 }
 
-func createBook() *domain.Book {
+func CreateBook() *domain.Book {
 	return domain.NewBook(uuid.New(),
 		random.String(20),
 		random.String(12),

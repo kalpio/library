@@ -3,6 +3,7 @@ package testutils
 import (
 	"fmt"
 	"library/domain"
+	"library/ioc"
 	"library/migrations"
 	"library/random"
 	"testing"
@@ -21,30 +22,34 @@ func (d *database) GetDB() *gorm.DB {
 	return d.db
 }
 
-func BeforeTest(t *testing.T) (domain.IDatabase, func(t *testing.T)) {
+func BeforeTest(t *testing.T) func(t *testing.T) {
 	randomDBName := getRandomDBName()
 	var (
-		err error
-		db  *gorm.DB
+		err    error
+		gormDB *gorm.DB
 	)
 	ass := assert.New(t)
 
 	dsn := fmt.Sprintf("file:%s.db?cache=shared&mode=rwc", randomDBName)
-	db, err = gorm.Open(sqlite.Open(dsn), &gorm.Config{})
+	gormDB, err = gorm.Open(sqlite.Open(dsn), &gorm.Config{})
 	ass.NoError(err)
 
-	ddb := &database{db}
+	db := &database{gormDB}
 
-	if err := migrations.CreateAndUseDatabase(ddb, randomDBName); err != nil {
+	ioc.RemoveSingleton[domain.IDatabase]()
+	err = ioc.AddSingleton[domain.IDatabase](db)
+	ass.NoError(err)
+
+	if err := migrations.CreateAndUseDatabase(randomDBName); err != nil {
 		ass.NoError(err)
 	}
 
-	if err := migrations.UpdateDatabase(ddb); err != nil {
+	if err := migrations.UpdateDatabase(); err != nil {
 		ass.NoError(err)
 	}
 
-	return ddb, func(t *testing.T) {
-		if err := migrations.DropDatabase(ddb, randomDBName); err != nil {
+	return func(t *testing.T) {
+		if err := migrations.DropDatabase(randomDBName); err != nil {
 			ass.NoError(err)
 		}
 	}

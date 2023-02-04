@@ -38,7 +38,7 @@ var notificationsObj = newNotifications()
 func GetEvents[TNotification any](forType TNotification) []TNotification {
 	notificationType := reflect.TypeOf(forType)
 	if events, ok := notificationsObj.events[notificationType]; ok {
-		result := []TNotification{}
+		var result []TNotification
 		for _, event := range events {
 			eventValue := event.(TNotification)
 			result = append(result, eventValue)
