@@ -1,7 +1,7 @@
 package author
 
 import (
-	"errors"
+	"github.com/pkg/errors"
 	"library/domain"
 	"library/infrastructure/repository"
 
@@ -24,17 +24,12 @@ func newAuthorService(db domain.IDatabase) IAuthorService {
 	return &authorService{db}
 }
 
-func (a *authorService) Create(id uuid.UUID, firstName, middleName, lastName string) (*domain.Author, error) {
+func (a authorService) Create(id uuid.UUID, firstName, middleName, lastName string) (*domain.Author, error) {
+	if a.exists(id) {
+		return nil, errors.New("author with that id already exists")
+	}
+
 	model := domain.NewAuthor(id, firstName, middleName, lastName)
-
-	exists, err := exists(a.db, firstName, middleName, lastName)
-	if err != nil {
-		return nil, err
-	}
-
-	if exists {
-		return nil, errors.New("author with that names already exists")
-	}
 
 	result, err := repository.Save(*model)
 	if err != nil {
@@ -44,7 +39,7 @@ func (a *authorService) Create(id uuid.UUID, firstName, middleName, lastName str
 	return &result, nil
 }
 
-func (a *authorService) Edit(id uuid.UUID, firstName, middleName, lastName string) (*domain.Author, error) {
+func (a authorService) Edit(id uuid.UUID, firstName, middleName, lastName string) (*domain.Author, error) {
 	model := &domain.Author{
 		Entity: domain.Entity{
 			ID: id,
@@ -68,7 +63,7 @@ func (a *authorService) Edit(id uuid.UUID, firstName, middleName, lastName strin
 	return result, nil
 }
 
-func (a *authorService) GetByID(id uuid.UUID) (*domain.Author, error) {
+func (a authorService) GetByID(id uuid.UUID) (*domain.Author, error) {
 	result, err := repository.GetByID[domain.Author](id)
 	if err != nil {
 		return nil, err
@@ -77,7 +72,7 @@ func (a *authorService) GetByID(id uuid.UUID) (*domain.Author, error) {
 	return &result, nil
 }
 
-func (a *authorService) GetAll() ([]domain.Author, error) {
+func (a authorService) GetAll() ([]domain.Author, error) {
 	result, err := repository.GetAll[domain.Author]()
 	if err != nil {
 		return nil, err
@@ -86,7 +81,7 @@ func (a *authorService) GetAll() ([]domain.Author, error) {
 	return result, nil
 }
 
-func (a *authorService) Delete(id uuid.UUID) (bool, error) {
+func (a authorService) Delete(id uuid.UUID) (bool, error) {
 	var (
 		rowsAffected int64
 		err          error
@@ -98,19 +93,11 @@ func (a *authorService) Delete(id uuid.UUID) (bool, error) {
 	return rowsAffected > 0, nil
 }
 
-func exists(db domain.IDatabase, firstName, middleName, lastName string) (bool, error) {
-	columns := map[string]interface{}{
-		"FirstName":  firstName,
-		"MiddleName": middleName,
-		"LastName":   lastName,
-	}
-
-	result, err := repository.GetByColumns[domain.Author](columns)
+func (a authorService) exists(id uuid.UUID) bool {
+	result, err := a.GetByID(id)
 	if err != nil {
-		return false, err
+		return false
 	}
 
-	return len(result.FirstName) > 0 ||
-		len(result.MiddleName) > 0 ||
-		len(result.LastName) > 0, nil
+	return result.ID == id
 }

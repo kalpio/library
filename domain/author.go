@@ -9,9 +9,9 @@ type AuthorID string
 
 type Author struct {
 	Entity
-	FirstName  string `gorm:"column:firstName;index:uq_first_last,unique" json:"first_name"`
+	FirstName  string `gorm:"column:firstName" json:"first_name"`
 	MiddleName string `gorm:"column:middleName" json:"middle_name"`
-	LastName   string `gorm:"column:lastName;index:uq_first_last,unique" json:"last_name"`
+	LastName   string `gorm:"column:lastName" json:"last_name"`
 	Books      []Book `json:"books"`
 }
 

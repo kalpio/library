@@ -18,24 +18,27 @@ type testDB struct {
 	db *gorm.DB
 }
 
-func (t *testDB) GetDB() *gorm.DB {
+func (t testDB) GetDB() *gorm.DB {
 	return t.db
 }
 
-func newDB() (*testDB, error) {
+func init() {
+	if err := initializeTests(); err != nil {
+		log.Fatal(err)
+	}
+}
+
+func newDB() (testDB, error) {
 	db, err := gorm.Open(sqlite.Open("file::memory:"), &gorm.Config{})
 	if err != nil {
-		return nil, err
+		return testDB{}, err
 	}
 
-	if err = db.AutoMigrate(&domain.Author{}); err != nil {
-		return nil, err
-	}
-	if err = db.AutoMigrate(&domain.Book{}); err != nil {
-		return nil, err
+	if err = db.AutoMigrate(&domain.Author{}, &domain.Book{}); err != nil {
+		return testDB{}, err
 	}
 
-	return &testDB{db: db}, nil
+	return testDB{db: db}, nil
 }
 
 func initializeTests() error {
@@ -56,12 +59,6 @@ func initializeTests() error {
 	}
 
 	return nil
-}
-
-func init() {
-	if err := initializeTests(); err != nil {
-		log.Fatal(err)
-	}
 }
 
 func TestBookService_CreateBookSucceeded(t *testing.T) {
