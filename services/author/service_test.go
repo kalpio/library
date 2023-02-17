@@ -72,6 +72,12 @@ func TestAuthorService_Create(t *testing.T) {
 	t.Run("Create adds when try add author with same data and different ID", createAddsWhenTryAddSecondAuthorWithSameDataAndDifferentID)
 }
 
+func TestAuthorService_Delete(t *testing.T) {
+	t.Run("Delete author succeeded when ID is set", deleteAuthorSucceededWhenIDIsSet)
+	t.Run("Delete author failed when ID isn't set", deleteAuthorFailedWhenIDIsNotSet)
+	t.Run("Delete author failed when ID doesn't exists", deleteAuthorFailedWhenIDDoesNotExist)
+}
+
 func createAddsAuthorWhenAllFieldsProvided(t *testing.T) {
 	ass := assert.New(t)
 
@@ -82,7 +88,7 @@ func createAddsAuthorWhenAllFieldsProvided(t *testing.T) {
 		"lastName":   random.String(20),
 	}
 
-	newAuthor, err := authorCreate(data)
+	newAuthor, err := executeServiceCreateAuthor(data)
 	ass.NoError(err)
 	assertAuthor(ass, data, newAuthor)
 }
@@ -97,7 +103,7 @@ func createReturnsErrorWhenEmptyFirstName(t *testing.T) {
 		"lastName":   random.String(20),
 	}
 
-	_, err := authorCreate(data)
+	_, err := executeServiceCreateAuthor(data)
 	ass.Error(err)
 }
 
@@ -111,7 +117,7 @@ func createReturnsErrorWhenEmptyLastName(t *testing.T) {
 		"lastName":   "",
 	}
 
-	_, err := authorCreate(data)
+	_, err := executeServiceCreateAuthor(data)
 	ass.Error(err)
 }
 
@@ -125,7 +131,7 @@ func createAddsWhenEmptyMiddleName(t *testing.T) {
 		"lastName":   random.String(20),
 	}
 
-	ath, err := authorCreate(data)
+	ath, err := executeServiceCreateAuthor(data)
 	ass.NoError(err)
 	assertAuthor(ass, data, ath)
 }
@@ -141,7 +147,7 @@ func createReturnsErrorWhenTryAddSecondAuthorWithSameID(t *testing.T) {
 		"lastName":   random.String(20),
 	}
 
-	_, err := authorCreate(data)
+	_, err := executeServiceCreateAuthor(data)
 	ass.NoError(err)
 
 	data = map[string]interface{}{
@@ -151,7 +157,7 @@ func createReturnsErrorWhenTryAddSecondAuthorWithSameID(t *testing.T) {
 		"lastName":   random.String(20),
 	}
 
-	_, err = authorCreate(data)
+	_, err = executeServiceCreateAuthor(data)
 	ass.Error(err)
 }
 
@@ -169,7 +175,7 @@ func createAddsWhenTryAddSecondAuthorWithSameDataAndDifferentID(t *testing.T) {
 		"lastName":   lastName,
 	}
 
-	ath0, err := authorCreate(data)
+	ath0, err := executeServiceCreateAuthor(data)
 	ass.NoError(err)
 	assertAuthor(ass, data, ath0)
 
@@ -180,12 +186,27 @@ func createAddsWhenTryAddSecondAuthorWithSameDataAndDifferentID(t *testing.T) {
 		"lastName":   lastName,
 	}
 
-	ath1, err := authorCreate(data)
+	ath1, err := executeServiceCreateAuthor(data)
 	ass.NoError(err)
 	assertAuthor(ass, data, ath1)
 }
 
-func authorCreate(data map[string]interface{}) (*domain.Author, error) {
+func createFakeAuthor() (*domain.Author, error) {
+	data := map[string]interface{}{
+		"id":         uuid.New(),
+		"firstName":  random.String(20),
+		"middleName": random.String(20),
+		"lastName":   random.String(20),
+	}
+
+	result, err := executeServiceCreateAuthor(data)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+func executeServiceCreateAuthor(data map[string]interface{}) (*domain.Author, error) {
 	authorSrv, err := ioc.Get[author.IAuthorService]()
 	if err != nil {
 		return nil, err
@@ -204,4 +225,39 @@ func assertAuthor(ass *assert.Assertions, data map[string]interface{}, ath *doma
 	ass.Equal(data["firstName"].(string), ath.FirstName)
 	ass.Equal(data["middleName"].(string), ath.MiddleName)
 	ass.Equal(data["lastName"].(string), ath.LastName)
+}
+
+func deleteAuthorSucceededWhenIDIsSet(t *testing.T) {
+	ass := assert.New(t)
+	ath, err := createFakeAuthor()
+	ass.NoError(err)
+
+	err = executeServiceDeleteAuthor(ath.ID)
+	ass.NoError(err)
+}
+
+func deleteAuthorFailedWhenIDIsNotSet(t *testing.T) {
+	ass := assert.New(t)
+	err := executeServiceDeleteAuthor(uuid.Nil)
+	ass.Error(err)
+}
+
+func deleteAuthorFailedWhenIDDoesNotExist(t *testing.T) {
+	ass := assert.New(t)
+	err := executeServiceDeleteAuthor(uuid.New())
+	ass.Error(err)
+}
+
+func executeServiceDeleteAuthor(id uuid.UUID) error {
+	authorSrv, err := ioc.Get[author.IAuthorService]()
+	if err != nil {
+		return err
+	}
+
+	err = authorSrv.Delete(id)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

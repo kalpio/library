@@ -24,7 +24,7 @@ type IBookService interface {
 
 	GetAll() ([]domain.Book, error)
 
-	Delete(id uuid.UUID) (bool, error)
+	Delete(id uuid.UUID) error
 }
 
 type bookService struct {
@@ -111,6 +111,6 @@ func (b *bookService) GetAll() ([]domain.Book, error) {
 	return nil, nil
 }
 
-func (b *bookService) Delete(id uuid.UUID) (bool, error) {
-	return false, nil
+func (b *bookService) Delete(id uuid.UUID) error {
+	return nil
 }

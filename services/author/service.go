@@ -13,7 +13,7 @@ type IAuthorService interface {
 	Edit(id uuid.UUID, firstName, middleName, lastName string) (*domain.Author, error)
 	GetByID(id uuid.UUID) (*domain.Author, error)
 	GetAll() ([]domain.Author, error)
-	Delete(id uuid.UUID) (bool, error)
+	Delete(id uuid.UUID) error
 }
 
 type authorService struct {
@@ -81,16 +81,24 @@ func (a authorService) GetAll() ([]domain.Author, error) {
 	return result, nil
 }
 
-func (a authorService) Delete(id uuid.UUID) (bool, error) {
+func (a authorService) Delete(id uuid.UUID) error {
+	if id == uuid.Nil {
+		return errors.New("author service: author ID must be set")
+	}
+
 	var (
 		rowsAffected int64
 		err          error
 	)
 	if rowsAffected, err = repository.Delete[domain.Author](id); err != nil {
-		return false, err
+		return err
 	}
 
-	return rowsAffected > 0, nil
+	if rowsAffected == 0 {
+		return errors.New("author service: no rows affected during delete")
+	}
+
+	return nil
 }
 
 func (a authorService) exists(id uuid.UUID) bool {

@@ -25,15 +25,13 @@ func (c *DeleteAuthorCommandHandler) Handle(ctx context.Context, command *Delete
 		return nil, err
 	}
 
-	succeeded, err := c.authorSrv.Delete(authorID)
+	err = c.authorSrv.Delete(authorID)
 	if err != nil {
-		return nil, err
+		return &DeleteAuthorCommandResponse{Succeeded: false}, err
 	}
 
-	response := &DeleteAuthorCommandResponse{Succeeded: succeeded}
-	if succeeded {
-		domainEvents.Publish(ctx, &events.AuthorDeletedEvent{AuthorID: authorID})
-	}
+	response := &DeleteAuthorCommandResponse{Succeeded: true}
+	domainEvents.Publish(ctx, &events.AuthorDeletedEvent{AuthorID: authorID})
 
 	return response, nil
 }
