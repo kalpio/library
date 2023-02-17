@@ -64,12 +64,13 @@ func initializeTests() error {
 }
 
 func TestAuthorService_Create(t *testing.T) {
-	t.Run("Create adds author when all fields provided", createAddsAuthorWhenAllFieldsProvided)
-	t.Run("Create returns error when empty first name", createReturnsErrorWhenEmptyFirstName)
-	t.Run("Create returns error when empty last name", createReturnsErrorWhenEmptyLastName)
-	t.Run("Create adds author when empty middle name", createAddsWhenEmptyMiddleName)
-	t.Run("Create returns error when try add second author with same ID", createReturnsErrorWhenTryAddSecondAuthorWithSameID)
-	t.Run("Create adds when try add author with same data and different ID", createAddsWhenTryAddSecondAuthorWithSameDataAndDifferentID)
+	t.Run("Create author succeeded when all fields provided", createAuthorSucceededWhenAllFieldsProvided)
+	t.Run("Create author fail when first name is empty", createAuthorFailWhenFirstNameIsEmpty)
+	t.Run("Create author fail when last name is empty", createAuthorFailWhenLastNameIsEmpty)
+	t.Run("Create author succeeded when middle name is empty", createAuthorSucceededWhenMiddleNameIsEmpty)
+	t.Run("Create author fail when try to add authors with same ID", createAuthorFailWhenTryToAddAuthorsWithSameID)
+	t.Run("Create author succeeded when try to add authors with same data and different ID",
+		createAuthorSucceededWhenTryToAddAuthorsWithSameDataAndDifferentID)
 }
 
 func TestAuthorService_Delete(t *testing.T) {
@@ -78,7 +79,16 @@ func TestAuthorService_Delete(t *testing.T) {
 	t.Run("Delete author failed when ID doesn't exists", deleteAuthorFailedWhenIDDoesNotExist)
 }
 
-func createAddsAuthorWhenAllFieldsProvided(t *testing.T) {
+func TestAuthorService_Edit(t *testing.T) {
+	t.Run("Edit author succeeded when ID is set", nil)
+	t.Run("Edit author fail when ID isn't set", nil)
+	t.Run("Edit author fail when author doesn't exist", nil)
+	t.Run("Edit author fail when first name is empty", nil)
+	t.Run("Edit author fail when last name is empty", nil)
+	t.Run("Edit author succeeded when middle name is empty", nil)
+}
+
+func createAuthorSucceededWhenAllFieldsProvided(t *testing.T) {
 	ass := assert.New(t)
 
 	data := map[string]interface{}{
@@ -93,7 +103,7 @@ func createAddsAuthorWhenAllFieldsProvided(t *testing.T) {
 	assertAuthor(ass, data, newAuthor)
 }
 
-func createReturnsErrorWhenEmptyFirstName(t *testing.T) {
+func createAuthorFailWhenFirstNameIsEmpty(t *testing.T) {
 	ass := assert.New(t)
 
 	data := map[string]interface{}{
@@ -107,7 +117,7 @@ func createReturnsErrorWhenEmptyFirstName(t *testing.T) {
 	ass.Error(err)
 }
 
-func createReturnsErrorWhenEmptyLastName(t *testing.T) {
+func createAuthorFailWhenLastNameIsEmpty(t *testing.T) {
 	ass := assert.New(t)
 
 	data := map[string]interface{}{
@@ -121,7 +131,7 @@ func createReturnsErrorWhenEmptyLastName(t *testing.T) {
 	ass.Error(err)
 }
 
-func createAddsWhenEmptyMiddleName(t *testing.T) {
+func createAuthorSucceededWhenMiddleNameIsEmpty(t *testing.T) {
 	ass := assert.New(t)
 
 	data := map[string]interface{}{
@@ -136,7 +146,7 @@ func createAddsWhenEmptyMiddleName(t *testing.T) {
 	assertAuthor(ass, data, ath)
 }
 
-func createReturnsErrorWhenTryAddSecondAuthorWithSameID(t *testing.T) {
+func createAuthorFailWhenTryToAddAuthorsWithSameID(t *testing.T) {
 	ass := assert.New(t)
 	id := uuid.New()
 
@@ -161,7 +171,7 @@ func createReturnsErrorWhenTryAddSecondAuthorWithSameID(t *testing.T) {
 	ass.Error(err)
 }
 
-func createAddsWhenTryAddSecondAuthorWithSameDataAndDifferentID(t *testing.T) {
+func createAuthorSucceededWhenTryToAddAuthorsWithSameDataAndDifferentID(t *testing.T) {
 	ass := assert.New(t)
 
 	firstName := random.String(20)
@@ -199,25 +209,19 @@ func createFakeAuthor() (*domain.Author, error) {
 		"lastName":   random.String(20),
 	}
 
-	result, err := executeServiceCreateAuthor(data)
-	if err != nil {
-		return nil, err
-	}
-
-	return result, nil
+	return executeServiceCreateAuthor(data)
 }
+
 func executeServiceCreateAuthor(data map[string]interface{}) (*domain.Author, error) {
 	authorSrv, err := ioc.Get[author.IAuthorService]()
 	if err != nil {
 		return nil, err
 	}
 
-	newAuthor, err := authorSrv.Create(data["id"].(uuid.UUID),
+	return authorSrv.Create(data["id"].(uuid.UUID),
 		data["firstName"].(string),
 		data["middleName"].(string),
 		data["lastName"].(string))
-
-	return newAuthor, err
 }
 
 func assertAuthor(ass *assert.Assertions, data map[string]interface{}, ath *domain.Author) {
@@ -254,10 +258,17 @@ func executeServiceDeleteAuthor(id uuid.UUID) error {
 		return err
 	}
 
-	err = authorSrv.Delete(id)
+	return authorSrv.Delete(id)
+}
+
+func executeServiceEditAuthor(data map[string]interface{}) (*domain.Author, error) {
+	authorSrv, err := ioc.Get[author.IAuthorService]()
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	return nil
+	return authorSrv.Edit(data["id"].(uuid.UUID),
+		data["firstName"].(string),
+		data["middleName"].(string),
+		data["lastName"].(string))
 }
