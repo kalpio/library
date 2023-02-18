@@ -80,12 +80,12 @@ func TestAuthorService_Delete(t *testing.T) {
 }
 
 func TestAuthorService_Edit(t *testing.T) {
-	t.Run("Edit author succeeded when ID is set", nil)
-	t.Run("Edit author fail when ID isn't set", nil)
-	t.Run("Edit author fail when author doesn't exist", nil)
-	t.Run("Edit author fail when first name is empty", nil)
-	t.Run("Edit author fail when last name is empty", nil)
-	t.Run("Edit author succeeded when middle name is empty", nil)
+	t.Run("Edit author succeeded when ID is set", editAuthorSucceededWhenIDIsSet)
+	t.Run("Edit author fail when ID isn't set", editAuthorFailWhenIDIsNotSet)
+	t.Run("Edit author fail when author doesn't exist", editAuthorFailWhenAuthorDoesNotExist)
+	t.Run("Edit author fail when first name is empty", editAuthorFailWhenFirstNameIsEmpty)
+	t.Run("Edit author fail when last name is empty", editAuthorFailWhenLastNameIsEmpty)
+	t.Run("Edit author succeeded when middle name is empty", editAuthorSucceededWhenMiddleNameIsEmpty)
 }
 
 func createAuthorSucceededWhenAllFieldsProvided(t *testing.T) {
@@ -226,6 +226,10 @@ func executeServiceCreateAuthor(data map[string]interface{}) (*domain.Author, er
 
 func assertAuthor(ass *assert.Assertions, data map[string]interface{}, ath *domain.Author) {
 	ass.Equal(data["id"].(uuid.UUID), ath.ID)
+	assertAuthorWithoutID(ass, data, ath)
+}
+
+func assertAuthorWithoutID(ass *assert.Assertions, data map[string]interface{}, ath *domain.Author) {
 	ass.Equal(data["firstName"].(string), ath.FirstName)
 	ass.Equal(data["middleName"].(string), ath.MiddleName)
 	ass.Equal(data["lastName"].(string), ath.LastName)
@@ -259,6 +263,94 @@ func executeServiceDeleteAuthor(id uuid.UUID) error {
 	}
 
 	return authorSrv.Delete(id)
+}
+
+func editAuthorSucceededWhenIDIsSet(t *testing.T) {
+	ass := assert.New(t)
+	ath, err := createFakeAuthor()
+	ass.NoError(err)
+
+	data := map[string]interface{}{
+		"id":         ath.ID,
+		"firstName":  random.String(20),
+		"middleName": random.String(20),
+		"lastName":   random.String(20),
+	}
+
+	result, err := executeServiceEditAuthor(data)
+	ass.NoError(err)
+
+	assertAuthorWithoutID(ass, data, result)
+}
+
+func editAuthorFailWhenIDIsNotSet(t *testing.T) {
+	ass := assert.New(t)
+	data := map[string]interface{}{
+		"id":         uuid.Nil,
+		"firstName":  random.String(20),
+		"middleName": random.String(20),
+		"lastName":   random.String(20),
+	}
+
+	_, err := executeServiceEditAuthor(data)
+	ass.Error(err)
+}
+
+func editAuthorFailWhenAuthorDoesNotExist(t *testing.T) {
+	ass := assert.New(t)
+	data := map[string]interface{}{
+		"id":         uuid.New(),
+		"firstName":  random.String(20),
+		"middleName": random.String(20),
+		"lastName":   random.String(20),
+	}
+
+	_, err := executeServiceEditAuthor(data)
+	ass.Error(err)
+}
+
+func editAuthorFailWhenFirstNameIsEmpty(t *testing.T) {
+	ass := assert.New(t)
+	data := map[string]interface{}{
+		"id":         uuid.New(),
+		"firstName":  "",
+		"middleName": random.String(20),
+		"lastName":   random.String(20),
+	}
+
+	_, err := executeServiceEditAuthor(data)
+	ass.Error(err)
+}
+
+func editAuthorFailWhenLastNameIsEmpty(t *testing.T) {
+	ass := assert.New(t)
+	data := map[string]interface{}{
+		"id":         uuid.New(),
+		"firstName":  random.String(20),
+		"middleName": random.String(20),
+		"lastName":   "",
+	}
+
+	_, err := executeServiceEditAuthor(data)
+	ass.Error(err)
+}
+
+func editAuthorSucceededWhenMiddleNameIsEmpty(t *testing.T) {
+	ass := assert.New(t)
+
+	ath, err := createFakeAuthor()
+	ass.NoError(err)
+
+	data := map[string]interface{}{
+		"id":         ath.ID,
+		"firstName":  random.String(20),
+		"middleName": "",
+		"lastName":   random.String(20),
+	}
+
+	result, err := executeServiceEditAuthor(data)
+	ass.NoError(err)
+	assertAuthor(ass, data, result)
 }
 
 func executeServiceEditAuthor(data map[string]interface{}) (*domain.Author, error) {

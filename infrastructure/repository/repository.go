@@ -1,10 +1,9 @@
 package repository
 
 import (
+	"github.com/google/uuid"
 	"library/domain"
 	"library/ioc"
-
-	"github.com/google/uuid"
 
 	"github.com/pkg/errors"
 )
@@ -54,6 +53,28 @@ func Update[T Models](model T) error {
 	}
 
 	return nil
+}
+
+func UpdateColumns[T Models](model T, columns []string) error {
+	db, err := ioc.Get[domain.IDatabase]()
+	if err != nil {
+		return errors.Wrap(err, errFailedGetDbService)
+	}
+
+	if err = model.Validate(); err != nil {
+		return errors.Wrapf(err, "repository: an error during %T validate", model)
+	}
+
+	if model.GetID() == domain.EmptyUUID() {
+		return errors.Errorf("repository: ID for %T must be set", model)
+	}
+
+	tx := db.GetDB().Model(model).
+		Where("id = ?", model.GetID()).
+		Select(columns).
+		Updates(model)
+
+	return errors.Wrapf(tx.Error, "repository: cannot update %T model", model)
 }
 
 func GetByColumns[T Models](columnValue map[string]interface{}) (T, error) {
