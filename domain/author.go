@@ -21,7 +21,7 @@ func NewAuthor(id uuid.UUID, firstName, middleName, lastName string) *Author {
 		FirstName:  firstName,
 		MiddleName: middleName,
 		LastName:   lastName,
-		Books:      []Book{},
+		Books:      nil,
 	}
 }
 

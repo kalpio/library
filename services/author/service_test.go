@@ -94,6 +94,11 @@ func TestAuthorService_GetByID(t *testing.T) {
 	t.Run("GetByID author fail when ID is empty", getByIDFailWhenIDIsEmpty)
 }
 
+func TestAuthorService_GetAll(t *testing.T) {
+	t.Run("GetAll author succeeded", getAllAuthorSucceeded)
+	t.Run("GetAll author returns empty array when no author", getAllAuthorReturnsEmptyArrayWhenNotAuthor)
+}
+
 func createAuthorSucceededWhenAllFieldsProvided(t *testing.T) {
 	ass := assert.New(t)
 
@@ -411,4 +416,57 @@ func executeGetByID(id uuid.UUID) (*domain.Author, error) {
 	}
 
 	return authorSrv.GetByID(id)
+}
+
+func getAllAuthorSucceeded(t *testing.T) {
+	ass := assert.New(t)
+
+	err := clearAuthorsTable()
+	ass.NoError(err)
+
+	var values []domain.Author
+	for i := 0; i < 5; i++ {
+		val, err := createFakeAuthor()
+		ass.NoError(err)
+
+		values = append(values, *val)
+	}
+
+	result, err := executeGetAll()
+	ass.NoError(err)
+	ass.Equal(len(values), len(result))
+	//ass.ElementsMatch(values, result)
+}
+
+func getAllAuthorReturnsEmptyArrayWhenNotAuthor(t *testing.T) {
+	ass := assert.New(t)
+
+	err := clearAuthorsTable()
+	ass.NoError(err)
+
+	result, err := executeGetAll()
+	ass.NoError(err)
+	ass.Equal(0, len(result))
+}
+
+func executeGetAll() ([]domain.Author, error) {
+	authorSrv, err := ioc.Get[author.IAuthorService]()
+	if err != nil {
+		return nil, err
+	}
+
+	return authorSrv.GetAll()
+}
+
+func clearAuthorsTable() error {
+	db, err := ioc.Get[domain.IDatabase]()
+	if err != nil {
+		return err
+	}
+
+	return db.GetDB().
+		Unscoped().
+		Where("1 = 1").
+		Delete(&domain.Author{}).
+		Error
 }

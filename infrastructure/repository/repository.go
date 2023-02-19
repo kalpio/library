@@ -103,7 +103,7 @@ func GetAll[T Models]() ([]T, error) {
 		results []T
 	)
 
-	if db, err = getDB(); err != nil {
+	if db, err = resolveDatabase(); err != nil {
 		return *new([]T), err
 	}
 
@@ -121,7 +121,7 @@ func GetByID[T Models](id uuid.UUID) (T, error) {
 		result T
 	)
 
-	db, err = getDB()
+	db, err = resolveDatabase()
 	if err != nil {
 		return *new(T), err
 	}
@@ -139,7 +139,7 @@ func Delete[T Models](id uuid.UUID) (int64, error) {
 		err error
 	)
 
-	db, err = getDB()
+	db, err = resolveDatabase()
 	if err != nil {
 		return 0, err
 	}
@@ -152,7 +152,7 @@ func Delete[T Models](id uuid.UUID) (int64, error) {
 	return gormDB.RowsAffected, nil
 }
 
-func getDB() (domain.IDatabase, error) {
+func resolveDatabase() (domain.IDatabase, error) {
 	db, err := ioc.Get[domain.IDatabase]()
 	if err != nil {
 		return nil, errors.Wrap(err, errFailedGetDbService)
