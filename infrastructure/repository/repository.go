@@ -55,7 +55,7 @@ func Update[T Models](model T) error {
 	return nil
 }
 
-func UpdateColumns[T Models](model T, columns []string) error {
+func UpdatesInsteadOf[T Models](model T, columns ...string) error {
 	db, err := ioc.Get[domain.IDatabase]()
 	if err != nil {
 		return errors.Wrap(err, errFailedGetDbService)
@@ -71,7 +71,8 @@ func UpdateColumns[T Models](model T, columns []string) error {
 
 	tx := db.GetDB().Model(model).
 		Where("id = ?", model.GetID()).
-		Select(columns).
+		Select("*").
+		Omit(columns...).
 		Updates(model)
 
 	return errors.Wrapf(tx.Error, "repository: cannot update %T model", model)

@@ -50,7 +50,7 @@ func (a authorService) Edit(id uuid.UUID, firstName, middleName, lastName string
 		Books:      nil,
 	}
 
-	err := repository.UpdateColumns(*model, []string{"firstName", "middleName", "lastName", "updatedAt"})
+	err := repository.UpdatesInsteadOf(*model, "createdAt")
 	if err != nil {
 		return nil, err
 	}
