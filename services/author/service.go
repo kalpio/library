@@ -64,6 +64,10 @@ func (a authorService) Edit(id uuid.UUID, firstName, middleName, lastName string
 }
 
 func (a authorService) GetByID(id uuid.UUID) (*domain.Author, error) {
+	if id == uuid.Nil {
+		return nil, errors.New("author service: author ID must be set")
+	}
+
 	result, err := repository.GetByID[domain.Author](id)
 	if err != nil {
 		return nil, err

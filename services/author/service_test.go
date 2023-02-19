@@ -88,6 +88,12 @@ func TestAuthorService_Edit(t *testing.T) {
 	t.Run("Edit author succeeded when middle name is empty", editAuthorSucceededWhenMiddleNameIsEmpty)
 }
 
+func TestAuthorService_GetByID(t *testing.T) {
+	t.Run("GetByID author succeeded when author exists", getByIDSucceededWhenAuthorExists)
+	t.Run("GetByID author fail when author not exists", getByIDFailWhenAuthorNotExists)
+	t.Run("GetByID author fail when ID is empty", getByIDFailWhenIDIsEmpty)
+}
+
 func createAuthorSucceededWhenAllFieldsProvided(t *testing.T) {
 	ass := assert.New(t)
 
@@ -363,4 +369,46 @@ func executeServiceEditAuthor(data map[string]interface{}) (*domain.Author, erro
 		data["firstName"].(string),
 		data["middleName"].(string),
 		data["lastName"].(string))
+}
+
+func getByIDSucceededWhenAuthorExists(t *testing.T) {
+	ass := assert.New(t)
+
+	ath, err := createFakeAuthor()
+	ass.NoError(err)
+
+	result, err := executeGetByID(ath.ID)
+	ass.NoError(err)
+
+	assertAuthor(ass,
+		map[string]interface{}{
+			"id":         ath.ID,
+			"firstName":  ath.FirstName,
+			"middleName": ath.MiddleName,
+			"lastName":   ath.LastName,
+		},
+		result)
+}
+
+func getByIDFailWhenAuthorNotExists(t *testing.T) {
+	ass := assert.New(t)
+
+	_, err := executeGetByID(uuid.New())
+	ass.Error(err)
+}
+
+func getByIDFailWhenIDIsEmpty(t *testing.T) {
+	ass := assert.New(t)
+
+	_, err := executeGetByID(uuid.Nil)
+	ass.Error(err)
+}
+
+func executeGetByID(id uuid.UUID) (*domain.Author, error) {
+	authorSrv, err := ioc.Get[author.IAuthorService]()
+	if err != nil {
+		return nil, err
+	}
+
+	return authorSrv.GetByID(id)
 }
