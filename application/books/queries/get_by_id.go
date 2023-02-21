@@ -10,11 +10,11 @@ type GetBookByIDQuery struct {
 }
 
 type GetBookByIDQueryResponse struct {
-	BookID      uuid.UUID `json:"id"`
-	Title       string    `json:"title"`
-	ISBN        string    `json:"isbn"`
-	Description string    `json:"description"`
-	AuthorID    uuid.UUID `json:"author_id"`
+	BookID      uuid.UUID   `json:"id"`
+	Title       string      `json:"title"`
+	ISBN        domain.ISBN `json:"isbn"`
+	Description string      `json:"description"`
+	AuthorID    uuid.UUID   `json:"author_id"`
 }
 
 func NewGetBookByIDQuery(bookID domain.BookID) *GetBookByIDQuery {

@@ -7,7 +7,7 @@ import (
 type CreateBookCommand struct {
 	BookID      domain.BookID
 	Title       string
-	ISBN        string
+	ISBN        domain.ISBN
 	Description string
 	AuthorID    domain.AuthorID
 }
@@ -15,13 +15,15 @@ type CreateBookCommand struct {
 type CreateBookCommandResponse struct {
 	BookID      domain.BookID   `json:"id"`
 	Title       string          `json:"title"`
-	ISBN        string          `json:"isbn"`
+	ISBN        domain.ISBN     `json:"isbn"`
 	Description string          `json:"description"`
 	AuthorID    domain.AuthorID `json:"author_id"`
 }
 
 func NewCreateBookCommand(id domain.BookID,
-	title, isbn, description string,
+	title string,
+	isbn domain.ISBN,
+	description string,
 	authorID domain.AuthorID) *CreateBookCommand {
 
 	return &CreateBookCommand{

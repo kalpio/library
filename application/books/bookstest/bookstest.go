@@ -41,7 +41,9 @@ type BookServiceMock struct {
 }
 
 func (b *BookServiceMock) Create(id uuid.UUID,
-	title, isbn, description string,
+	title string,
+	isbn domain.ISBN,
+	description string,
 	authorID uuid.UUID) (*domain.Book, error) {
 
 	args := b.Called(id, title, isbn, description, authorID)
@@ -49,7 +51,9 @@ func (b *BookServiceMock) Create(id uuid.UUID,
 }
 
 func (b *BookServiceMock) Edit(id uuid.UUID,
-	title, isbn, description string,
+	title string,
+	isbn domain.ISBN,
+	description string,
 	authorID uuid.UUID) (*domain.Book, error) {
 
 	args := b.Called(id, title, isbn, description, authorID)
@@ -74,7 +78,7 @@ func (b *BookServiceMock) Delete(id uuid.UUID) error {
 func CreateBook() *domain.Book {
 	return domain.NewBook(uuid.New(),
 		random.String(20),
-		random.String(12),
+		domain.ISBN(random.String(13)),
 		random.String(120),
 		domain.NewAuthor(uuid.New(),
 			random.String(20),

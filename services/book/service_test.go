@@ -1,17 +1,18 @@
 package book_test
 
 import (
-	"github.com/google/uuid"
-	log "github.com/sirupsen/logrus"
-	"github.com/stretchr/testify/assert"
-	"gorm.io/driver/sqlite"
-	"gorm.io/gorm"
 	"library/domain"
 	"library/ioc"
 	"library/random"
 	"library/services/author"
 	"library/services/book"
 	"testing"
+
+	"github.com/google/uuid"
+	log "github.com/sirupsen/logrus"
+	"github.com/stretchr/testify/assert"
+	"gorm.io/driver/sqlite"
+	"gorm.io/gorm"
 )
 
 type testDB struct {
@@ -61,14 +62,17 @@ func initializeTests() error {
 	return nil
 }
 
-func TestBookService_CreateBookSucceeded(t *testing.T) {
+func TestBookService_Create(t *testing.T) {
+	t.Run("Create book succeeded", createBookSucceeded)
+	t.Run("Create book failed when no author", createBookFailedWhenNoAuthor)
+	t.Run("Create failed when ISBN is too long", createFailedWhenISBNIsTooLong)
+	t.Run("Create failed when trying add the same ISBN twice", createFailedWhenTryingAddTheSameISBNTwice)
+}
+
+func createBookSucceeded(t *testing.T) {
 	ass := assert.New(t)
 
-	authorSrv, err := ioc.Get[author.IAuthorService]()
-	ass.NoError(err)
-
-	bookAuthor, err := addAuthor(authorSrv)
-
+	bookAuthor, err := createFakeAuthor()
 	ass.NoError(err)
 
 	bookSrv, err := ioc.Get[book.IBookService]()
@@ -77,26 +81,26 @@ func TestBookService_CreateBookSucceeded(t *testing.T) {
 	bookData := map[string]interface{}{
 		"id":          uuid.New(),
 		"title":       random.String(40),
-		"isbn":        random.String(13),
+		"isbn":        domain.ISBN(random.String(13)),
 		"description": random.String(140),
 		"authorID":    bookAuthor.ID,
 	}
 
 	newBook, err := bookSrv.Create(bookData["id"].(uuid.UUID),
 		bookData["title"].(string),
-		bookData["isbn"].(string),
+		bookData["isbn"].(domain.ISBN),
 		bookData["description"].(string),
 		bookData["authorID"].(uuid.UUID))
 
 	ass.NoError(err)
 	ass.Equal(bookData["id"].(uuid.UUID), newBook.ID)
 	ass.Equal(bookData["title"].(string), newBook.Title)
-	ass.Equal(bookData["isbn"].(string), newBook.ISBN)
+	ass.Equal(bookData["isbn"].(domain.ISBN), newBook.ISBN)
 	ass.Equal(bookData["description"].(string), newBook.Description)
 	ass.Equal(bookData["authorID"].(uuid.UUID), newBook.AuthorID)
 }
 
-func TestBookService_CreateFail_WhenNoAuthor(t *testing.T) {
+func createBookFailedWhenNoAuthor(t *testing.T) {
 	ass := assert.New(t)
 
 	bookSrv, err := ioc.Get[book.IBookService]()
@@ -104,7 +108,7 @@ func TestBookService_CreateFail_WhenNoAuthor(t *testing.T) {
 
 	newBook, err := bookSrv.Create(uuid.New(),
 		random.String(20),
-		random.String(13),
+		domain.ISBN(random.String(13)),
 		random.String(140),
 		uuid.New())
 
@@ -112,13 +116,10 @@ func TestBookService_CreateFail_WhenNoAuthor(t *testing.T) {
 	ass.Nil(newBook)
 }
 
-func TestBookService_CreateFail_WhenISBN_IsTooLong(t *testing.T) {
+func createFailedWhenISBNIsTooLong(t *testing.T) {
 	ass := assert.New(t)
 
-	authorSrv, err := ioc.Get[author.IAuthorService]()
-	ass.NoError(err)
-
-	bookAuthor, err := addAuthor(authorSrv)
+	bookAuthor, err := createFakeAuthor()
 	ass.NoError(err)
 
 	bookSrv, err := ioc.Get[book.IBookService]()
@@ -126,7 +127,7 @@ func TestBookService_CreateFail_WhenISBN_IsTooLong(t *testing.T) {
 
 	newBook, err := bookSrv.Create(uuid.New(),
 		random.String(20),
-		random.String(20),
+		domain.ISBN(random.String(20)),
 		random.String(20),
 		bookAuthor.ID)
 
@@ -134,19 +135,16 @@ func TestBookService_CreateFail_WhenISBN_IsTooLong(t *testing.T) {
 	ass.Nil(newBook)
 }
 
-func TestBookService_CreateFail_WhenTryingAddSameISBNTwice(t *testing.T) {
+func createFailedWhenTryingAddTheSameISBNTwice(t *testing.T) {
 	ass := assert.New(t)
 
-	authorSrv, err := ioc.Get[author.IAuthorService]()
-	ass.NoError(err)
-
-	bookAuthor, err := addAuthor(authorSrv)
+	bookAuthor, err := createFakeAuthor()
 	ass.NoError(err)
 
 	bookSrv, err := ioc.Get[book.IBookService]()
 	ass.NoError(err)
 
-	isbn := random.String(13)
+	isbn := domain.ISBN(random.String(13))
 	firstBook, err := bookSrv.Create(uuid.New(),
 		random.String(20),
 		isbn,
@@ -167,7 +165,12 @@ func TestBookService_CreateFail_WhenTryingAddSameISBNTwice(t *testing.T) {
 	ass.Nil(secondBook)
 }
 
-func addAuthor(authorSrv author.IAuthorService) (*domain.Author, error) {
+func createFakeAuthor() (*domain.Author, error) {
+	authorSrv, err := ioc.Get[author.IAuthorService]()
+	if err != nil {
+		return nil, err
+	}
+
 	return authorSrv.Create(uuid.New(),
 		random.String(20),
 		random.String(20),

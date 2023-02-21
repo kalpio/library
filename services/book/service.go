@@ -6,18 +6,21 @@ import (
 	"library/domain"
 	"library/infrastructure/repository"
 	"library/services/author"
-	"strings"
 
 	"github.com/google/uuid"
 )
 
 type IBookService interface {
 	Create(id uuid.UUID,
-		title, isbn, description string,
+		title string,
+		isbn domain.ISBN,
+		description string,
 		authorID uuid.UUID) (*domain.Book, error)
 
 	Edit(id uuid.UUID,
-		title, isbn, description string,
+		title string,
+		isbn domain.ISBN,
+		description string,
 		authorID uuid.UUID) (*domain.Book, error)
 
 	GetByID(id uuid.UUID) (*domain.Book, error)
@@ -37,7 +40,9 @@ func newBookService(db domain.IDatabase, authorSrv author.IAuthorService) IBookS
 }
 
 func (b *bookService) Create(id uuid.UUID,
-	title, isbn, description string,
+	title string,
+	isbn domain.ISBN,
+	description string,
 	authorID uuid.UUID) (*domain.Book, error) {
 
 	err := b.exists(isbn)
@@ -64,7 +69,7 @@ func (b *bookService) Create(id uuid.UUID,
 
 var ErrAlreadyExists = errors.New("book service: book already exists")
 
-func (b *bookService) exists(isbn string) error {
+func (b *bookService) exists(isbn domain.ISBN) error {
 	var (
 		err   error
 		value domain.Book
@@ -74,7 +79,7 @@ func (b *bookService) exists(isbn string) error {
 		return fmt.Errorf("book service: an error during check book exists %w", err)
 	}
 
-	var exists = strings.Compare(isbn, value.ISBN) == 0
+	var exists = isbn.IsEqual(value.ISBN)
 	if exists {
 		return ErrAlreadyExists
 	}
@@ -92,7 +97,9 @@ func (b *bookService) getAuthor(id uuid.UUID) (*domain.Author, error) {
 }
 
 func (b *bookService) Edit(id uuid.UUID,
-	title, isbn, description string,
+	title string,
+	isbn domain.ISBN,
+	description string,
 	authorID uuid.UUID) (*domain.Book, error) {
 
 	return nil, nil

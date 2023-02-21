@@ -10,13 +10,13 @@ type BookID string
 type Book struct {
 	Entity
 	Title       string    `gorm:"column:title" json:"title"`
-	ISBN        string    `gorm:"uniqueIndex;size:13" json:"isbn"`
+	ISBN        ISBN      `gorm:"uniqueIndex;size:13" json:"isbn"`
 	Description string    `json:"description"`
 	AuthorID    uuid.UUID `json:"author_id"`
 	Author      *Author   `json:"-"`
 }
 
-func NewBook(id uuid.UUID, title, isbn, description string, author *Author) *Book {
+func NewBook(id uuid.UUID, title string, isbn ISBN, description string, author *Author) *Book {
 	return &Book{
 		Entity:      Entity{ID: id},
 		Title:       title,

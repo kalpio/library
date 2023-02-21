@@ -17,11 +17,11 @@ func NewBooksController() *Controller {
 }
 
 type createBookDto struct {
-	ID          string `json:"id"`
-	Title       string `json:"title"`
-	ISBN        string `json:"isbn"`
-	Description string `json:"description"`
-	AuthorID    string `json:"author_id"`
+	ID          string      `json:"id"`
+	Title       string      `json:"title"`
+	ISBN        domain.ISBN `json:"isbn"`
+	Description string      `json:"description"`
+	AuthorID    string      `json:"author_id"`
 }
 
 func (a *Controller) Create(ctx *gin.Context) {

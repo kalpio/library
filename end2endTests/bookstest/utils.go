@@ -21,18 +21,18 @@ func executeRequest(app application.App, req *http.Request) *httptest.ResponseRe
 }
 
 type postBookDto struct {
-	ID          string `json:"id"`
-	Title       string `json:"title"`
-	ISBN        string `json:"isbn"`
-	Description string `json:"description"`
-	AuthorID    string `json:"author_id"`
+	ID          string      `json:"id"`
+	Title       string      `json:"title"`
+	ISBN        domain.ISBN `json:"isbn"`
+	Description string      `json:"description"`
+	AuthorID    string      `json:"author_id"`
 }
 
 func generateBookDto(bookAuthorID uuid.UUID) postBookDto {
 	return postBookDto{
 		ID:          uuid.New().String(),
 		Title:       random.String(20),
-		ISBN:        random.String(13),
+		ISBN:        domain.ISBN(random.String(13)),
 		Description: random.String(20),
 		AuthorID:    bookAuthorID.String(),
 	}

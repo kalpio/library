@@ -23,7 +23,7 @@ func TestBookCreatedEventHandler_Handle_LogValidMessage(t *testing.T) {
 	event := events.NewBookCreatedEvent(
 		domain.BookID(uuid.New().String()),
 		random.String(20),
-		random.String(20),
+		domain.ISBN(random.String(20)),
 		random.String(120),
 		domain.AuthorID(uuid.New().String()))
 	eventHandler := &events.BookCreatedEventHandler{}
