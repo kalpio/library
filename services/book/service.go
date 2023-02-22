@@ -134,5 +134,18 @@ func (b *bookService) GetAll() ([]domain.Book, error) {
 }
 
 func (b *bookService) Delete(id uuid.UUID) error {
+	if id == uuid.Nil {
+		return errors.New("book service: book ID must be set")
+	}
+
+	rowsAffected, err := repository.Delete[domain.Book](id)
+	if err != nil {
+		return errors.Wrap(err, "book service: could not delete book")
+	}
+
+	if rowsAffected == 0 {
+		return errors.New("book service: no rows affected during delete")
+	}
+
 	return nil
 }

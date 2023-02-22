@@ -70,6 +70,9 @@ func TestBookService_Create(t *testing.T) {
 	t.Run("Edit book succeeded", editBookSucceeded)
 	t.Run("Edit book failed when no author", editBookFailedWhenNoAuthor)
 	t.Run("Edit book failed when ISBN is too long", editBookFailedWhenISBNIsTooLong)
+	t.Run("Edit book failed when title is empty", editBookFailedWhenTitleIsEmpty)
+	t.Run("Delete book succeeded", deleteBookSucceeded)
+	t.Run("Delete book failed when book ID is empty", deleteBookFailedWhenBookIDIsEmpty)
 }
 
 func createBookSucceeded(t *testing.T) {
@@ -221,6 +224,49 @@ func editBookFailedWhenISBNIsTooLong(t *testing.T) {
 		domain.ISBN(random.String(30)),
 		b.Description,
 		b.AuthorID)
+	ass.Error(err)
+}
+
+func editBookFailedWhenTitleIsEmpty(t *testing.T) {
+	ass := assert.New(t)
+
+	b, err := createFakeBook()
+	ass.NoError(err)
+
+	bookSrv, err := ioc.Get[book.IBookService]()
+	ass.NoError(err)
+
+	_, err = bookSrv.Edit(b.ID,
+		"",
+		b.ISBN,
+		b.Description,
+		b.AuthorID)
+	ass.Error(err)
+}
+
+func deleteBookSucceeded(t *testing.T) {
+	ass := assert.New(t)
+
+	b, err := createFakeBook()
+	ass.NoError(err)
+
+	bookSrv, err := ioc.Get[book.IBookService]()
+	ass.NoError(err)
+
+	err = bookSrv.Delete(b.ID)
+	ass.NoError(err)
+
+	_, err = bookSrv.GetByID(b.ID)
+	ass.Error(err)
+}
+
+func deleteBookFailedWhenBookIDIsEmpty(t *testing.T) {
+	ass := assert.New(t)
+
+	bookSrv, err := ioc.Get[book.IBookService]()
+	ass.NoError(err)
+
+	err = bookSrv.Delete(uuid.Nil)
 	ass.Error(err)
 }
 
