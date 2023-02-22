@@ -70,9 +70,12 @@ func TestBookService_Create(t *testing.T) {
 	t.Run("Edit book succeeded", editBookSucceeded)
 	t.Run("Edit book failed when no author", editBookFailedWhenNoAuthor)
 	t.Run("Edit book failed when ISBN is too long", editBookFailedWhenISBNIsTooLong)
+	t.Run("Edit book failed when ISBN is too short", editBookFailedWhenISBNIsTooShort)
 	t.Run("Edit book failed when title is empty", editBookFailedWhenTitleIsEmpty)
 	t.Run("Delete book succeeded", deleteBookSucceeded)
 	t.Run("Delete book failed when book ID is empty", deleteBookFailedWhenBookIDIsEmpty)
+	t.Run("GetByID book succeeded", getByIDSucceeded)
+	t.Run("GetByID book failed when book ID is empty", getByIDFailedWhenBookIDIsEmpty)
 }
 
 func createBookSucceeded(t *testing.T) {
@@ -227,6 +230,23 @@ func editBookFailedWhenISBNIsTooLong(t *testing.T) {
 	ass.Error(err)
 }
 
+func editBookFailedWhenISBNIsTooShort(t *testing.T) {
+	ass := assert.New(t)
+
+	b, err := createFakeBook()
+	ass.NoError(err)
+
+	bookSrv, err := ioc.Get[book.IBookService]()
+	ass.NoError(err)
+
+	_, err = bookSrv.Edit(b.ID,
+		b.Title,
+		domain.ISBN(random.String(3)),
+		b.Description,
+		b.AuthorID)
+	ass.Error(err)
+}
+
 func editBookFailedWhenTitleIsEmpty(t *testing.T) {
 	ass := assert.New(t)
 
@@ -267,6 +287,35 @@ func deleteBookFailedWhenBookIDIsEmpty(t *testing.T) {
 	ass.NoError(err)
 
 	err = bookSrv.Delete(uuid.Nil)
+	ass.Error(err)
+}
+
+func getByIDSucceeded(t *testing.T) {
+	ass := assert.New(t)
+
+	b, err := createFakeBook()
+	ass.NoError(err)
+
+	bookSrv, err := ioc.Get[book.IBookService]()
+	ass.NoError(err)
+
+	result, err := bookSrv.GetByID(b.ID)
+	ass.NoError(err)
+	ass.Equal(b.ID, result.ID)
+	ass.Equal(b.Title, result.Title)
+	ass.Equal(b.ISBN, result.ISBN)
+	ass.Equal(b.Description, result.Description)
+	ass.Equal(b.AuthorID, result.AuthorID)
+	ass.Equal(b.CreatedAt.UnixMilli(), result.CreatedAt.UnixMilli())
+}
+
+func getByIDFailedWhenBookIDIsEmpty(t *testing.T) {
+	ass := assert.New(t)
+
+	bookSrv, err := ioc.Get[book.IBookService]()
+	ass.NoError(err)
+
+	_, err = bookSrv.GetByID(uuid.Nil)
 	ass.Error(err)
 }
 
