@@ -1,8 +1,8 @@
 package book
 
 import (
-	"errors"
 	"fmt"
+	"github.com/pkg/errors"
 	"library/domain"
 	"library/infrastructure/repository"
 	"library/services/author"
@@ -102,7 +102,22 @@ func (b *bookService) Edit(id uuid.UUID,
 	description string,
 	authorID uuid.UUID) (*domain.Book, error) {
 
-	return nil, nil
+	if authorID == uuid.Nil {
+		return nil, errors.New("book service: AuthorID must be set")
+	}
+
+	bookAuthor, err := b.getAuthor(authorID)
+	if err != nil {
+		return nil, errors.Wrap(err, "book service: could not find book author")
+	}
+
+	model := domain.NewBook(id, title, isbn, description, bookAuthor)
+	err = repository.UpdatesInsteadOf[domain.Book](*model, "created_at")
+	if err != nil {
+		return nil, errors.Wrap(err, "book service: could not update book")
+	}
+
+	return b.GetByID(id)
 }
 
 func (b *bookService) GetByID(id uuid.UUID) (*domain.Book, error) {

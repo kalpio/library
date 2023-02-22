@@ -18,7 +18,7 @@ func TestSaveNewBook(t *testing.T) {
 
 	id := uuid.New()
 	title := random.String(100)
-	isbn := random.String(13)
+	isbn := domain.ISBN(random.String(13))
 	format := random.String(3)
 	author := domain.NewAuthor(
 		uuid.New(),
@@ -104,7 +104,7 @@ func createNewBookInDB(t *testing.T) *domain.Book {
 	b := domain.NewBook(
 		uuid.New(),
 		random.String(100),
-		random.String(13),
+		domain.ISBN(random.String(13)),
 		random.String(3),
 		domain.NewAuthor(
 			uuid.New(),

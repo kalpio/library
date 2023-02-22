@@ -65,8 +65,11 @@ func initializeTests() error {
 func TestBookService_Create(t *testing.T) {
 	t.Run("Create book succeeded", createBookSucceeded)
 	t.Run("Create book failed when no author", createBookFailedWhenNoAuthor)
-	t.Run("Create failed when ISBN is too long", createFailedWhenISBNIsTooLong)
-	t.Run("Create failed when trying add the same ISBN twice", createFailedWhenTryingAddTheSameISBNTwice)
+	t.Run("Create book failed when ISBN is too long", createBookFailedWhenISBNIsTooLong)
+	t.Run("Create book failed when trying add the same ISBN twice", createBookFailedWhenTryingAddTheSameISBNTwice)
+	t.Run("Edit book succeeded", editBookSucceeded)
+	t.Run("Edit book failed when no author", editBookFailedWhenNoAuthor)
+	t.Run("Edit book failed when ISBN is too long", editBookFailedWhenISBNIsTooLong)
 }
 
 func createBookSucceeded(t *testing.T) {
@@ -116,7 +119,7 @@ func createBookFailedWhenNoAuthor(t *testing.T) {
 	ass.Nil(newBook)
 }
 
-func createFailedWhenISBNIsTooLong(t *testing.T) {
+func createBookFailedWhenISBNIsTooLong(t *testing.T) {
 	ass := assert.New(t)
 
 	bookAuthor, err := createFakeAuthor()
@@ -135,7 +138,7 @@ func createFailedWhenISBNIsTooLong(t *testing.T) {
 	ass.Nil(newBook)
 }
 
-func createFailedWhenTryingAddTheSameISBNTwice(t *testing.T) {
+func createBookFailedWhenTryingAddTheSameISBNTwice(t *testing.T) {
 	ass := assert.New(t)
 
 	bookAuthor, err := createFakeAuthor()
@@ -163,6 +166,80 @@ func createFailedWhenTryingAddTheSameISBNTwice(t *testing.T) {
 	ass.Error(err)
 	ass.ErrorIs(err, book.ErrAlreadyExists)
 	ass.Nil(secondBook)
+}
+
+func editBookSucceeded(t *testing.T) {
+	ass := assert.New(t)
+
+	b, err := createFakeBook()
+	ass.NoError(err)
+
+	bookSrv, err := ioc.Get[book.IBookService]()
+	ass.NoError(err)
+
+	editedBook, err := bookSrv.Edit(b.ID,
+		b.Title,
+		b.ISBN,
+		b.Description,
+		b.AuthorID)
+	ass.NoError(err)
+	ass.Equal(b.ID, editedBook.ID)
+	ass.Equal(b.Title, editedBook.Title)
+	ass.Equal(b.ISBN, editedBook.ISBN)
+	ass.Equal(b.Description, editedBook.Description)
+	ass.Equal(b.AuthorID, editedBook.AuthorID)
+}
+
+func editBookFailedWhenNoAuthor(t *testing.T) {
+	ass := assert.New(t)
+
+	b, err := createFakeBook()
+	ass.NoError(err)
+
+	bookSrv, err := ioc.Get[book.IBookService]()
+	ass.NoError(err)
+
+	_, err = bookSrv.Edit(b.ID,
+		b.Title,
+		b.ISBN,
+		b.Description,
+		uuid.Nil)
+	ass.Error(err)
+}
+
+func editBookFailedWhenISBNIsTooLong(t *testing.T) {
+	ass := assert.New(t)
+
+	b, err := createFakeBook()
+	ass.NoError(err)
+
+	bookSrv, err := ioc.Get[book.IBookService]()
+	ass.NoError(err)
+
+	_, err = bookSrv.Edit(b.ID,
+		b.Title,
+		domain.ISBN(random.String(30)),
+		b.Description,
+		b.AuthorID)
+	ass.Error(err)
+}
+
+func createFakeBook() (*domain.Book, error) {
+	ath, err := createFakeAuthor()
+	if err != nil {
+		return nil, err
+	}
+
+	bookSrv, err := ioc.Get[book.IBookService]()
+	if err != nil {
+		return nil, err
+	}
+
+	return bookSrv.Create(uuid.New(),
+		random.String(20),
+		domain.ISBN(random.String(13)),
+		random.String(100),
+		ath.ID)
 }
 
 func createFakeAuthor() (*domain.Author, error) {

@@ -2,6 +2,7 @@ package repository
 
 import (
 	"github.com/google/uuid"
+	"gorm.io/gorm/clause"
 	"library/domain"
 	"library/ioc"
 
@@ -69,6 +70,8 @@ func UpdatesInsteadOf[T Models](model T, columns ...string) error {
 		return errors.Errorf("repository: ID for %T must be set", model)
 	}
 
+	columns = append(columns, clause.Associations)
+
 	tx := db.GetDB().Model(model).
 		Where("id = ?", model.GetID()).
 		Select("*").
@@ -126,7 +129,7 @@ func GetByID[T Models](id uuid.UUID) (T, error) {
 		return *new(T), err
 	}
 
-	if err = db.GetDB().First(&result, id).Error; err != nil {
+	if err = db.GetDB().Preload(clause.Associations).First(&result, id).Error; err != nil {
 		return *new(T), errors.Wrapf(err, "repository: could not find %T by ID: %d", new(T), id)
 	}
 
