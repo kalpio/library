@@ -7,6 +7,7 @@ import (
 	"library/application/authors"
 	"library/application/books"
 	"library/domain"
+	"library/infrastructure"
 	"library/ioc"
 	"library/migrations"
 	"library/register"
@@ -15,8 +16,6 @@ import (
 	"net"
 
 	"github.com/gin-gonic/gin"
-	"gorm.io/driver/sqlite"
-	"gorm.io/gorm"
 )
 
 type App struct {
@@ -24,14 +23,6 @@ type App struct {
 	router *gin.Engine
 	host   string
 	port   string
-}
-
-type database struct {
-	db *gorm.DB
-}
-
-func (d *database) GetDB() *gorm.DB {
-	return d.db
 }
 
 func (a *App) DB() domain.IDatabase {
@@ -50,31 +41,31 @@ func (a *App) Port(port string) {
 	a.port = port
 }
 
-func (a *App) Initialize(dsn string) {
-	a.initializeDB(dsn)
+func (a *App) Initialize() {
+	a.initializeDB()
 	a.initializeRouter()
 	a.initializeMediatr()
 }
 
-func (a *App) initializeDB(dsn string) {
-	gormDB, err := gorm.Open(sqlite.Open(dsn), &gorm.Config{})
+func (a *App) initializeDB() {
+	if err := ioc.AddSingleton[domain.IDsn](infrastructure.NewDsnSqlite); err != nil {
+		log.Fatalf("app: failed to add database object to IoC: %v\n", err)
+	}
+
+	if err := ioc.AddSingleton[domain.IDatabase](infrastructure.NewDatabase); err != nil {
+		log.Fatalf("app: failed to add database object to IoC: %v\n", err)
+	}
+
+	dsn, err := ioc.Get[domain.IDsn]()
 	if err != nil {
-		log.Fatalln(fmt.Printf("App: failed to open database: %v", err))
+		// TODO: (kalpio) add log
 	}
-
-	db := &database{db: gormDB}
-	a.db = db
-
-	if err := ioc.AddSingleton[domain.IDatabase](db); err != nil {
-		log.Fatalln(fmt.Printf("App: failed to add database object to IoC: %v", err))
-	}
-
-	if err := migrations.CreateAndUseDatabase(dsn); err != nil {
-		log.Fatalln(fmt.Printf("App: failed to create and use database: %v", err))
+	if err := migrations.CreateAndUseDatabase(dsn.GetDsn()); err != nil {
+		log.Fatalf("app: failed to create and use database: %v\n", err)
 	}
 
 	if err := migrations.UpdateDatabase(); err != nil {
-		log.Fatalln(fmt.Printf("App: failed to update database: %v", err))
+		log.Fatalf("app: failed to update database: %v\n", err)
 	}
 }
 
