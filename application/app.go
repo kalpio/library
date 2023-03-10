@@ -2,16 +2,11 @@ package application
 
 import (
 	"fmt"
-	"library/api/author"
-	booksAPI "library/api/books"
-	"library/application/authors"
-	"library/application/books"
 	"library/domain"
 	"library/infrastructure"
 	"library/ioc"
 	"library/migrations"
 	"library/register"
-	"library/services"
 	"log"
 	"net"
 
@@ -42,24 +37,32 @@ func (a *App) Port(port string) {
 }
 
 func (a *App) Initialize() {
-	a.initializeDB()
-	a.initializeRouter()
+	a.configureServices()
+	a.migrateDatabase()
+	a.router = configureRouter()
 	a.initializeMediatr()
 }
 
-func (a *App) initializeDB() {
+func (*App) configureServices() {
 	if err := ioc.AddSingleton[domain.IDsn](infrastructure.NewDsnSqlite); err != nil {
-		log.Fatalf("app: failed to add database object to IoC: %v\n", err)
+		log.Fatalf("app: failed to add database DSN to service collection: %v\n", err)
 	}
 
 	if err := ioc.AddSingleton[domain.IDatabase](infrastructure.NewDatabase); err != nil {
-		log.Fatalf("app: failed to add database object to IoC: %v\n", err)
+		log.Fatalf("app: failed to add database to service collection: %v\n", err)
 	}
 
+	if err := ioc.AddSingleton[register.IRegister[*App]](newRegister); err != nil {
+		log.Fatalf("app: failed to add register to service collection: %v\n", err)
+	}
+}
+
+func (*App) migrateDatabase() {
 	dsn, err := ioc.Get[domain.IDsn]()
 	if err != nil {
-		// TODO: (kalpio) add log
+		log.Fatalf("app: failed to get DNS service instance: %v\n", err)
 	}
+
 	if err := migrations.CreateAndUseDatabase(dsn.GetDsn()); err != nil {
 		log.Fatalf("app: failed to create and use database: %v\n", err)
 	}
@@ -69,55 +72,14 @@ func (a *App) initializeDB() {
 	}
 }
 
-type appRegister struct {
-}
-
-func (r *appRegister) Register() error {
-	srvRegister := services.NewServiceRegister()
-	if err := srvRegister.Register(); err != nil {
-		return err
-	}
-
-	authorRegister := authors.NewAuthorRegister()
-	if err := authorRegister.Register(); err != nil {
-		return err
-	}
-
-	bookRegister := books.NewBookRegister()
-	if err := bookRegister.Register(); err != nil {
-		return err
-	}
-
-	return nil
-}
-
 func (a *App) initializeMediatr() {
-	reg := new(appRegister)
-	if err := ioc.AddSingleton[register.IRegister[*App]](reg); err != nil {
-		log.Fatalln(err)
+	reg, err := ioc.Get[register.IRegister[*App]]()
+	if err != nil {
+		log.Fatalf("app: failed to get register service instance: %v\n", err)
 	}
 
 	if err := reg.Register(); err != nil {
-		log.Fatalln(err)
-	}
-}
-
-func (a *App) initializeRouter() {
-	a.router = gin.Default()
-
-	authorCtrl := author.NewAuthorController()
-	bookCtrl := booksAPI.NewBooksController()
-
-	v1 := a.router.Group("/api/v1")
-	{
-		v1.GET("/author", authorCtrl.GetAll)
-		v1.GET("/author/:id", authorCtrl.Get)
-		v1.POST("/author", authorCtrl.Add)
-		v1.PATCH("/author/:id", authorCtrl.Edit)
-		v1.DELETE("/author/:id", authorCtrl.Delete)
-
-		v1.POST("/book", bookCtrl.Create)
-		v1.GET("/book/:id", bookCtrl.Get)
+		log.Fatalf("app: failed to register mediatr services: %v\n", err)
 	}
 }
 

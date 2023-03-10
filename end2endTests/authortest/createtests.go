@@ -13,10 +13,10 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var a application.App
+var testApplication application.App
 
 func SetApp(app application.App) {
-	a = app
+	testApplication = app
 }
 
 func PostNewAuthor(t *testing.T) {
