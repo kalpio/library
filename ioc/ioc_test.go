@@ -19,48 +19,48 @@ type iSecondInterface interface {
 	SetSecondText(s string)
 }
 
-type iFirstStruct struct {
+type iFirstImpl struct {
 	Second iSecondInterface
 	text   string
 }
 
-func newFirstStruct() *iFirstStruct {
-	return new(iFirstStruct)
+func newFirstImpl() *iFirstImpl {
+	return new(iFirstImpl)
 }
 
-func newFirstStructWithSecondInterface(secondInterface iSecondInterface) *iFirstStruct {
-	return &iFirstStruct{Second: secondInterface}
+func newFirstImplWithSecondInterface(secondInterface iSecondInterface) *iFirstImpl {
+	return &iFirstImpl{Second: secondInterface}
 }
 
-func (f *iFirstStruct) SetText(s string) {
+func (f *iFirstImpl) SetText(s string) {
 	f.text = s
 }
 
-func (f *iFirstStruct) GetText() string {
+func (f *iFirstImpl) GetText() string {
 	return f.text
 }
 
-func (f *iFirstStruct) GetTextFromSecond() string {
+func (f *iFirstImpl) GetTextFromSecond() string {
 	return f.Second.GetSecondText()
 }
 
-type secondStruct struct {
+type secondImpl struct {
 	text string
 }
 
-func newSecondStruct() *secondStruct {
-	return new(secondStruct)
+func newSecondImpl() *secondImpl {
+	return new(secondImpl)
 }
 
-func newSecondStructNonPointer() secondStruct {
-	return secondStruct{}
+func newSecondImplNonPointer() secondImpl {
+	return secondImpl{}
 }
 
-func (second *secondStruct) SetSecondText(s string) {
+func (second *secondImpl) SetSecondText(s string) {
 	second.text = s
 }
 
-func (second *secondStruct) GetSecondText() string {
+func (second *secondImpl) GetSecondText() string {
 	return second.text
 }
 
@@ -74,14 +74,14 @@ func TestAddTransient(t *testing.T) {
 func addTransientNotReturnError(t *testing.T) {
 	ass := assert.New(t)
 	clearValues(1)
-	err := AddTransient[iFirstInterface](newFirstStruct)
+	err := AddTransient[iFirstInterface](newFirstImpl)
 	ass.NoError(err)
 }
 
 func addTransientNotReturnErrorAndHasRegisteredService(t *testing.T) {
 	ass := assert.New(t)
 	clearValues(1)
-	err := AddTransient[iFirstInterface](newFirstStruct)
+	err := AddTransient[iFirstInterface](newFirstImpl)
 
 	ass.NoError(err)
 	ass.Len(values, 1)
@@ -92,8 +92,8 @@ func TestAddSingleton(t *testing.T) {
 		addSingletonNotReturnError)
 	t.Run("Add singleton no return error and has registered service",
 		addSingletonNotReturnErrorAndHasRegisteredService)
-	t.Run("Add singleton fail when register same interface second time",
-		addSingletonFailWhenRegisterSameInterfaceSecondTimes)
+	t.Run("Add singleton succeeded when register same interface twice",
+		addSingletonSucceededWhenRegisterSameInterfaceTwice)
 	t.Run("Add singleton fail when trying add type which not implement interface",
 		addSingletonFailWhenTryingAddTypeWhichNotImplementsInterface)
 	t.Run("Add singleton fail when trying add type which is different",
@@ -103,7 +103,7 @@ func TestAddSingleton(t *testing.T) {
 func addSingletonNotReturnError(t *testing.T) {
 	ass := assert.New(t)
 	clearValues(1)
-	err := AddSingleton[iFirstInterface](newFirstStruct)
+	err := AddSingleton[iFirstInterface](newFirstImpl)
 
 	ass.NoError(err)
 }
@@ -111,31 +111,29 @@ func addSingletonNotReturnError(t *testing.T) {
 func addSingletonNotReturnErrorAndHasRegisteredService(t *testing.T) {
 	ass := assert.New(t)
 	clearValues(1)
-	err := AddSingleton[iFirstInterface](newFirstStruct)
+	err := AddSingleton[iFirstInterface](newFirstImpl)
 
 	ass.NoError(err)
 	ass.Len(values, 1)
 }
 
-func addSingletonFailWhenRegisterSameInterfaceSecondTimes(t *testing.T) {
+func addSingletonSucceededWhenRegisterSameInterfaceTwice(t *testing.T) {
 	ass := assert.New(t)
+
 	clearValues(1)
 
-	err := AddSingleton[iFirstInterface](newFirstStruct)
+	err := AddSingleton[iFirstInterface](newFirstImpl)
 	ass.NoError(err)
 
-	err = AddSingleton[iFirstInterface](newFirstStruct)
-	ass.Error(err)
-	ass.ErrorIs(err, ErrAlreadyRegistered)
-	var obj iFirstInterface
-	ass.ErrorContains(err, reflect.TypeOf(&obj).Elem().String())
+	err = AddSingleton[iFirstInterface](newFirstImpl)
+	ass.NoError(err)
 }
 
 func addSingletonFailWhenTryingAddTypeWhichNotImplementsInterface(t *testing.T) {
 	ass := assert.New(t)
 	clearValues(1)
 
-	err := AddSingleton[iFirstInterface](newSecondStruct)
+	err := AddSingleton[iFirstInterface](newSecondImpl)
 	ass.ErrorIs(err, ErrInvalidType)
 }
 
@@ -143,7 +141,7 @@ func addSingletonFailWhenTryingAddTypeWhichIsDifferent(t *testing.T) {
 	ass := assert.New(t)
 	clearValues(1)
 
-	err := AddSingleton[iFirstStruct](newSecondStruct)
+	err := AddSingleton[iFirstImpl](newSecondImpl)
 	ass.ErrorIs(err, ErrInvalidType)
 }
 
@@ -168,24 +166,24 @@ func getReturnRegisteredSingletonInstance(t *testing.T) {
 	ass := assert.New(t)
 	clearValues(1)
 
-	err := AddSingleton[iFirstInterface](newFirstStruct)
+	err := AddSingleton[iFirstInterface](newFirstImpl)
 	ass.NoError(err)
 
 	instance, err := Get[iFirstInterface]()
 	ass.NoError(err)
-	ass.IsType(&iFirstStruct{}, instance)
+	ass.IsType(&iFirstImpl{}, instance)
 }
 
 func getReturnNotUniqueRegisteredSingletonInstance(t *testing.T) {
 	ass := assert.New(t)
 	clearValues(1)
 
-	err := AddSingleton[iFirstInterface](newFirstStruct)
+	err := AddSingleton[iFirstInterface](newFirstImpl)
 	ass.NoError(err)
 
 	v0, err := Get[iFirstInterface]()
 	ass.NoError(err)
-	ass.IsType(&iFirstStruct{}, v0)
+	ass.IsType(&iFirstImpl{}, v0)
 
 	v0.SetText(random.String(10))
 
@@ -200,54 +198,54 @@ func getReturnRegisteredSingletonPointer(t *testing.T) {
 	ass := assert.New(t)
 	clearValues(1)
 
-	err := AddSingleton[*secondStruct](newSecondStruct)
+	err := AddSingleton[*secondImpl](newSecondImpl)
 	ass.NoError(err)
 
-	value, err := Get[*secondStruct]()
+	value, err := Get[*secondImpl]()
 	ass.NoError(err)
-	ass.IsType(&secondStruct{}, value)
+	ass.IsType(&secondImpl{}, value)
 }
 
 func getReturnRegisteredSingletonValue(t *testing.T) {
 	ass := assert.New(t)
 	clearValues(1)
 
-	err := AddSingleton[secondStruct](newSecondStructNonPointer)
+	err := AddSingleton[secondImpl](newSecondImplNonPointer)
 	ass.NoError(err)
 
-	value, err := Get[secondStruct]()
+	value, err := Get[secondImpl]()
 	ass.NoError(err)
-	ass.IsType(secondStruct{}, value)
+	ass.IsType(secondImpl{}, value)
 }
 
 func getReturnRegisteredTransientInstance(t *testing.T) {
 	ass := assert.New(t)
 	clearValues(1)
 
-	err := AddTransient[iFirstInterface](newFirstStruct)
+	err := AddTransient[iFirstInterface](newFirstImpl)
 	ass.NoError(err)
 
 	value, err := Get[iFirstInterface]()
 	ass.NoError(err)
-	ass.IsType(new(iFirstStruct), value)
+	ass.IsType(new(iFirstImpl), value)
 }
 
 func getReturnUniqueRegisteredTransientInstance(t *testing.T) {
 	ass := assert.New(t)
 	clearValues(2)
 
-	err := AddTransient[iFirstInterface](newFirstStruct)
+	err := AddTransient[iFirstInterface](newFirstImpl)
 	ass.NoError(err)
 
 	v0, err := Get[iFirstInterface]()
 	ass.NoError(err)
-	ass.IsType(&iFirstStruct{}, v0)
+	ass.IsType(&iFirstImpl{}, v0)
 
 	v0.SetText(random.String(10))
 
 	v1, err := Get[iFirstInterface]()
 	ass.NoError(err)
-	ass.IsType(&iFirstStruct{}, v1)
+	ass.IsType(&iFirstImpl{}, v1)
 
 	ass.NotEqual(v0.GetText(), v1.GetText())
 	ass.NotSame(v0, v1)
@@ -257,7 +255,7 @@ func getReturnUniqueRegisteredTransientWithResolvedConstructorArgs(t *testing.T)
 	ass := assert.New(t)
 	clearValues(2)
 
-	err := AddSingleton[iSecondInterface](newSecondStruct)
+	err := AddSingleton[iSecondInterface](newSecondImpl)
 	ass.NoError(err)
 
 	second, err := Get[iSecondInterface]()
@@ -265,7 +263,7 @@ func getReturnUniqueRegisteredTransientWithResolvedConstructorArgs(t *testing.T)
 	secondText := random.String(10)
 	second.SetSecondText(secondText)
 
-	err = AddTransient[iFirstInterface](newFirstStructWithSecondInterface)
+	err = AddTransient[iFirstInterface](newFirstImplWithSecondInterface)
 	ass.NoError(err)
 
 	v0, err := Get[iFirstInterface]()

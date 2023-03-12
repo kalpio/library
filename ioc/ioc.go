@@ -8,11 +8,10 @@ import (
 )
 
 var (
-	values               = make(map[reflect.Type]*scopeAndInterface, 10)
-	singletons           = make(map[reflect.Type]reflect.Value, 10)
-	ErrAlreadyRegistered = errors.New("ioc: already registered type")
-	ErrNoRegistered      = errors.New("ioc: no service is registered for type")
-	ErrInvalidType       = errors.New("ioc: invalid type")
+	values          = make(map[reflect.Type]*scopeAndInterface, 10)
+	singletons      = make(map[reflect.Type]reflect.Value, 10)
+	ErrNoRegistered = errors.New("ioc: no service is registered for type")
+	ErrInvalidType  = errors.New("ioc: invalid type")
 )
 
 type scopeAndInterface struct {
@@ -46,7 +45,9 @@ func AddSingleton[T interface{}](ctor any) error {
 
 	args := getMethodArgumentTypes(constructor)
 
-	return addSingletonInternal(t, constructor, args)
+	values[t] = newScopeAndInterface(Singleton, constructor, args)
+
+	return nil
 }
 
 func AddTransient[T any](ctor any) error {
@@ -63,7 +64,9 @@ func AddTransient[T any](ctor any) error {
 
 	args := getMethodArgumentTypes(constructor)
 
-	return addTransientInternal(t, constructor, args)
+	values[t] = newScopeAndInterface(Transient, constructor, args)
+
+	return nil
 }
 
 func isValidReturnType[T any](constructor reflect.Value) error {
@@ -95,28 +98,6 @@ func getMethodArgumentTypes(constructor reflect.Value) []reflect.Type {
 	}
 
 	return result
-}
-
-func addSingletonInternal(t reflect.Type, value reflect.Value, args []reflect.Type) error {
-	_, exists := values[t]
-	if exists {
-		return errors.Wrapf(ErrAlreadyRegistered, "%v", t)
-	}
-
-	values[t] = newScopeAndInterface(Singleton, value, args)
-
-	return nil
-}
-
-func addTransientInternal(t reflect.Type, value reflect.Value, args []reflect.Type) error {
-	_, exists := values[t]
-	if exists {
-		return errors.Wrapf(ErrAlreadyRegistered, "%s", t.String())
-	}
-
-	values[t] = newScopeAndInterface(Transient, value, args)
-
-	return nil
 }
 
 func RemoveSingleton[T interface{}]() {
