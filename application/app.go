@@ -63,7 +63,7 @@ func (*App) migrateDatabase() {
 		log.Fatalf("app: failed to get DNS service instance: %v\n", err)
 	}
 
-	if err := migrations.CreateAndUseDatabase(dsn.GetDsn()); err != nil {
+	if err := migrations.CreateAndUseDatabase(dsn.GetDatabaseName()); err != nil {
 		log.Fatalf("app: failed to create and use database: %v\n", err)
 	}
 

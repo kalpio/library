@@ -100,15 +100,6 @@ func getMethodArgumentTypes(constructor reflect.Value) []reflect.Type {
 	return result
 }
 
-func RemoveSingleton[T interface{}]() {
-	t := getType[T]()
-
-	_, exists := values[t]
-	if exists {
-		delete(values, t)
-	}
-}
-
 func Get[T any]() (T, error) {
 	t := getType[T]()
 
