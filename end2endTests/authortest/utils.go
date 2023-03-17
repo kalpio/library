@@ -18,7 +18,11 @@ func executeRequest(req *http.Request) *httptest.ResponseRecorder {
 }
 
 func clearAuthorsTable() error {
-	return testApplication.DB().GetDB().
+	db, err := testApplication.DB()
+	if err != nil {
+		return err
+	}
+	return db.GetDB().
 		Unscoped().
 		Where("1 = 1").
 		Delete(&domain.Author{}).

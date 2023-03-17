@@ -20,8 +20,8 @@ type App struct {
 	port   string
 }
 
-func (a *App) DB() domain.IDatabase {
-	return a.db
+func (a *App) DB() (domain.IDatabase, error) {
+	return ioc.Get[domain.IDatabase]()
 }
 
 func (a *App) Router() *gin.Engine {

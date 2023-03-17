@@ -39,7 +39,7 @@ func TestAuthor_EditCommandHandler_Raised_AuthorEditedEvent(t *testing.T) {
 	ass.NoError(err)
 	mckService.AssertExpectations(t)
 
-	notifications := domainEvents.GetEvents(&events.AuthorEditedEvent{})
+	notifications := domainEvents.GetEvents[*events.AuthorEditedEvent]()
 	ass.Equal(1, len(notifications))
 
 	notification := notifications[0]
