@@ -53,7 +53,7 @@ func newRepositoryDatabase(dsn domain.IDsn) domain.IDatabase {
 
 func init() {
 	if err := ioc.AddSingleton[domain.IDsn](newRepositoryDsn); err != nil {
-		log.Fatal("repository [test]: failed to add database DSN to service collection: %v\n", err)
+		log.Fatalf("repository [test]: failed to add database DSN to service collection: %v\n", err)
 	}
 
 	if err := ioc.AddTransient[domain.IDatabase](newRepositoryDatabase); err != nil {

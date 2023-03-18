@@ -11,20 +11,45 @@ import (
 	"library/services/book"
 )
 
-type fakeDatabase struct {
+type dsnBook struct {
+	dsn          string
+	databaseName string
 }
 
-func (fdb *fakeDatabase) GetDB() *gorm.DB {
+func (d dsnBook) GetDsn() string {
+	return d.dsn
+}
+
+func (d dsnBook) GetDatabaseName() string {
+	return d.databaseName
+}
+
+func newDsnBook() domain.IDsn {
+	return dsnBook{dsn: "", databaseName: ""}
+}
+
+type dbBook struct {
+}
+
+func (d dbBook) GetDB() *gorm.DB {
 	return nil
+}
+
+func newDBBook(dsn domain.IDsn) domain.IDatabase {
+	return dbBook{}
 }
 
 func Initialize() error {
 	var lastErr error
-	if err := ioc.AddSingleton[domain.IDatabase](new(fakeDatabase)); err != nil {
+	if err := ioc.AddSingleton[domain.IDsn](newDsnBook); err != nil {
 		lastErr = err
 	}
 
-	if err := ioc.AddSingleton[book.IBookService](new(BookServiceMock)); err != nil {
+	if err := ioc.AddSingleton[domain.IDatabase](newDBBook); err != nil {
+		lastErr = err
+	}
+
+	if err := ioc.AddSingleton[book.IBookService](newBookServiceMock); err != nil {
 		lastErr = err
 	}
 
@@ -38,6 +63,10 @@ func Initialize() error {
 
 type BookServiceMock struct {
 	mock.Mock
+}
+
+func newBookServiceMock() *BookServiceMock {
+	return &BookServiceMock{}
 }
 
 func (b *BookServiceMock) Create(id uuid.UUID,
