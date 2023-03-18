@@ -46,7 +46,7 @@ func TestBook_CreateCommandHandler_RaisedBookCreatedEvent(t *testing.T) {
 	ass.NoError(err)
 	mckService.AssertExpectations(t)
 
-	notifications := domainEvents.GetEvents(&events.BookCreatedEvent{})
+	notifications := domainEvents.GetEvents[*events.BookCreatedEvent]()
 	ass.Len(notifications, 1)
 
 	ass.Equal(expectedBook.ID, uuid.MustParse(string(notifications[0].BookID)))

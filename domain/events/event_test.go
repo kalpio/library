@@ -31,17 +31,17 @@ func (*SecondDummyEventHandler) Handle(_ context.Context, _ *SecondDummyEvent) e
 }
 
 func TestGetEventsShouldReturnNil(t *testing.T) {
-	rand.Seed(time.Now().UnixMilli())
+	rand.New(rand.NewSource(time.Now().UnixMilli()))
 	Clear()
 	ass := assert.New(t)
 
-	events := GetEvents(&FirstDummyEvent{})
+	events := GetEvents[*FirstDummyEvent]()
 
 	ass.Nil(events)
 }
 
 func TestGetEventsShouldReturnFirstDummyEventOnce(t *testing.T) {
-	rand.Seed(time.Now().UnixMilli())
+	rand.New(rand.NewSource(time.Now().UnixMilli()))
 	Clear()
 	ass := assert.New(t)
 	err := mediatr.RegisterNotificationHandler[*FirstDummyEvent](&FirstDummyEventHandler{})
@@ -51,14 +51,14 @@ func TestGetEventsShouldReturnFirstDummyEventOnce(t *testing.T) {
 	id := rand.Uint32()
 	Publish(context.Background(), &FirstDummyEvent{ID: id})
 
-	events := GetEvents(&FirstDummyEvent{})
+	events := GetEvents[*FirstDummyEvent]()
 
 	ass.Len(events, 1)
 	ass.Equal(id, events[0].ID)
 }
 
 func TestGetEventsShouldReturnFirstDummyEventFourTimes(t *testing.T) {
-	rand.Seed(time.Now().UnixMilli())
+	rand.New(rand.NewSource(time.Now().UnixMilli()))
 	Clear()
 	ass := assert.New(t)
 	err := mediatr.RegisterNotificationHandler[*FirstDummyEvent](&FirstDummyEventHandler{})
@@ -78,7 +78,7 @@ func TestGetEventsShouldReturnFirstDummyEventFourTimes(t *testing.T) {
 	id3 := rand.Uint32()
 	Publish(ctx, &FirstDummyEvent{ID: id3})
 
-	events := GetEvents(&FirstDummyEvent{})
+	events := GetEvents[*FirstDummyEvent]()
 
 	ass.Len(events, 4)
 	ass.Equal(id0, events[0].ID)
@@ -87,8 +87,8 @@ func TestGetEventsShouldReturnFirstDummyEventFourTimes(t *testing.T) {
 	ass.Equal(id3, events[3].ID)
 }
 
-func TestGetEventsShouldReturnsCorrentEvents(t *testing.T) {
-	rand.Seed(time.Now().UnixMilli())
+func TestGetEventsShouldReturnsCorrectEvents(t *testing.T) {
+	rand.New(rand.NewSource(time.Now().UnixMilli()))
 	Clear()
 	ass := assert.New(t)
 
@@ -111,8 +111,8 @@ func TestGetEventsShouldReturnsCorrentEvents(t *testing.T) {
 	id3 := rand.Uint32()
 	Publish(ctx, &SecondDummyEvent{ID: id3})
 
-	firstDummyEvents := GetEvents(&FirstDummyEvent{})
-	secondDummyEvents := GetEvents(&SecondDummyEvent{})
+	firstDummyEvents := GetEvents[*FirstDummyEvent]()
+	secondDummyEvents := GetEvents[*SecondDummyEvent]()
 
 	ass.Len(firstDummyEvents, 2)
 	ass.Len(secondDummyEvents, 2)

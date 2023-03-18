@@ -2,6 +2,7 @@ package testutils
 
 import (
 	"fmt"
+	log "github.com/sirupsen/logrus"
 	"library/domain"
 	"library/ioc"
 	"library/migrations"
@@ -14,44 +15,71 @@ import (
 	"gorm.io/gorm"
 )
 
+type repositoryDsn struct {
+	dsn          string
+	databaseName string
+}
+
+func (d repositoryDsn) GetDsn() string {
+	return d.dsn
+}
+
+func (d repositoryDsn) GetDatabaseName() string {
+	return d.databaseName
+}
+
+func newRepositoryDsn() domain.IDsn {
+	databaseName := getRandomDBName()
+	dsn := fmt.Sprintf("file:%s?cache=shared&mode=memory", databaseName)
+	return &repositoryDsn{dsn, databaseName}
+}
+
 type database struct {
 	db *gorm.DB
 }
 
-func (d *database) GetDB() *gorm.DB {
+func (d database) GetDB() *gorm.DB {
 	return d.db
 }
 
+func newRepositoryDatabase(dsn domain.IDsn) domain.IDatabase {
+	db, err := gorm.Open(sqlite.Open(dsn.GetDsn()), &gorm.Config{})
+	if err != nil {
+		log.Fatalf("repository [test]: failed to create database: %v\n", err)
+	}
+
+	return database{db}
+}
+
+func init() {
+	if err := ioc.AddSingleton[domain.IDsn](newRepositoryDsn); err != nil {
+		log.Fatalf("repository [test]: failed to add database DSN to service collection: %v\n", err)
+	}
+
+	if err := ioc.AddTransient[domain.IDatabase](newRepositoryDatabase); err != nil {
+		log.Fatalf("repository [test]: failed to add database to service collection: %v\n", err)
+	}
+}
+
 func BeforeTest(t *testing.T) func(t *testing.T) {
-	randomDBName := getRandomDBName()
-	var (
-		err    error
-		gormDB *gorm.DB
-	)
 	ass := assert.New(t)
-
-	dsn := fmt.Sprintf("file:%s.db?cache=shared&mode=rwc", randomDBName)
-	gormDB, err = gorm.Open(sqlite.Open(dsn), &gorm.Config{})
+	dsn, err := ioc.Get[domain.IDsn]()
 	ass.NoError(err)
 
-	db := &database{gormDB}
-
-	ioc.RemoveSingleton[domain.IDatabase]()
-	err = ioc.AddSingleton[domain.IDatabase](db)
+	err = migrations.CreateAndUseDatabase(dsn.GetDatabaseName())
 	ass.NoError(err)
-
-	if err := migrations.CreateAndUseDatabase(randomDBName); err != nil {
-		ass.NoError(err)
-	}
-
-	if err := migrations.UpdateDatabase(); err != nil {
-		ass.NoError(err)
-	}
+	err = migrations.UpdateDatabase()
+	ass.NoError(err)
 
 	return func(t *testing.T) {
-		if err := migrations.DropDatabase(randomDBName); err != nil {
-			ass.NoError(err)
-		}
+		db, err := ioc.Get[domain.IDatabase]()
+		ass.NoError(err)
+		err = migrations.DropTables()
+		ass.NoError(err)
+		sqlDB, err := db.GetDB().DB()
+		ass.NoError(err)
+		err = sqlDB.Close()
+		ass.NoError(err)
 	}
 }
 

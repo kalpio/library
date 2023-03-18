@@ -14,20 +14,19 @@ import (
 var a application.App
 
 func TestMain(m *testing.M) {
-	dsn := "test.db"
 	a.Host("127.0.0.1")
 	a.Port("8089")
-	a.Initialize(dsn)
+	a.Initialize()
 
 	code := m.Run()
 
-	dropDatabase("test")
+	dropDatabase()
 
 	os.Exit(code)
 }
 
-func dropDatabase(dsn string) {
-	if err := migrations.DropDatabase(dsn); err != nil {
+func dropDatabase() {
+	if err := migrations.DropDatabase(); err != nil {
 		log.Fatalln(err)
 	}
 }

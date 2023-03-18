@@ -31,7 +31,7 @@ func TestAuthor_DeleteCommandHandler_RaisedAuthorDeletedEvent(t *testing.T) {
 	mckService.AssertExpectations(t)
 	ass.True(response.Succeeded)
 
-	notifications := domainEvents.GetEvents(&events.AuthorDeletedEvent{})
+	notifications := domainEvents.GetEvents[*events.AuthorDeletedEvent]()
 	ass.Equal(1, len(notifications))
 
 	notification := notifications[0]

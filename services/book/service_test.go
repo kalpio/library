@@ -1,6 +1,7 @@
 package book_test
 
 import (
+	"fmt"
 	"github.com/google/uuid"
 	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
@@ -8,43 +9,56 @@ import (
 	"gorm.io/gorm"
 	"library/domain"
 	"library/ioc"
+	"library/migrations"
 	"library/random"
 	"library/services/author"
 	"library/services/book"
 	"testing"
 )
 
-type testDB struct {
+type bookServiceDsn struct {
+	dsn          string
+	databaseName string
+}
+
+func (dsn bookServiceDsn) GetDsn() string {
+	return dsn.dsn
+}
+
+func (dsn bookServiceDsn) GetDatabaseName() string {
+	return dsn.databaseName
+}
+
+func newBookServiceDsn() domain.IDsn {
+	databaseName := random.String(10)
+	dsn := fmt.Sprintf("file:%s?cache=shared&mode=memory", databaseName)
+	return &bookServiceDsn{dsn, databaseName}
+}
+
+type bookServiceDb struct {
 	db *gorm.DB
 }
 
-func (t *testDB) GetDB() *gorm.DB {
-	return t.db
+func (d bookServiceDb) GetDB() *gorm.DB {
+	return d.db
 }
 
-func newDB() (*testDB, error) {
-	db, err := gorm.Open(sqlite.Open("file::memory:"), &gorm.Config{})
+func newBookServiceDb(dsn domain.IDsn) domain.IDatabase {
+	db, err := gorm.Open(sqlite.Open(dsn.GetDsn()), &gorm.Config{})
 	if err != nil {
-		return nil, err
+		log.Fatalf("repository [test]: failed to create database: %v\n", err)
 	}
 
-	if err = db.AutoMigrate(&domain.Author{}); err != nil {
-		return nil, err
-	}
-	if err = db.AutoMigrate(&domain.Book{}); err != nil {
-		return nil, err
-	}
-
-	return &testDB{db: db}, nil
+	return bookServiceDb{db}
 }
 
 func initializeTests() error {
-	db, err := newDB()
-	if err != nil {
-		return err
+	if err := ioc.AddSingleton[domain.IDsn](newBookServiceDsn); err != nil {
+		log.Fatalf("repository [test]: failed to add database DSN to service collection: %v\n", err)
 	}
-	if err := ioc.AddSingleton[domain.IDatabase](db); err != nil {
-		return err
+
+	if err := ioc.AddTransient[domain.IDatabase](newBookServiceDb); err != nil {
+		log.Fatalf("repository [test]: failed to add database to service collection: %v\n", err)
 	}
 
 	if err := author.NewAuthorServiceRegister().Register(); err != nil {
@@ -64,7 +78,35 @@ func init() {
 	}
 }
 
+func beforeTest(t *testing.T) func(t *testing.T) {
+	ass := assert.New(t)
+	dsn, err := ioc.Get[domain.IDsn]()
+	ass.NoError(err)
+
+	err = migrations.CreateAndUseDatabase(dsn.GetDatabaseName())
+	ass.NoError(err)
+	err = migrations.UpdateDatabase()
+	ass.NoError(err)
+
+	return afterTest
+}
+
+func afterTest(t *testing.T) {
+	ass := assert.New(t)
+	db, err := ioc.Get[domain.IDatabase]()
+	ass.NoError(err)
+	err = migrations.DropTables()
+	ass.NoError(err)
+	sqlDB, err := db.GetDB().DB()
+	ass.NoError(err)
+	err = sqlDB.Close()
+	ass.NoError(err)
+}
+
 func TestBookService_CreateBookSucceeded(t *testing.T) {
+	after := beforeTest(t)
+	defer after(t)
+
 	ass := assert.New(t)
 
 	authorSrv, err := ioc.Get[author.IAuthorService]()
@@ -100,6 +142,8 @@ func TestBookService_CreateBookSucceeded(t *testing.T) {
 }
 
 func TestBookService_CreateFail_WhenNoAuthor(t *testing.T) {
+	after := beforeTest(t)
+	defer after(t)
 	ass := assert.New(t)
 
 	bookSrv, err := ioc.Get[book.IBookService]()
@@ -116,6 +160,8 @@ func TestBookService_CreateFail_WhenNoAuthor(t *testing.T) {
 }
 
 func TestBookService_CreateFail_WhenISBN_IsTooLong(t *testing.T) {
+	after := beforeTest(t)
+	defer after(t)
 	ass := assert.New(t)
 
 	authorSrv, err := ioc.Get[author.IAuthorService]()
@@ -138,6 +184,8 @@ func TestBookService_CreateFail_WhenISBN_IsTooLong(t *testing.T) {
 }
 
 func TestBookService_CreateFail_WhenTryingAddSameISBNTwice(t *testing.T) {
+	after := beforeTest(t)
+	defer after(t)
 	ass := assert.New(t)
 
 	authorSrv, err := ioc.Get[author.IAuthorService]()

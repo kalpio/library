@@ -35,8 +35,8 @@ func (n *notifications) clear() {
 
 var notificationsObj = newNotifications()
 
-func GetEvents[TNotification any](forType TNotification) []TNotification {
-	notificationType := reflect.TypeOf(forType)
+func GetEvents[TNotification any]() []TNotification {
+	notificationType := getType[TNotification]()
 	if events, ok := notificationsObj.events[notificationType]; ok {
 		var result []TNotification
 		for _, event := range events {
@@ -47,6 +47,11 @@ func GetEvents[TNotification any](forType TNotification) []TNotification {
 	}
 
 	return nil
+}
+
+func getType[T interface{}]() reflect.Type {
+	var obj T
+	return reflect.TypeOf(&obj).Elem()
 }
 
 func Clear() {

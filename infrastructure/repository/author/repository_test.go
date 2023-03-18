@@ -114,7 +114,7 @@ func TestGetAll(t *testing.T) {
 	results, err := repository.GetAll[domain.Author]()
 
 	ass.NoError(err)
-	ass.Equal(len(results), 3)
+	ass.Equal(3, len(results))
 
 	for _, v := range expects {
 		assertThatContainsAuthor(ass, results, v)

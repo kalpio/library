@@ -2,21 +2,15 @@ package application
 
 import (
 	"fmt"
-	"library/api/author"
-	booksAPI "library/api/books"
-	"library/application/authors"
-	"library/application/books"
 	"library/domain"
+	"library/infrastructure"
 	"library/ioc"
 	"library/migrations"
 	"library/register"
-	"library/services"
 	"log"
 	"net"
 
 	"github.com/gin-gonic/gin"
-	"gorm.io/driver/sqlite"
-	"gorm.io/gorm"
 )
 
 type App struct {
@@ -26,16 +20,8 @@ type App struct {
 	port   string
 }
 
-type database struct {
-	db *gorm.DB
-}
-
-func (d *database) GetDB() *gorm.DB {
-	return d.db
-}
-
-func (a *App) DB() domain.IDatabase {
-	return a.db
+func (a *App) DB() (domain.IDatabase, error) {
+	return ioc.Get[domain.IDatabase]()
 }
 
 func (a *App) Router() *gin.Engine {
@@ -50,83 +36,50 @@ func (a *App) Port(port string) {
 	a.port = port
 }
 
-func (a *App) Initialize(dsn string) {
-	a.initializeDB(dsn)
-	a.initializeRouter()
+func (a *App) Initialize() {
+	a.configureServices()
+	a.migrateDatabase()
+	a.router = configureRouter()
 	a.initializeMediatr()
 }
 
-func (a *App) initializeDB(dsn string) {
-	gormDB, err := gorm.Open(sqlite.Open(dsn), &gorm.Config{})
+func (*App) configureServices() {
+	if err := ioc.AddSingleton[domain.IDsn](infrastructure.NewDsnSqlite); err != nil {
+		log.Fatalf("app: failed to add database DSN to service collection: %v\n", err)
+	}
+
+	if err := ioc.AddSingleton[domain.IDatabase](infrastructure.NewDatabase); err != nil {
+		log.Fatalf("app: failed to add database to service collection: %v\n", err)
+	}
+
+	if err := ioc.AddSingleton[register.IRegister[*App]](newRegister); err != nil {
+		log.Fatalf("app: failed to add register to service collection: %v\n", err)
+	}
+}
+
+func (*App) migrateDatabase() {
+	dsn, err := ioc.Get[domain.IDsn]()
 	if err != nil {
-		log.Fatalln(fmt.Printf("App: failed to open database: %v", err))
+		log.Fatalf("app: failed to get DNS service instance: %v\n", err)
 	}
 
-	db := &database{db: gormDB}
-	a.db = db
-
-	if err := ioc.AddSingleton[domain.IDatabase](db); err != nil {
-		log.Fatalln(fmt.Printf("App: failed to add database object to IoC: %v", err))
-	}
-
-	if err := migrations.CreateAndUseDatabase(dsn); err != nil {
-		log.Fatalln(fmt.Printf("App: failed to create and use database: %v", err))
+	if err := migrations.CreateAndUseDatabase(dsn.GetDatabaseName()); err != nil {
+		log.Fatalf("app: failed to create and use database: %v\n", err)
 	}
 
 	if err := migrations.UpdateDatabase(); err != nil {
-		log.Fatalln(fmt.Printf("App: failed to update database: %v", err))
+		log.Fatalf("app: failed to update database: %v\n", err)
 	}
-}
-
-type appRegister struct {
-}
-
-func (r *appRegister) Register() error {
-	srvRegister := services.NewServiceRegister()
-	if err := srvRegister.Register(); err != nil {
-		return err
-	}
-
-	authorRegister := authors.NewAuthorRegister()
-	if err := authorRegister.Register(); err != nil {
-		return err
-	}
-
-	bookRegister := books.NewBookRegister()
-	if err := bookRegister.Register(); err != nil {
-		return err
-	}
-
-	return nil
 }
 
 func (a *App) initializeMediatr() {
-	reg := new(appRegister)
-	if err := ioc.AddSingleton[register.IRegister[*App]](reg); err != nil {
-		log.Fatalln(err)
+	reg, err := ioc.Get[register.IRegister[*App]]()
+	if err != nil {
+		log.Fatalf("app: failed to get register service instance: %v\n", err)
 	}
 
 	if err := reg.Register(); err != nil {
-		log.Fatalln(err)
-	}
-}
-
-func (a *App) initializeRouter() {
-	a.router = gin.Default()
-
-	authorCtrl := author.NewAuthorController()
-	bookCtrl := booksAPI.NewBooksController()
-
-	v1 := a.router.Group("/api/v1")
-	{
-		v1.GET("/author", authorCtrl.GetAll)
-		v1.GET("/author/:id", authorCtrl.Get)
-		v1.POST("/author", authorCtrl.Add)
-		v1.PATCH("/author/:id", authorCtrl.Edit)
-		v1.DELETE("/author/:id", authorCtrl.Delete)
-
-		v1.POST("/book", bookCtrl.Create)
-		v1.GET("/book/:id", bookCtrl.Get)
+		log.Fatalf("app: failed to register mediatr services: %v\n", err)
 	}
 }
 

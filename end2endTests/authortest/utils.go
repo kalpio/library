@@ -12,13 +12,17 @@ import (
 
 func executeRequest(req *http.Request) *httptest.ResponseRecorder {
 	rr := httptest.NewRecorder()
-	a.Router().ServeHTTP(rr, req)
+	testApplication.Router().ServeHTTP(rr, req)
 
 	return rr
 }
 
 func clearAuthorsTable() error {
-	return a.DB().GetDB().
+	db, err := testApplication.DB()
+	if err != nil {
+		return err
+	}
+	return db.GetDB().
 		Unscoped().
 		Where("1 = 1").
 		Delete(&domain.Author{}).
