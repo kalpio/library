@@ -1,8 +1,8 @@
 package book
 
 import (
-	"errors"
 	"fmt"
+	"github.com/pkg/errors"
 	"library/domain"
 	"library/infrastructure/repository"
 	"library/services/author"
@@ -95,7 +95,24 @@ func (b *bookService) Edit(id uuid.UUID,
 	title, isbn, description string,
 	authorID uuid.UUID) (*domain.Book, error) {
 
-	return nil, nil
+	model := &domain.Book{
+		Entity: domain.Entity{
+			ID: id,
+		},
+		Title:       title,
+		ISBN:        isbn,
+		Description: description,
+		AuthorID:    authorID,
+	}
+
+	err := repository.Update(*model)
+	if err != nil {
+		return nil, errors.Wrap(err, "book service: could not update book")
+	}
+
+	result, err := b.GetByID(id)
+
+	return result, errors.Wrapf(err, "book service: could not find book with id %s", id)
 }
 
 func (b *bookService) GetByID(id uuid.UUID) (*domain.Book, error) {

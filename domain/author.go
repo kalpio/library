@@ -7,6 +7,14 @@ import (
 
 type AuthorID string
 
+func ParseUUID[T AuthorID | BookID](val T) uuid.UUID {
+	return uuid.MustParse(string(val))
+}
+
+func ParseID[T AuthorID | BookID](val uuid.UUID) T {
+	return T(val.String())
+}
+
 type Author struct {
 	Entity
 	FirstName  string `gorm:"column:firstName;index:uq_first_last,unique" json:"first_name"`

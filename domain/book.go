@@ -33,7 +33,7 @@ func (b Book) Validate() error {
 		validation.Field(&b.Title, validation.Required),
 		validation.Field(&b.ISBN, validation.Required),
 		validation.Field(&b.ISBN, validation.Length(13, 13)),
-		validation.Field(&b.Author, validation.Required))
+		validation.Field(&b.AuthorID, validation.Required))
 }
 
 func (b Book) GetID() uuid.UUID {
