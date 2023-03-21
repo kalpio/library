@@ -33,7 +33,19 @@ func (b Book) Validate() error {
 		validation.Field(&b.Title, validation.Required),
 		validation.Field(&b.ISBN, validation.Required),
 		validation.Field(&b.ISBN, validation.Length(13, 13)),
-		validation.Field(&b.AuthorID, validation.Required))
+		validation.Field(&b.AuthorID, validation.By(b.ValidateAuthorID)),
+	)
+}
+
+func (b Book) ValidateAuthorID(_ interface{}) error {
+	if b.AuthorID == uuid.Nil {
+		return validation.NewError("author_id", "author_id is null")
+	}
+	if b.AuthorID == EmptyUUID() {
+		return validation.NewError("author_id", "author_id id is empty")
+	}
+
+	return nil
 }
 
 func (b Book) GetID() uuid.UUID {
