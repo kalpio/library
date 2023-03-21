@@ -236,11 +236,7 @@ func updateBookSucceeded(t *testing.T) {
 
 	ass := assert.New(t)
 
-	ath, err := createAuthor()
-	ass.NoError(err)
-
-	isbn := random.String(13)
-	b, err := createBook(isbn, ath.ID)
+	b, err := createBookWithAuthor()
 	ass.NoError(err)
 
 	title, description := b.Title, b.Description
