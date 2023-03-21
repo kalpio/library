@@ -105,8 +105,12 @@ func afterTest(t *testing.T) {
 
 func TestBookService_Create(t *testing.T) {
 	t.Run("Create book succeeded", createBookSucceeded)
-	t.Run("Create book failed when not author", createBookFailedWhenNoAuthor)
+	t.Run("Create book failed when author doesn't exist", createBookFailedWhenAuthorDoesNotExist)
+	t.Run("Create book failed when author is empty", createBookFailedWhenAuthorIsEmpty)
+	t.Run("Create book failed when author is nil", createBookFailedWhenAuthorIsNil)
+	t.Run("Create book failed when title is empty", createBookFailedWhenTitleIsEmpty)
 	t.Run("Create book failed when ISBN is too long", createBookFailedWhenISBNIsTooLong)
+	t.Run("Create book failed when ISBN is too short", createBookFailedWhenISBNIsTooShort)
 	t.Run("Create book failed when trying add same ISBN twice", createBookFailedWhenTryingAddSameISBNTwice)
 }
 
@@ -116,41 +120,15 @@ func createBookSucceeded(t *testing.T) {
 
 	ass := assert.New(t)
 
-	authorSrv, err := ioc.Get[author.IAuthorService]()
+	b, err := createBookWithAuthor("")
 	ass.NoError(err)
-
-	bookAuthor, err := addAuthor(authorSrv)
-
-	ass.NoError(err)
-
-	bookSrv, err := ioc.Get[book.IBookService]()
-	ass.NoError(err)
-
-	bookData := map[string]interface{}{
-		"id":          uuid.New(),
-		"title":       random.String(40),
-		"isbn":        random.String(13),
-		"description": random.String(140),
-		"authorID":    bookAuthor.ID,
-	}
-
-	newBook, err := bookSrv.Create(bookData["id"].(uuid.UUID),
-		bookData["title"].(string),
-		bookData["isbn"].(string),
-		bookData["description"].(string),
-		bookData["authorID"].(uuid.UUID))
-
-	ass.NoError(err)
-	ass.Equal(bookData["id"].(uuid.UUID), newBook.ID)
-	ass.Equal(bookData["title"].(string), newBook.Title)
-	ass.Equal(bookData["isbn"].(string), newBook.ISBN)
-	ass.Equal(bookData["description"].(string), newBook.Description)
-	ass.Equal(bookData["authorID"].(uuid.UUID), newBook.AuthorID)
+	ass.NotNil(b)
 }
 
-func createBookFailedWhenNoAuthor(t *testing.T) {
+func createBookFailedWhenAuthorDoesNotExist(t *testing.T) {
 	after := beforeTest(t)
 	defer after(t)
+
 	ass := assert.New(t)
 
 	bookSrv, err := ioc.Get[book.IBookService]()
@@ -169,25 +147,23 @@ func createBookFailedWhenNoAuthor(t *testing.T) {
 func createBookFailedWhenISBNIsTooLong(t *testing.T) {
 	after := beforeTest(t)
 	defer after(t)
+
 	ass := assert.New(t)
 
-	authorSrv, err := ioc.Get[author.IAuthorService]()
-	ass.NoError(err)
-
-	bookAuthor, err := addAuthor(authorSrv)
-	ass.NoError(err)
-
-	bookSrv, err := ioc.Get[book.IBookService]()
-	ass.NoError(err)
-
-	newBook, err := bookSrv.Create(uuid.New(),
-		random.String(20),
-		random.String(20),
-		random.String(20),
-		bookAuthor.ID)
-
+	b, err := createBookWithAuthor(random.String(20))
 	ass.Error(err)
-	ass.Nil(newBook)
+	ass.Nil(b)
+}
+
+func createBookFailedWhenISBNIsTooShort(t *testing.T) {
+	after := beforeTest(t)
+	defer after(t)
+
+	ass := assert.New(t)
+
+	b, err := createBookWithAuthor(random.String(10))
+	ass.Error(err)
+	ass.Nil(b)
 }
 
 func createBookFailedWhenTryingAddSameISBNTwice(t *testing.T) {
@@ -195,39 +171,82 @@ func createBookFailedWhenTryingAddSameISBNTwice(t *testing.T) {
 	defer after(t)
 	ass := assert.New(t)
 
-	authorSrv, err := ioc.Get[author.IAuthorService]()
+	isbn := random.String(13)
+	b0, err := createBookWithAuthor(isbn)
+	ass.NoError(err)
+	ass.NotNil(b0)
+	ass.Equal(isbn, b0.ISBN)
+
+	b1, err := createBookWithAuthor(isbn)
+	ass.Error(err)
+	ass.ErrorIs(err, book.ErrBookAlreadyExists)
+	ass.Nil(b1)
+}
+
+func createBookFailedWhenAuthorIsEmpty(t *testing.T) {
+	after := beforeTest(t)
+	defer after(t)
+
+	ass := assert.New(t)
+
+	bookSrv, err := ioc.Get[book.IBookService]()
 	ass.NoError(err)
 
-	bookAuthor, err := addAuthor(authorSrv)
+	b, err := bookSrv.Create(uuid.New(),
+		random.String(20),
+		random.String(13),
+		random.String(140),
+		domain.EmptyUUID())
+	ass.Error(err)
+	ass.Nil(b)
+}
+
+func createBookFailedWhenAuthorIsNil(t *testing.T) {
+	after := beforeTest(t)
+	defer after(t)
+
+	ass := assert.New(t)
+
+	bookSrv, err := ioc.Get[book.IBookService]()
+	ass.NoError(err)
+
+	b, err := bookSrv.Create(uuid.New(),
+		random.String(20),
+		random.String(13),
+		random.String(140),
+		uuid.Nil)
+	ass.Error(err)
+	ass.Nil(b)
+}
+
+func createBookFailedWhenTitleIsEmpty(t *testing.T) {
+	after := beforeTest(t)
+	defer after(t)
+
+	ass := assert.New(t)
+
+	bookAuthor, err := createAuthor()
 	ass.NoError(err)
 
 	bookSrv, err := ioc.Get[book.IBookService]()
 	ass.NoError(err)
 
-	isbn := random.String(13)
-	firstBook, err := bookSrv.Create(uuid.New(),
-		random.String(20),
-		isbn,
-		random.String(100),
+	b, err := bookSrv.Create(uuid.New(),
+		"",
+		random.String(13),
+		random.String(140),
 		bookAuthor.ID)
-
-	ass.NoError(err)
-	ass.NotNil(firstBook)
-
-	secondBook, err := bookSrv.Create(uuid.New(),
-		random.String(20),
-		isbn,
-		random.String(100),
-		bookAuthor.ID)
-
 	ass.Error(err)
-	ass.ErrorIs(err, book.ErrAlreadyExists)
-	ass.Nil(secondBook)
+	ass.Nil(b)
 }
 
 func TestBookService_Edit(t *testing.T) {
 	t.Run("Update book succeeded", updateBookSucceeded)
-	t.Run("Update book failed when no author", updateBookFailedWhenNoAuthor)
+	t.Run("Update book failed when author doesn't exist", updateBookFailedWhenAuthorDoesNotExist)
+	t.Run("Update book failed when author is empty", updateBookFailedWhenAuthorIsEmpty)
+	t.Run("Update book failed when author is nil", updateBookFailedWhenAuthorIsNil)
+	t.Run("Update book failed when ISBN is too long", updateBookFailedWhenISBNIsTooLong)
+	t.Run("Update book failed when ISBN is too short", updateBookFailedWhenISBNIsTooShort)
 }
 
 func updateBookSucceeded(t *testing.T) {
@@ -236,7 +255,7 @@ func updateBookSucceeded(t *testing.T) {
 
 	ass := assert.New(t)
 
-	b, err := createBookWithAuthor()
+	b, err := createBookWithAuthor("")
 	ass.NoError(err)
 
 	title, description := b.Title, b.Description
@@ -246,22 +265,99 @@ func updateBookSucceeded(t *testing.T) {
 
 	bookSrv, err := ioc.Get[book.IBookService]()
 	ass.NoError(err)
+
 	b, err = bookSrv.Edit(b.ID, b.Title, b.ISBN, b.Description, b.AuthorID)
 	ass.NoError(err)
 	ass.NotEqual(title, b.Title)
 	ass.NotEqual(description, b.Description)
 }
 
-func updateBookFailedWhenNoAuthor(t *testing.T) {
+func updateBookFailedWhenAuthorDoesNotExist(t *testing.T) {
 	after := beforeTest(t)
 	defer after(t)
 
 	ass := assert.New(t)
 
-	b, err := createBookWithAuthor()
+	b, err := createBookWithAuthor("")
+	ass.NoError(err)
+
+	b.AuthorID = uuid.New()
+	b.Author.ID = b.AuthorID
+
+	bookSrv, err := ioc.Get[book.IBookService]()
+	ass.NoError(err)
+
+	b, err = bookSrv.Edit(b.ID, b.Title, b.ISBN, b.Description, b.AuthorID)
+	ass.Error(err)
+	ass.Nil(b)
+}
+
+func updateBookFailedWhenAuthorIsEmpty(t *testing.T) {
+	after := beforeTest(t)
+	defer after(t)
+
+	ass := assert.New(t)
+
+	b, err := createBookWithAuthor("")
 	ass.NoError(err)
 
 	b.AuthorID = domain.EmptyUUID()
+
+	bookSrv, err := ioc.Get[book.IBookService]()
+	ass.NoError(err)
+
+	b, err = bookSrv.Edit(b.ID, b.Title, b.ISBN, b.Description, b.AuthorID)
+	ass.Error(err)
+	ass.Nil(b)
+}
+
+func updateBookFailedWhenAuthorIsNil(t *testing.T) {
+	after := beforeTest(t)
+	defer after(t)
+
+	ass := assert.New(t)
+
+	b, err := createBookWithAuthor("")
+	ass.NoError(err)
+
+	b.AuthorID = uuid.Nil
+
+	bookSrv, err := ioc.Get[book.IBookService]()
+	ass.NoError(err)
+
+	b, err = bookSrv.Edit(b.ID, b.Title, b.ISBN, b.Description, b.AuthorID)
+	ass.Error(err)
+	ass.Nil(b)
+}
+
+func updateBookFailedWhenISBNIsTooLong(t *testing.T) {
+	after := beforeTest(t)
+	defer after(t)
+
+	ass := assert.New(t)
+
+	b, err := createBookWithAuthor("")
+	ass.NoError(err)
+
+	b.ISBN = random.String(20)
+
+	bookSrv, err := ioc.Get[book.IBookService]()
+	ass.NoError(err)
+
+	_, err = bookSrv.Edit(b.ID, b.Title, b.ISBN, b.Description, b.AuthorID)
+	ass.Error(err)
+}
+
+func updateBookFailedWhenISBNIsTooShort(t *testing.T) {
+	after := beforeTest(t)
+	defer after(t)
+
+	ass := assert.New(t)
+
+	b, err := createBookWithAuthor("")
+	ass.NoError(err)
+
+	b.ISBN = random.String(10)
 
 	bookSrv, err := ioc.Get[book.IBookService]()
 	ass.NoError(err)
@@ -282,7 +378,7 @@ func createAuthor() (*domain.Author, error) {
 		random.String(20))
 }
 
-func createBookWithAuthor() (*domain.Book, error) {
+func createBookWithAuthor(isbn string) (*domain.Book, error) {
 	authorSrv, err := ioc.Get[author.IAuthorService]()
 	if err != nil {
 		return nil, err
@@ -293,7 +389,11 @@ func createBookWithAuthor() (*domain.Book, error) {
 		return nil, err
 	}
 
-	return createBook(random.String(13), bookAuthor.ID)
+	if isbn == "" {
+		return createBook(random.String(13), bookAuthor.ID)
+	}
+
+	return createBook(isbn, bookAuthor.ID)
 }
 
 func createBook(isbn string, authorID uuid.UUID) (*domain.Book, error) {

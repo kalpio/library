@@ -44,6 +44,9 @@ func (b Book) ValidateAuthorID(_ interface{}) error {
 	if b.AuthorID == EmptyUUID() {
 		return validation.NewError("author_id", "author_id id is empty")
 	}
+	if b.Author != nil && b.AuthorID != b.Author.ID {
+		return validation.NewError("author_id", "author_id is not equal to author.id")
+	}
 
 	return nil
 }

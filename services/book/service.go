@@ -62,7 +62,7 @@ func (b *bookService) Create(id uuid.UUID,
 	return &result, nil
 }
 
-var ErrAlreadyExists = errors.New("book service: book already exists")
+var ErrBookAlreadyExists = errors.New("book service: book already exists")
 
 func (b *bookService) exists(isbn string) error {
 	var (
@@ -76,7 +76,7 @@ func (b *bookService) exists(isbn string) error {
 
 	var exists = strings.Compare(isbn, value.ISBN) == 0
 	if exists {
-		return ErrAlreadyExists
+		return ErrBookAlreadyExists
 	}
 
 	return nil
@@ -95,6 +95,12 @@ func (b *bookService) Edit(id uuid.UUID,
 	title, isbn, description string,
 	authorID uuid.UUID) (*domain.Book, error) {
 
+	bookAuthor, err := b.getAuthor(authorID)
+	if err != nil {
+		return nil, err
+	}
+
+	// TODO: use domain.NewBook - in repository update method add update author table. Not is locked when update book
 	model := &domain.Book{
 		Entity: domain.Entity{
 			ID: id,
@@ -102,10 +108,10 @@ func (b *bookService) Edit(id uuid.UUID,
 		Title:       title,
 		ISBN:        isbn,
 		Description: description,
-		AuthorID:    authorID,
+		AuthorID:    bookAuthor.ID,
 	}
 
-	err := repository.Update(*model)
+	err = repository.Update(*model)
 	if err != nil {
 		return nil, errors.Wrap(err, "book service: could not update book")
 	}
