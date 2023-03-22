@@ -3,6 +3,7 @@ package book_test
 import (
 	"fmt"
 	"github.com/google/uuid"
+	"github.com/pkg/errors"
 	"github.com/samber/lo"
 	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
@@ -55,27 +56,23 @@ func newBookServiceDb(dsn domain.IDsn) domain.IDatabase {
 
 func initializeTests() error {
 	if err := ioc.AddSingleton[domain.IDsn](newBookServiceDsn); err != nil {
-		log.Fatalf("repository [test]: failed to add database DSN to service collection: %v\n", err)
+		return errors.Wrap(err, "repository [test]: failed to add dsn to service collection")
 	}
-
 	if err := ioc.AddTransient[domain.IDatabase](newBookServiceDb); err != nil {
-		log.Fatalf("repository [test]: failed to add database to service collection: %v\n", err)
+		return errors.Wrap(err, "repository [test]: failed to add database to service collection")
 	}
-
 	if err := author.NewAuthorServiceRegister().Register(); err != nil {
-		return err
+		return errors.Wrap(err, "repository [test]: failed to register author service")
 	}
-
 	if err := book.NewBookServiceRegister().Register(); err != nil {
-		return err
+		return errors.Wrapf(err, "repository [test]: failed to register book service")
 	}
-
 	return nil
 }
 
 func init() {
 	if err := initializeTests(); err != nil {
-		log.Fatal(err)
+		log.Fatalf("repository [test]: failed to initialize tests: %v\n", err)
 	}
 }
 

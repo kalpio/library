@@ -35,7 +35,7 @@ func NewAuthor(id uuid.UUID, firstName, middleName, lastName string) *Author {
 
 func (a Author) Validate() error {
 	return validation.ValidateStruct(&a,
-		validation.Field(&a.ID, validation.Required),
+		validation.Field(&a.ID, validation.By(a.validateID)),
 		validation.Field(&a.FirstName, validation.Required),
 		validation.Field(&a.LastName, validation.Required),
 	)
@@ -43,4 +43,15 @@ func (a Author) Validate() error {
 
 func (a Author) GetID() uuid.UUID {
 	return a.ID
+}
+
+func (a Author) validateID(_ interface{}) error {
+	if a.ID == uuid.Nil {
+		return validation.NewError("id", "id is null")
+	}
+	if a.ID == EmptyUUID() {
+		return validation.NewError("id", "id is empty")
+	}
+
+	return nil
 }
