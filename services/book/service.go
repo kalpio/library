@@ -24,7 +24,7 @@ type IBookService interface {
 
 	GetAll() ([]domain.Book, error)
 
-	Delete(id uuid.UUID) (bool, error)
+	Delete(id uuid.UUID) error
 }
 
 type bookService struct {
@@ -100,7 +100,7 @@ func (b *bookService) Edit(id uuid.UUID,
 		return nil, err
 	}
 
-	// TODO: use domain.NewBook - in repository update method add update author table. Not is locked when update book
+	// TODO(kalpio): use domain.NewBook - in repository update method add update author table. Not is locked when update book
 	model := &domain.Book{
 		Entity: domain.Entity{
 			ID: id,
@@ -131,9 +131,15 @@ func (b *bookService) GetByID(id uuid.UUID) (*domain.Book, error) {
 }
 
 func (b *bookService) GetAll() ([]domain.Book, error) {
-	return nil, nil
+	result, err := repository.GetAll[domain.Book]()
+	if err != nil {
+		return nil, fmt.Errorf("book service: could not find books: %w", err)
+	}
+	return result, nil
 }
 
-func (b *bookService) Delete(id uuid.UUID) (bool, error) {
-	return false, nil
+func (b *bookService) Delete(id uuid.UUID) error {
+	err := repository.Delete[domain.Book](id)
+
+	return errors.Wrap(err, "book service: could not delete book")
 }

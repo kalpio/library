@@ -94,10 +94,9 @@ func TestDelete(t *testing.T) {
 	ass := assert.New(t)
 
 	book := createNewBookInDB(t)
-	rowsAffected, err := repository.Delete[domain.Book](book.ID)
+	err := repository.Delete[domain.Book](book.ID)
 
 	ass.NoError(err)
-	ass.Greater(rowsAffected, int64(0))
 }
 
 func createNewBookInDB(t *testing.T) *domain.Book {

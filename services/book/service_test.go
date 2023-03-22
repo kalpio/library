@@ -3,6 +3,7 @@ package book_test
 import (
 	"fmt"
 	"github.com/google/uuid"
+	"github.com/samber/lo"
 	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	"gorm.io/driver/sqlite"
@@ -363,6 +364,188 @@ func updateBookFailedWhenISBNIsTooShort(t *testing.T) {
 	ass.NoError(err)
 
 	_, err = bookSrv.Edit(b.ID, b.Title, b.ISBN, b.Description, b.AuthorID)
+	ass.Error(err)
+}
+
+func TestBookService_GetByID(t *testing.T) {
+	t.Run("Get book by ID succeeded", getBookByIDSucceeded)
+	t.Run("Get book by ID failed when ID is empty", getBookByIDFailedWhenIDIsEmpty)
+	t.Run("Get book by ID failed when ID is nil", getBookByIDFailedWhenIDIsNil)
+	t.Run("Get book by ID failed when book doesn't exist", getBookByIDFailedWhenBookDoesNotExist)
+}
+
+func getBookByIDSucceeded(t *testing.T) {
+	after := beforeTest(t)
+	defer after(t)
+
+	ass := assert.New(t)
+
+	b0, err := createBookWithAuthor("")
+	ass.NoError(err)
+
+	bookSrv, err := ioc.Get[book.IBookService]()
+	ass.NoError(err)
+
+	b1, err := bookSrv.GetByID(b0.ID)
+	ass.NoError(err)
+	ass.Equal(b0.ID, b1.ID)
+	ass.Equal(b0.Title, b1.Title)
+	ass.Equal(b0.ISBN, b1.ISBN)
+	ass.Equal(b0.Description, b1.Description)
+	ass.Equal(b0.AuthorID, b1.AuthorID)
+}
+
+func getBookByIDFailedWhenIDIsEmpty(t *testing.T) {
+	after := beforeTest(t)
+	defer after(t)
+
+	ass := assert.New(t)
+
+	bookSrv, err := ioc.Get[book.IBookService]()
+	ass.NoError(err)
+
+	_, err = bookSrv.GetByID(domain.EmptyUUID())
+	ass.Error(err)
+}
+
+func getBookByIDFailedWhenIDIsNil(t *testing.T) {
+	after := beforeTest(t)
+	defer after(t)
+
+	ass := assert.New(t)
+
+	bookSrv, err := ioc.Get[book.IBookService]()
+	ass.NoError(err)
+
+	_, err = bookSrv.GetByID(uuid.Nil)
+	ass.Error(err)
+}
+
+func getBookByIDFailedWhenBookDoesNotExist(t *testing.T) {
+	after := beforeTest(t)
+	defer after(t)
+
+	ass := assert.New(t)
+
+	bookSrv, err := ioc.Get[book.IBookService]()
+	ass.NoError(err)
+
+	_, err = bookSrv.GetByID(uuid.New())
+	ass.Error(err)
+}
+
+func TestBookService_GetAll(t *testing.T) {
+	t.Run("Get all books succeeded", getAllBooksSucceeded)
+	t.Run("Get all books succeeded when there is no book", getAllBooksSucceededWhenThereIsNoBook)
+}
+
+func getAllBooksSucceeded(t *testing.T) {
+	after := beforeTest(t)
+	defer after(t)
+
+	ass := assert.New(t)
+
+	var values []domain.Book
+	for i := 0; i < 10; i++ {
+		b, err := createBookWithAuthor("")
+		ass.NoError(err)
+		values = append(values, *b)
+	}
+
+	bookSrv, err := ioc.Get[book.IBookService]()
+	ass.NoError(err)
+
+	books, err := bookSrv.GetAll()
+	ass.NoError(err)
+
+	ass.Len(books, len(values))
+
+	for _, b := range books {
+		r, ok := lo.Find(values, func(val domain.Book) bool {
+			return b.ID == val.ID
+		})
+		ass.True(ok)
+		ass.Equal(r.Title, b.Title)
+		ass.Equal(r.ISBN, b.ISBN)
+		ass.Equal(r.Description, b.Description)
+		ass.Equal(r.AuthorID, b.AuthorID)
+	}
+}
+
+func getAllBooksSucceededWhenThereIsNoBook(t *testing.T) {
+	after := beforeTest(t)
+	defer after(t)
+
+	ass := assert.New(t)
+
+	bookSrv, err := ioc.Get[book.IBookService]()
+	ass.NoError(err)
+
+	books, err := bookSrv.GetAll()
+	ass.NoError(err)
+
+	ass.Len(books, 0)
+}
+
+func TestBookService_Delete(t *testing.T) {
+	t.Run("Delete book succeeded", deleteBookSucceeded)
+	t.Run("Delete book failed when ID is empty", deleteBookFailedWhenIDIsEmpty)
+	t.Run("Delete book failed when ID is nil", deleteBookFailedWhenIDIsNil)
+	t.Run("Delete book failed when book doesn't exist", deleteBookFailedWhenBookDoesNotExist)
+}
+
+func deleteBookSucceeded(t *testing.T) {
+	after := beforeTest(t)
+	defer after(t)
+
+	ass := assert.New(t)
+
+	b, err := createBookWithAuthor("")
+	ass.NoError(err)
+
+	bookSrv, err := ioc.Get[book.IBookService]()
+	ass.NoError(err)
+
+	err = bookSrv.Delete(b.ID)
+	ass.NoError(err)
+}
+
+func deleteBookFailedWhenIDIsEmpty(t *testing.T) {
+	after := beforeTest(t)
+	defer after(t)
+
+	ass := assert.New(t)
+
+	bookSrv, err := ioc.Get[book.IBookService]()
+	ass.NoError(err)
+
+	err = bookSrv.Delete(domain.EmptyUUID())
+	ass.Error(err)
+}
+
+func deleteBookFailedWhenIDIsNil(t *testing.T) {
+	after := beforeTest(t)
+	defer after(t)
+
+	ass := assert.New(t)
+
+	bookSrv, err := ioc.Get[book.IBookService]()
+	ass.NoError(err)
+
+	err = bookSrv.Delete(uuid.Nil)
+	ass.Error(err)
+}
+
+func deleteBookFailedWhenBookDoesNotExist(t *testing.T) {
+	after := beforeTest(t)
+	defer after(t)
+
+	ass := assert.New(t)
+
+	bookSrv, err := ioc.Get[book.IBookService]()
+	ass.NoError(err)
+
+	err = bookSrv.Delete(uuid.New())
 	ass.Error(err)
 }
 

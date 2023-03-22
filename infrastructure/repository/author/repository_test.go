@@ -127,10 +127,9 @@ func TestDelete(t *testing.T) {
 	ass := assert.New(t)
 
 	a := createNewAuthorInDB(t)
-	rowsAffected, err := repository.Delete[domain.Author](a.ID)
+	err := repository.Delete[domain.Author](a.ID)
 
 	ass.NoError(err)
-	ass.Greater(rowsAffected, int64(0))
 }
 
 func assertThatContainsAuthor(ass *assert.Assertions, results []domain.Author, expect domain.Author) {
