@@ -35,7 +35,7 @@ func (d dbBook) GetDB() *gorm.DB {
 	return nil
 }
 
-func newDBBook(dsn domain.IDsn) domain.IDatabase {
+func newDBBook(_ domain.IDsn) domain.IDatabase {
 	return dbBook{}
 }
 
@@ -95,9 +95,9 @@ func (b *BookServiceMock) GetAll() ([]domain.Book, error) {
 	return args.Get(0).([]domain.Book), args.Error(1)
 }
 
-func (b *BookServiceMock) Delete(id uuid.UUID) (bool, error) {
+func (b *BookServiceMock) Delete(id uuid.UUID) error {
 	args := b.Called(id)
-	return args.Bool(0), args.Error(1)
+	return args.Error(0)
 }
 
 func CreateBook() *domain.Book {

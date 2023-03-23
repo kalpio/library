@@ -21,7 +21,7 @@ func TestAuthor_DeleteCommandHandler_RaisedAuthorDeletedEvent(t *testing.T) {
 	expectedAuthorID := domain.AuthorID(authorID.String())
 	mckService.
 		On("Delete", authorID).
-		Return(true, nil)
+		Return(nil)
 
 	commandHandler := commands.NewDeleteAuthorCommandHandler(nil, mckService)
 	response, err := commandHandler.Handle(context.Background(),

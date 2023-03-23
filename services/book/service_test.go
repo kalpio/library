@@ -433,7 +433,7 @@ func getBookByIDFailedWhenBookDoesNotExist(t *testing.T) {
 
 func TestBookService_GetAll(t *testing.T) {
 	t.Run("Get all books succeeded", getAllBooksSucceeded)
-	t.Run("Get all books succeeded when there is no book", getAllBooksSucceededWhenThereIsNoBook)
+	t.Run("Get all books succeeded when there are no book", getAllBooksSucceededWhenThereAreNoBook)
 }
 
 func getAllBooksSucceeded(t *testing.T) {
@@ -469,7 +469,7 @@ func getAllBooksSucceeded(t *testing.T) {
 	}
 }
 
-func getAllBooksSucceededWhenThereIsNoBook(t *testing.T) {
+func getAllBooksSucceededWhenThereAreNoBook(t *testing.T) {
 	after := beforeTest(t)
 	defer after(t)
 
