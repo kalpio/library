@@ -29,11 +29,37 @@ func NewBook(id uuid.UUID, title, isbn, description string, author *Author) *Boo
 
 func (b Book) Validate() error {
 	return validation.ValidateStruct(&b,
-		validation.Field(&b.ID, validation.Required),
+		validation.Field(&b.ID, validation.By(b.validateID)),
 		validation.Field(&b.Title, validation.Required),
 		validation.Field(&b.ISBN, validation.Required),
 		validation.Field(&b.ISBN, validation.Length(13, 13)),
-		validation.Field(&b.Author, validation.Required))
+		validation.Field(&b.AuthorID, validation.By(b.validateAuthorID)),
+	)
+}
+
+func (b Book) validateAuthorID(_ interface{}) error {
+	if b.AuthorID == uuid.Nil {
+		return validation.NewError("author_id", "author_id is null")
+	}
+	if b.AuthorID == EmptyUUID() {
+		return validation.NewError("author_id", "author_id id is empty")
+	}
+	if b.Author != nil && b.AuthorID != b.Author.ID {
+		return validation.NewError("author_id", "author_id is not equal to author.id")
+	}
+
+	return nil
+}
+
+func (b Book) validateID(_ interface{}) error {
+	if b.ID == uuid.Nil {
+		return validation.NewError("id", "id is null")
+	}
+	if b.ID == EmptyUUID() {
+		return validation.NewError("id", "id is empty")
+	}
+
+	return nil
 }
 
 func (b Book) GetID() uuid.UUID {

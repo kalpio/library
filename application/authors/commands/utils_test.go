@@ -50,9 +50,9 @@ func (a *authorServiceMock) GetAll() ([]domain.Author, error) {
 	return args.Get(0).([]domain.Author), args.Error(1)
 }
 
-func (a *authorServiceMock) Delete(id uuid.UUID) (bool, error) {
+func (a *authorServiceMock) Delete(id uuid.UUID) error {
 	args := a.Called(id)
-	return args.Bool(0), args.Error(1)
+	return args.Error(0)
 }
 
 func createAuthor() *domain.Author {

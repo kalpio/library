@@ -111,7 +111,7 @@ func GetByID[T Models](id uuid.UUID) (T, error) {
 	return result, nil
 }
 
-func Delete[T Models](id uuid.UUID) (int64, error) {
+func Delete[T Models](id uuid.UUID) error {
 	var (
 		db  domain.IDatabase
 		err error
@@ -119,15 +119,18 @@ func Delete[T Models](id uuid.UUID) (int64, error) {
 
 	db, err = getDB()
 	if err != nil {
-		return 0, err
+		return err
 	}
 
 	var gormDB = db.GetDB()
 	if gormDB = gormDB.Delete(new(T), id); gormDB.Error != nil {
-		return 0, errors.Wrapf(gormDB.Error, "repository: could not delete: %T", new(T))
+		return errors.Wrapf(gormDB.Error, "repository: could not delete: %T", new(T))
+	}
+	if gormDB.RowsAffected == 0 {
+		return errors.Errorf("repository: could not delete: %T", new(T))
 	}
 
-	return gormDB.RowsAffected, nil
+	return nil
 }
 
 func getDB() (domain.IDatabase, error) {

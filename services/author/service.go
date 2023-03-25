@@ -1,7 +1,7 @@
 package author
 
 import (
-	"errors"
+	"github.com/pkg/errors"
 	"library/domain"
 	"library/infrastructure/repository"
 
@@ -13,7 +13,7 @@ type IAuthorService interface {
 	Edit(id uuid.UUID, firstName, middleName, lastName string) (*domain.Author, error)
 	GetByID(id uuid.UUID) (*domain.Author, error)
 	GetAll() ([]domain.Author, error)
-	Delete(id uuid.UUID) (bool, error)
+	Delete(id uuid.UUID) error
 }
 
 type authorService struct {
@@ -27,7 +27,7 @@ func newAuthorService(db domain.IDatabase) IAuthorService {
 func (a *authorService) Create(id uuid.UUID, firstName, middleName, lastName string) (*domain.Author, error) {
 	model := domain.NewAuthor(id, firstName, middleName, lastName)
 
-	exists, err := exists(a.db, firstName, middleName, lastName)
+	exists, err := exists(firstName, middleName, lastName)
 	if err != nil {
 		return nil, err
 	}
@@ -86,19 +86,12 @@ func (a *authorService) GetAll() ([]domain.Author, error) {
 	return result, nil
 }
 
-func (a *authorService) Delete(id uuid.UUID) (bool, error) {
-	var (
-		rowsAffected int64
-		err          error
-	)
-	if rowsAffected, err = repository.Delete[domain.Author](id); err != nil {
-		return false, err
-	}
-
-	return rowsAffected > 0, nil
+func (a *authorService) Delete(id uuid.UUID) error {
+	err := repository.Delete[domain.Author](id)
+	return errors.Wrap(err, "could not delete author")
 }
 
-func exists(db domain.IDatabase, firstName, middleName, lastName string) (bool, error) {
+func exists(firstName, middleName, lastName string) (bool, error) {
 	columns := map[string]interface{}{
 		"FirstName":  firstName,
 		"MiddleName": middleName,
