@@ -59,22 +59,27 @@ func init() {
 	if err := ioc.AddTransient[domain.IDatabase](newRepositoryDatabase); err != nil {
 		log.Fatalf("repository [test]: failed to add database to service collection: %v\n", err)
 	}
+
+	if err := ioc.AddTransient[migrations.Migration](migrations.NewMigration); err != nil {
+		log.Fatalf("repository [test]: failed to add migration to service collection: %v\n", err)
+	}
 }
 
 func BeforeTest(t *testing.T) func(t *testing.T) {
 	ass := assert.New(t)
-	dsn, err := ioc.Get[domain.IDsn]()
+	migration, err := ioc.Get[migrations.Migration]()
 	ass.NoError(err)
 
-	err = migrations.CreateAndUseDatabase(dsn.GetDatabaseName())
+	err = migration.CreateDatabase()
 	ass.NoError(err)
-	err = migrations.UpdateDatabase()
+
+	err = migration.MigrateDatabase()
 	ass.NoError(err)
 
 	return func(t *testing.T) {
 		db, err := ioc.Get[domain.IDatabase]()
 		ass.NoError(err)
-		err = migrations.DropTables()
+		err = migration.DropTables()
 		ass.NoError(err)
 		sqlDB, err := db.GetDB().DB()
 		ass.NoError(err)
