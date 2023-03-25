@@ -78,8 +78,6 @@ func init() {
 }
 
 func beforeTest(t *testing.T) func(t *testing.T) {
-	t.Parallel()
-
 	ass := assert.New(t)
 	dsn, err := ioc.Get[domain.IDsn]()
 	ass.NoError(err)
