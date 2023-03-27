@@ -41,11 +41,8 @@ func newBookServiceDsn() domain.IDsn {
 }
 
 type bookServiceDb struct {
-	db *gorm.DB
-}
-
-func (d bookServiceDb) GetDB() *gorm.DB {
-	return d.db
+	db  *gorm.DB
+	dsn domain.IDsn
 }
 
 func newBookServiceDb(dsn domain.IDsn) domain.IDatabase {
@@ -54,7 +51,15 @@ func newBookServiceDb(dsn domain.IDsn) domain.IDatabase {
 		log.Fatalf("repository [test]: failed to create database: %v\n", err)
 	}
 
-	return bookServiceDb{db}
+	return bookServiceDb{db, dsn}
+}
+
+func (d bookServiceDb) GetDB() *gorm.DB {
+	return d.db
+}
+
+func (d bookServiceDb) GetDatabaseName() string {
+	return d.dsn.GetDatabaseName()
 }
 
 func initializeTests() error {
@@ -64,6 +69,9 @@ func initializeTests() error {
 	}
 	if err = ioc.AddTransient[domain.IDatabase](newBookServiceDb); err != nil {
 		return errors.Wrap(err, "repository [test]: failed to add database to service collection")
+	}
+	if err = migrations.NewMigrationRegister().Register(); err != nil {
+		return errors.Wrap(err, "repository [test]: failed to register migrations")
 	}
 	if err = author.NewAuthorServiceRegister().Register(); err != nil {
 		return errors.Wrap(err, "repository [test]: failed to register author service")
@@ -88,12 +96,12 @@ func init() {
 
 func beforeTest(t *testing.T) func(t *testing.T) {
 	ass := assert.New(t)
-	dsn, err := ioc.Get[domain.IDsn]()
+	migration, err := ioc.Get[migrations.Migration]()
 	ass.NoError(err)
 
-	err = migrations.CreateAndUseDatabase(dsn.GetDatabaseName())
+	err = migration.CreateDatabase()
 	ass.NoError(err)
-	err = migrations.UpdateDatabase()
+	err = migration.MigrateDatabase()
 	ass.NoError(err)
 
 	return afterTest
@@ -101,9 +109,11 @@ func beforeTest(t *testing.T) func(t *testing.T) {
 
 func afterTest(t *testing.T) {
 	ass := assert.New(t)
+	migration, err := ioc.Get[migrations.Migration]()
+	ass.NoError(err)
 	db, err := ioc.Get[domain.IDatabase]()
 	ass.NoError(err)
-	err = migrations.DropTables()
+	err = migration.DropTables()
 	ass.NoError(err)
 	sqlDB, err := db.GetDB().DB()
 	ass.NoError(err)
