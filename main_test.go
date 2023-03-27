@@ -1,6 +1,7 @@
 package main_test
 
 import (
+	"library/ioc"
 	"library/migrations"
 	"log"
 	"os"
@@ -11,12 +12,12 @@ import (
 	"library/end2endTests/bookstest"
 )
 
-var a application.App
+var testApplication application.App
 
 func TestMain(m *testing.M) {
-	a.Host("127.0.0.1")
-	a.Port("8089")
-	a.Initialize()
+	testApplication.Host("127.0.0.1")
+	testApplication.Port("8089")
+	testApplication.Initialize()
 
 	code := m.Run()
 
@@ -26,13 +27,17 @@ func TestMain(m *testing.M) {
 }
 
 func dropDatabase() {
-	if err := migrations.DropDatabase(); err != nil {
+	migration, err := ioc.Get[migrations.Migration]()
+	if err != nil {
+		log.Fatalln(err)
+	}
+	if err = migration.DropDatabase(); err != nil {
 		log.Fatalln(err)
 	}
 }
 
 func TestAuthorAPI(t *testing.T) {
-	authortest.SetApp(a)
+	authortest.SetApp(testApplication)
 	t.Run("PostNewAuthor", authortest.PostNewAuthor)
 	t.Run("PostDuplicatedAuthor", authortest.PostDuplicatedAuthor)
 	t.Run("PostAuthorWithEmptyFirstNameShouldFail", authortest.PostAuthorWithEmptyFirstNameShouldFail)
@@ -50,7 +55,7 @@ func TestAuthorAPI(t *testing.T) {
 
 	t.Run("EditExistingAuthor", authortest.EditExistingAuthor)
 
-	bookstest.SetApp(a)
+	bookstest.SetApp(testApplication)
 	t.Run("POST_NewBook", bookstest.PostNewBook)
 
 	t.Run("GetExistingBookByID", bookstest.GetExistingBookByID)
