@@ -39,11 +39,8 @@ func (dsn authorServiceDsn) GetDatabaseName() string {
 }
 
 type authorServiceDb struct {
-	db *gorm.DB
-}
-
-func (d authorServiceDb) GetDB() *gorm.DB {
-	return d.db
+	db  *gorm.DB
+	dsn domain.IDsn
 }
 
 func newAuthorServiceDb(dsn domain.IDsn) domain.IDatabase {
@@ -51,7 +48,15 @@ func newAuthorServiceDb(dsn domain.IDsn) domain.IDatabase {
 	if err != nil {
 		log.Fatalf("repository [test]: failed to create database: %v\n", err)
 	}
-	return authorServiceDb{db}
+	return authorServiceDb{db, dsn}
+}
+
+func (d authorServiceDb) GetDB() *gorm.DB {
+	return d.db
+}
+
+func (d authorServiceDb) GetDatabaseName() string {
+	return d.dsn.GetDatabaseName()
 }
 
 func initializeTests() error {

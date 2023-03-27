@@ -31,12 +31,16 @@ func newDsnBook() domain.IDsn {
 type dbBook struct {
 }
 
+func newDBBook(_ domain.IDsn) domain.IDatabase {
+	return dbBook{}
+}
+
 func (d dbBook) GetDB() *gorm.DB {
 	return nil
 }
 
-func newDBBook(_ domain.IDsn) domain.IDatabase {
-	return dbBook{}
+func (d dbBook) GetDatabaseName() string {
+	return ""
 }
 
 func Initialize() error {

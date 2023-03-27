@@ -8,11 +8,8 @@ import (
 )
 
 type database struct {
-	db *gorm.DB
-}
-
-func (d database) GetDB() *gorm.DB {
-	return d.db
+	db  *gorm.DB
+	dsn domain.IDsn
 }
 
 func NewDatabase(dsn domain.IDsn) domain.IDatabase {
@@ -21,5 +18,13 @@ func NewDatabase(dsn domain.IDsn) domain.IDatabase {
 		log.Fatalf("app: failed to open database: %v", err)
 	}
 
-	return database{db: db}
+	return database{db: db, dsn: dsn}
+}
+
+func (d database) GetDB() *gorm.DB {
+	return d.db
+}
+
+func (d database) GetDatabaseName() string {
+	return d.dsn.GetDatabaseName()
 }

@@ -41,11 +41,8 @@ func newBookServiceDsn() domain.IDsn {
 }
 
 type bookServiceDb struct {
-	db *gorm.DB
-}
-
-func (d bookServiceDb) GetDB() *gorm.DB {
-	return d.db
+	db  *gorm.DB
+	dsn domain.IDsn
 }
 
 func newBookServiceDb(dsn domain.IDsn) domain.IDatabase {
@@ -54,7 +51,15 @@ func newBookServiceDb(dsn domain.IDsn) domain.IDatabase {
 		log.Fatalf("repository [test]: failed to create database: %v\n", err)
 	}
 
-	return bookServiceDb{db}
+	return bookServiceDb{db, dsn}
+}
+
+func (d bookServiceDb) GetDB() *gorm.DB {
+	return d.db
+}
+
+func (d bookServiceDb) GetDatabaseName() string {
+	return d.dsn.GetDatabaseName()
 }
 
 func initializeTests() error {

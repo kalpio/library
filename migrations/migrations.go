@@ -22,7 +22,7 @@ func NewMigration(db domain.IDatabase) Migration {
 }
 
 func (m Migration) CreateDatabase() error {
-	databaseName := m.db.GetDB().Name()
+	databaseName := m.getDatabaseName()
 	if !strings.Contains(m.getDialectorName(), "sqlite") {
 		if tx := m.db.GetDB().Exec(fmt.Sprintf("CREATE DATABASE %s;", databaseName)); tx.Error != nil {
 			return tx.Error
@@ -70,7 +70,7 @@ func (m Migration) DropTables() error {
 }
 
 func (m Migration) getDatabaseName() string {
-	return m.db.GetDB().Name()
+	return m.db.GetDatabaseName()
 }
 
 func (m Migration) getDialectorName() string {
