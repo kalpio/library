@@ -38,9 +38,10 @@ func (a *App) Port(port string) {
 
 func (a *App) Initialize() {
 	a.configureServices()
-	a.migrateDatabase()
 	a.router = configureRouter()
 	a.initializeMediatr()
+
+	a.migrateDatabase()
 }
 
 func (*App) configureServices() {
@@ -58,17 +59,16 @@ func (*App) configureServices() {
 }
 
 func (*App) migrateDatabase() {
-	dsn, err := ioc.Get[domain.IDsn]()
+	migration, err := ioc.Get[migrations.Migration]()
 	if err != nil {
-		log.Fatalf("app: failed to get DNS service instance: %v\n", err)
+		log.Fatalf("app: failed to get migration service instance: %v\n", err)
 	}
 
-	if err := migrations.CreateAndUseDatabase(dsn.GetDatabaseName()); err != nil {
-		log.Fatalf("app: failed to create and use database: %v\n", err)
+	if err = migration.CreateDatabase(); err != nil {
+		log.Fatalf("app: failed to create database: %v\n", err)
 	}
-
-	if err := migrations.UpdateDatabase(); err != nil {
-		log.Fatalf("app: failed to update database: %v\n", err)
+	if err = migration.MigrateDatabase(); err != nil {
+		log.Fatalf("app: failed to migrate database: %v\n", err)
 	}
 }
 

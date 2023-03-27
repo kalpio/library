@@ -21,6 +21,7 @@ func (reg) Register() error {
 	if err := migrationRegister.Register(); err != nil {
 		return errors.Wrap(err, "register [app]: failed to register migration")
 	}
+
 	serviceRegister := services.NewServiceRegister()
 	if err := serviceRegister.Register(); err != nil {
 		return errors.Wrap(err, "register [app]: failed to register services")
