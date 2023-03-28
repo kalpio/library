@@ -12,7 +12,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestSaveNewAuthor(t *testing.T) {
+func Test_SaveAuthorSucceeded(t *testing.T) {
 	afterTest := testutils.BeforeTest(t)
 	defer afterTest(t)
 
@@ -32,7 +32,7 @@ func TestSaveNewAuthor(t *testing.T) {
 	ass.Equal(result.LastName, lastName)
 }
 
-func TestTryAddExistingAuthor(t *testing.T) {
+func Test_SaveReturnsError_When_AuthorAlreadyExists(t *testing.T) {
 	afterTest := testutils.BeforeTest(t)
 	defer afterTest(t)
 
@@ -57,7 +57,7 @@ func TestTryAddExistingAuthor(t *testing.T) {
 	ass.Equal(result1.ID, id)
 }
 
-func TestTryAddEmptyFirstName(t *testing.T) {
+func Test_SaveReturnsError_When_FirstNameIsEmpty(t *testing.T) {
 	afterTest := testutils.BeforeTest(t)
 	defer afterTest(t)
 
@@ -73,7 +73,7 @@ func TestTryAddEmptyFirstName(t *testing.T) {
 	ass.Equal(result.ID, domain.EmptyUUID())
 }
 
-func TestTryAddEmptyLastName(t *testing.T) {
+func Test_SaveReturnsError_When_LastNameIsEmpty(t *testing.T) {
 	afterTest := testutils.BeforeTest(t)
 	defer afterTest(t)
 
