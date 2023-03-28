@@ -1,3 +1,6 @@
+build:
+	go build -o bin/library.exe main.go
+
 test:
 	go test ./...
 
