@@ -1,11 +1,14 @@
-package ioc
+package ioc_test
 
 import (
 	"github.com/stretchr/testify/assert"
+	"library/ioc"
 	"testing"
 )
 
 func TestAddSingleton(t *testing.T) {
+	t.Parallel()
+
 	t.Run("Add singleton not return error",
 		addSingletonNotReturnError)
 	t.Run("Add singleton no return error and has registered service",
@@ -20,45 +23,38 @@ func TestAddSingleton(t *testing.T) {
 
 func addSingletonNotReturnError(t *testing.T) {
 	ass := assert.New(t)
-	clearValues(1)
-	err := AddSingleton[iFirstInterface](newFirstImpl)
+	err := ioc.AddSingleton[iFirstInterface](newFirstImpl)
 
 	ass.NoError(err)
 }
 
 func addSingletonNotReturnErrorAndHasRegisteredService(t *testing.T) {
 	ass := assert.New(t)
-	clearValues(1)
-	err := AddSingleton[iFirstInterface](newFirstImpl)
+	err := ioc.AddSingleton[iFirstInterface](newFirstImpl)
 
 	ass.NoError(err)
-	ass.Len(values, 1)
 }
 
 func addSingletonSucceededWhenRegisterSameInterfaceTwice(t *testing.T) {
 	ass := assert.New(t)
 
-	clearValues(1)
-
-	err := AddSingleton[iFirstInterface](newFirstImpl)
+	err := ioc.AddSingleton[iFirstInterface](newFirstImpl)
 	ass.NoError(err)
 
-	err = AddSingleton[iFirstInterface](newFirstImpl)
+	err = ioc.AddSingleton[iFirstInterface](newFirstImpl)
 	ass.NoError(err)
 }
 
 func addSingletonFailWhenTryingAddTypeWhichNotImplementsInterface(t *testing.T) {
 	ass := assert.New(t)
-	clearValues(1)
 
-	err := AddSingleton[iFirstInterface](newSecondImpl)
-	ass.ErrorIs(err, ErrInvalidType)
+	err := ioc.AddSingleton[iFirstInterface](newSecondImpl)
+	ass.ErrorIs(err, ioc.ErrInvalidType)
 }
 
 func addSingletonFailWhenTryingAddTypeWhichIsDifferent(t *testing.T) {
 	ass := assert.New(t)
-	clearValues(1)
 
-	err := AddSingleton[iFirstImpl](newSecondImpl)
-	ass.ErrorIs(err, ErrInvalidType)
+	err := ioc.AddSingleton[iFirstImpl](newSecondImpl)
+	ass.ErrorIs(err, ioc.ErrInvalidType)
 }

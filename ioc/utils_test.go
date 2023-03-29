@@ -1,10 +1,8 @@
-package ioc
+package ioc_test
 
-import "reflect"
-
-func clearValues(length int) {
-	values = make(map[reflect.Type]*scopeAndInterface, length)
-}
+import (
+	"sync"
+)
 
 /**
  * Tests interfaces
@@ -24,11 +22,13 @@ type iSecondInterface interface {
  * Test implementation
  */
 type iFirstImpl struct {
+	mu     sync.RWMutex
 	Second iSecondInterface
 	text   string
 }
 
 type secondImpl struct {
+	mu   sync.Mutex
 	text string
 }
 
