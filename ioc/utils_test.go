@@ -1,10 +1,8 @@
-package ioc
+package ioc_test
 
-import "reflect"
-
-func clearValues(length int) {
-	values = make(map[reflect.Type]*scopeAndInterface, length)
-}
+import (
+	"sync"
+)
 
 /**
  * Tests interfaces
@@ -24,11 +22,13 @@ type iSecondInterface interface {
  * Test implementation
  */
 type iFirstImpl struct {
+	mu     sync.RWMutex
 	Second iSecondInterface
 	text   string
 }
 
 type secondImpl struct {
+	mu   sync.Mutex
 	text string
 }
 
@@ -41,6 +41,8 @@ func newFirstImplWithSecondInterface(secondInterface iSecondInterface) *iFirstIm
 }
 
 func (f *iFirstImpl) SetText(s string) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
 	f.text = s
 }
 
@@ -61,6 +63,8 @@ func newSecondImplNonPointer() secondImpl {
 }
 
 func (second *secondImpl) SetSecondText(s string) {
+	second.mu.Lock()
+	defer second.mu.Unlock()
 	second.text = s
 }
 

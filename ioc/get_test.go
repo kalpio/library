@@ -1,12 +1,15 @@
-package ioc
+package ioc_test
 
 import (
 	"github.com/stretchr/testify/assert"
+	"library/ioc"
 	"library/random"
 	"testing"
 )
 
 func TestGet(t *testing.T) {
+	t.Parallel()
+
 	t.Run("Get return registered singleton instance",
 		getReturnRegisteredSingletonInstance)
 	t.Run("Get return not unique registered singleton instance",
@@ -25,30 +28,28 @@ func TestGet(t *testing.T) {
 
 func getReturnRegisteredSingletonInstance(t *testing.T) {
 	ass := assert.New(t)
-	clearValues(1)
 
-	err := AddSingleton[iFirstInterface](newFirstImpl)
+	err := ioc.AddSingleton[iFirstInterface](newFirstImpl)
 	ass.NoError(err)
 
-	instance, err := Get[iFirstInterface]()
+	instance, err := ioc.Get[iFirstInterface]()
 	ass.NoError(err)
 	ass.IsType(&iFirstImpl{}, instance)
 }
 
 func getReturnNotUniqueRegisteredSingletonInstance(t *testing.T) {
 	ass := assert.New(t)
-	clearValues(1)
 
-	err := AddSingleton[iFirstInterface](newFirstImpl)
+	err := ioc.AddSingleton[iFirstInterface](newFirstImpl)
 	ass.NoError(err)
 
-	v0, err := Get[iFirstInterface]()
+	v0, err := ioc.Get[iFirstInterface]()
 	ass.NoError(err)
 	ass.IsType(&iFirstImpl{}, v0)
 
 	v0.SetText(random.String(10))
 
-	v1, err := Get[iFirstInterface]()
+	v1, err := ioc.Get[iFirstInterface]()
 	ass.NoError(err)
 
 	ass.Equal(v0.GetText(), v1.GetText())
@@ -57,54 +58,50 @@ func getReturnNotUniqueRegisteredSingletonInstance(t *testing.T) {
 
 func getReturnRegisteredSingletonPointer(t *testing.T) {
 	ass := assert.New(t)
-	clearValues(1)
 
-	err := AddSingleton[*secondImpl](newSecondImpl)
+	err := ioc.AddSingleton[*secondImpl](newSecondImpl)
 	ass.NoError(err)
 
-	value, err := Get[*secondImpl]()
+	value, err := ioc.Get[*secondImpl]()
 	ass.NoError(err)
 	ass.IsType(&secondImpl{}, value)
 }
 
 func getReturnRegisteredSingletonValue(t *testing.T) {
 	ass := assert.New(t)
-	clearValues(1)
 
-	err := AddSingleton[secondImpl](newSecondImplNonPointer)
+	err := ioc.AddSingleton[secondImpl](newSecondImplNonPointer)
 	ass.NoError(err)
 
-	value, err := Get[secondImpl]()
+	value, err := ioc.Get[secondImpl]()
 	ass.NoError(err)
 	ass.IsType(secondImpl{}, value)
 }
 
 func getReturnRegisteredTransientInstance(t *testing.T) {
 	ass := assert.New(t)
-	clearValues(1)
 
-	err := AddTransient[iFirstInterface](newFirstImpl)
+	err := ioc.AddTransient[iFirstInterface](newFirstImpl)
 	ass.NoError(err)
 
-	value, err := Get[iFirstInterface]()
+	value, err := ioc.Get[iFirstInterface]()
 	ass.NoError(err)
 	ass.IsType(new(iFirstImpl), value)
 }
 
 func getReturnUniqueRegisteredTransientInstance(t *testing.T) {
 	ass := assert.New(t)
-	clearValues(2)
 
-	err := AddTransient[iFirstInterface](newFirstImpl)
+	err := ioc.AddTransient[iFirstInterface](newFirstImpl)
 	ass.NoError(err)
 
-	v0, err := Get[iFirstInterface]()
+	v0, err := ioc.Get[iFirstInterface]()
 	ass.NoError(err)
 	ass.IsType(&iFirstImpl{}, v0)
 
 	v0.SetText(random.String(10))
 
-	v1, err := Get[iFirstInterface]()
+	v1, err := ioc.Get[iFirstInterface]()
 	ass.NoError(err)
 	ass.IsType(&iFirstImpl{}, v1)
 
@@ -114,20 +111,19 @@ func getReturnUniqueRegisteredTransientInstance(t *testing.T) {
 
 func getReturnUniqueRegisteredTransientWithResolvedConstructorArgs(t *testing.T) {
 	ass := assert.New(t)
-	clearValues(2)
 
-	err := AddSingleton[iSecondInterface](newSecondImpl)
+	err := ioc.AddSingleton[iSecondInterface](newSecondImpl)
 	ass.NoError(err)
 
-	second, err := Get[iSecondInterface]()
+	second, err := ioc.Get[iSecondInterface]()
 	ass.NoError(err)
 	secondText := random.String(10)
 	second.SetSecondText(secondText)
 
-	err = AddTransient[iFirstInterface](newFirstImplWithSecondInterface)
+	err = ioc.AddTransient[iFirstInterface](newFirstImplWithSecondInterface)
 	ass.NoError(err)
 
-	v0, err := Get[iFirstInterface]()
+	v0, err := ioc.Get[iFirstInterface]()
 	ass.NoError(err)
 
 	ass.Equal(v0.GetTextFromSecond(), secondText)

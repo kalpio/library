@@ -3,6 +3,7 @@ package ioc
 import (
 	"fmt"
 	"reflect"
+	"sync"
 
 	"github.com/pkg/errors"
 )
@@ -12,6 +13,7 @@ var (
 	singletons      = make(map[reflect.Type]reflect.Value, 10)
 	ErrNoRegistered = errors.New("ioc: no service is registered for type")
 	ErrInvalidType  = errors.New("ioc: invalid type")
+	valuesLock      = &sync.RWMutex{}
 )
 
 type scopeAndInterface struct {
@@ -45,7 +47,9 @@ func AddSingleton[T interface{}](ctor any) error {
 
 	args := getMethodArgumentTypes(constructor)
 
+	valuesLock.Lock()
 	values[t] = newScopeAndInterface(Singleton, constructor, args)
+	valuesLock.Unlock()
 
 	return nil
 }
@@ -64,7 +68,9 @@ func AddTransient[T any](ctor any) error {
 
 	args := getMethodArgumentTypes(constructor)
 
+	valuesLock.Lock()
 	values[t] = newScopeAndInterface(Transient, constructor, args)
+	valuesLock.Unlock()
 
 	return nil
 }
@@ -112,10 +118,12 @@ func Get[T any]() (T, error) {
 }
 
 func resolveType(t reflect.Type) (reflect.Value, error) {
+	valuesLock.RLock()
 	value, ok := values[t]
 	if !ok {
 		return getNilValue(), errors.Wrapf(ErrNoRegistered, "%v", t)
 	}
+	valuesLock.RUnlock()
 
 	var (
 		args []reflect.Value
