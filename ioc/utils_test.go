@@ -41,8 +41,6 @@ func newFirstImplWithSecondInterface(secondInterface iSecondInterface) *iFirstIm
 }
 
 func (f *iFirstImpl) SetText(s string) {
-	f.mu.Lock()
-	defer f.mu.Unlock()
 	f.text = s
 }
 
@@ -63,8 +61,6 @@ func newSecondImplNonPointer() secondImpl {
 }
 
 func (second *secondImpl) SetSecondText(s string) {
-	second.mu.Lock()
-	defer second.mu.Unlock()
 	second.text = s
 }
 

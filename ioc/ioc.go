@@ -138,12 +138,14 @@ func resolveType(t reflect.Type) (reflect.Value, error) {
 	}
 
 	if value.scope == Singleton {
+		valuesLock.Lock()
 		_, ok := singletons[t]
 		if !ok {
 			v := value.value.(reflect.Value)
 			res := v.Call(args)
 			singletons[t] = res[0]
 		}
+		valuesLock.Unlock()
 
 		return reflect.ValueOf(singletons[t].Interface()), nil
 	}
