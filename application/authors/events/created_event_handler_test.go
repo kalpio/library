@@ -3,11 +3,11 @@ package events_test
 import (
 	"context"
 	"fmt"
-	"github.com/google/uuid"
 	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	"library/application"
 	"library/application/authors/events"
+	"library/domain"
 	"library/random"
 	"testing"
 )
@@ -19,7 +19,7 @@ func TestAuthorCreatedEventHandler_Handle_LogValidMessage(t *testing.T) {
 	log.SetOutput(writer)
 
 	event := &events.AuthorCreatedEvent{
-		AuthorID:   uuid.UUID{},
+		AuthorID:   domain.NewAuthorID(),
 		FirstName:  random.String(20),
 		MiddleName: random.String(20),
 		LastName:   random.String(20),

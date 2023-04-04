@@ -3,11 +3,11 @@ package events_test
 import (
 	"context"
 	"fmt"
-	"github.com/google/uuid"
 	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	"library/application"
 	"library/application/authors/events"
+	"library/domain"
 	"testing"
 )
 
@@ -16,7 +16,7 @@ func TestAuthorDeletedEventHandler_Handle_LogValidMessage(t *testing.T) {
 	writer := application.NewTestLogWriter()
 	log.SetOutput(writer)
 
-	event := &events.AuthorDeletedEvent{AuthorID: uuid.New()}
+	event := &events.AuthorDeletedEvent{AuthorID: domain.NewAuthorID()}
 	eventHandler := &events.AuthorDeletedEventHandler{}
 	expected := fmt.Sprintf("Author deleted [%s]", event.AuthorID)
 	err := eventHandler.Handle(context.Background(), event)

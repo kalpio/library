@@ -8,8 +8,6 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/google/uuid"
-
 	"github.com/stretchr/testify/assert"
 )
 
@@ -62,7 +60,7 @@ func DeleteNotExistingAuthor(t *testing.T) {
 		values = append(values, *model)
 	}
 
-	resp := requestDelete(uuid.New())
+	resp := requestDelete(domain.NewAuthorID())
 	ass.NotNil(resp)
 	ass.Equal(http.StatusBadRequest, resp.Code)
 
@@ -74,7 +72,7 @@ func DeleteNotExistingAuthor(t *testing.T) {
 	ass.ElementsMatch(values, result)
 }
 
-func requestDelete(id uuid.UUID) *httptest.ResponseRecorder {
+func requestDelete(id domain.AuthorID) *httptest.ResponseRecorder {
 	req, _ := http.NewRequest("DELETE", fmt.Sprintf("/api/v1/author/%s", id.String()), nil)
 	return executeRequest(req)
 }

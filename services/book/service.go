@@ -7,24 +7,22 @@ import (
 	"library/infrastructure/repository"
 	"library/services/author"
 	"strings"
-
-	"github.com/google/uuid"
 )
 
 type IBookService interface {
-	Create(id uuid.UUID,
+	Create(id domain.BookID,
 		title, isbn, description string,
-		authorID uuid.UUID) (*domain.Book, error)
+		authorID domain.AuthorID) (*domain.Book, error)
 
-	Edit(id uuid.UUID,
+	Edit(id domain.BookID,
 		title, isbn, description string,
-		authorID uuid.UUID) (*domain.Book, error)
+		authorID domain.AuthorID) (*domain.Book, error)
 
-	GetByID(id uuid.UUID) (*domain.Book, error)
+	GetByID(id domain.BookID) (*domain.Book, error)
 
 	GetAll() ([]domain.Book, error)
 
-	Delete(id uuid.UUID) error
+	Delete(id domain.BookID) error
 }
 
 type bookService struct {
@@ -36,9 +34,9 @@ func newBookService(db domain.IDatabase, authorSrv author.IAuthorService) IBookS
 	return &bookService{db: db, authorSrv: authorSrv}
 }
 
-func (b *bookService) Create(id uuid.UUID,
+func (b *bookService) Create(id domain.BookID,
 	title, isbn, description string,
-	authorID uuid.UUID) (*domain.Book, error) {
+	authorID domain.AuthorID) (*domain.Book, error) {
 
 	err := b.exists(isbn)
 	if err != nil {
@@ -51,7 +49,7 @@ func (b *bookService) Create(id uuid.UUID,
 		return nil, err
 	}
 
-	model := domain.NewBook(id, title, isbn, description, bookAuthor)
+	model := domain.NewBook(domain.BookID(id.String()), title, isbn, description, bookAuthor)
 
 	var result domain.Book
 	result, err = repository.Save(*model)
@@ -82,7 +80,7 @@ func (b *bookService) exists(isbn string) error {
 	return nil
 }
 
-func (b *bookService) getAuthor(id uuid.UUID) (*domain.Author, error) {
+func (b *bookService) getAuthor(id domain.AuthorID) (*domain.Author, error) {
 	bookAuthor, err := b.authorSrv.GetByID(id)
 	if err != nil {
 		return nil, fmt.Errorf("book service: could not find book author: %w", err)
@@ -91,9 +89,9 @@ func (b *bookService) getAuthor(id uuid.UUID) (*domain.Author, error) {
 	return bookAuthor, nil
 }
 
-func (b *bookService) Edit(id uuid.UUID,
+func (b *bookService) Edit(id domain.BookID,
 	title, isbn, description string,
-	authorID uuid.UUID) (*domain.Book, error) {
+	authorID domain.AuthorID) (*domain.Book, error) {
 
 	bookAuthor, err := b.getAuthor(authorID)
 	if err != nil {
@@ -102,8 +100,8 @@ func (b *bookService) Edit(id uuid.UUID,
 
 	// TODO(kalpio): use domain.NewBook - in repository update method add update author table. Not is locked when update book
 	model := &domain.Book{
-		Entity: domain.Entity{
-			ID: id,
+		Entity: domain.Entity[domain.BookID]{
+			ID: domain.BookID(id.String()),
 		},
 		Title:       title,
 		ISBN:        isbn,
@@ -121,8 +119,8 @@ func (b *bookService) Edit(id uuid.UUID,
 	return result, errors.Wrapf(err, "book service: could not find book with id %s", id)
 }
 
-func (b *bookService) GetByID(id uuid.UUID) (*domain.Book, error) {
-	result, err := repository.GetByID[domain.Book](id)
+func (b *bookService) GetByID(id domain.BookID) (*domain.Book, error) {
+	result, err := repository.GetByID[domain.Book](id.UUID())
 	if err != nil {
 		return nil, fmt.Errorf("book service: could not find book: %w", err)
 	}
@@ -138,8 +136,8 @@ func (b *bookService) GetAll() ([]domain.Book, error) {
 	return result, nil
 }
 
-func (b *bookService) Delete(id uuid.UUID) error {
-	err := repository.Delete[domain.Book](id)
+func (b *bookService) Delete(id domain.BookID) error {
+	err := repository.Delete[domain.Book](id.UUID())
 
 	return errors.Wrap(err, "book service: could not delete book")
 }

@@ -7,25 +7,37 @@ import (
 
 type AuthorID string
 
-func ParseUUID[T AuthorID | BookID](val T) uuid.UUID {
-	return uuid.MustParse(string(val))
+func (a AuthorID) String() string {
+	return string(a)
 }
 
-func ParseID[T AuthorID | BookID](val uuid.UUID) T {
-	return T(val.String())
+func (a AuthorID) IsNil() bool {
+	return a == AuthorID(uuid.Nil.String())
+}
+
+func (a AuthorID) IsEmpty() bool {
+	return a == AuthorID(EmptyUUID().String())
+}
+
+func (a AuthorID) UUID() uuid.UUID {
+	return uuid.MustParse(a.String())
+}
+
+func NewAuthorID() AuthorID {
+	return AuthorID(uuid.NewString())
 }
 
 type Author struct {
-	Entity
+	Entity[AuthorID]
 	FirstName  string `gorm:"column:firstName;index:uq_first_last,unique" json:"first_name"`
 	MiddleName string `gorm:"column:middleName" json:"middle_name"`
 	LastName   string `gorm:"column:lastName;index:uq_first_last,unique" json:"last_name"`
 	Books      []Book `json:"books"`
 }
 
-func NewAuthor(id uuid.UUID, firstName, middleName, lastName string) *Author {
+func NewAuthor(id AuthorID, firstName, middleName, lastName string) *Author {
 	return &Author{
-		Entity:     Entity{ID: id},
+		Entity:     Entity[AuthorID]{ID: id},
 		FirstName:  firstName,
 		MiddleName: middleName,
 		LastName:   lastName,
@@ -42,14 +54,14 @@ func (a Author) Validate() error {
 }
 
 func (a Author) GetID() uuid.UUID {
-	return a.ID
+	return a.ID.UUID()
 }
 
 func (a Author) validateID(_ interface{}) error {
-	if a.ID == uuid.Nil {
+	if a.ID.IsNil() {
 		return validation.NewError("id", "id is null")
 	}
-	if a.ID == EmptyUUID() {
+	if a.ID.IsEmpty() {
 		return validation.NewError("id", "id is empty")
 	}
 

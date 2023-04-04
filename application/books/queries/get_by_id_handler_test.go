@@ -6,7 +6,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"library/application/books/bookstest"
 	"library/application/books/queries"
-	"library/domain"
 	"library/ioc"
 	"library/services/book"
 	"testing"
@@ -29,7 +28,7 @@ func TestBook_QueryHandler_ReturnCorrectData(t *testing.T) {
 			expectedBook.ID).
 		Return(expectedBook, nil)
 
-	query := queries.NewGetBookByIDQuery(domain.BookID(expectedBook.ID.String()))
+	query := queries.NewGetBookByIDQuery(expectedBook.ID)
 	response, err := mediatr.Send[
 		*queries.GetBookByIDQuery,
 		*queries.GetBookByIDQueryResponse](

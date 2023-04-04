@@ -2,7 +2,6 @@ package author
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 	"github.com/mehdihadeli/go-mediatr"
 	"library/application/authors/commands"
 	"library/application/authors/queries"
@@ -31,7 +30,7 @@ func (a *Controller) Add(ctx *gin.Context) {
 		return
 	}
 
-	command := commands.NewCreateAuthorCommand(uuid.New(), json.FirstName, json.MiddleName, json.LastName)
+	command := commands.NewCreateAuthorCommand(domain.NewAuthorID(), json.FirstName, json.MiddleName, json.LastName)
 	response, err := mediatr.Send[*commands.CreateAuthorCommand, *commands.CreateAuthorCommandResponse](
 		ctx.Request.Context(),
 		command)

@@ -2,7 +2,6 @@ package commands_test
 
 import (
 	"context"
-	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"library/application/books/bookstest"
 	"library/application/books/commands"
@@ -37,7 +36,7 @@ func TestBook_CreateCommandHandler_RaisedBookCreatedEvent(t *testing.T) {
 
 	commandHandler := commands.NewCreateBookCommandHandler(nil, mckService)
 	_, err = commandHandler.Handle(context.Background(),
-		commands.NewCreateBookCommand(domain.BookID(expectedBook.ID.String()),
+		commands.NewCreateBookCommand(expectedBook.ID,
 			expectedBook.Title,
 			expectedBook.ISBN,
 			expectedBook.Description,
@@ -49,9 +48,9 @@ func TestBook_CreateCommandHandler_RaisedBookCreatedEvent(t *testing.T) {
 	notifications := domainEvents.GetEvents[*events.BookCreatedEvent]()
 	ass.Len(notifications, 1)
 
-	ass.Equal(expectedBook.ID, uuid.MustParse(string(notifications[0].BookID)))
+	ass.Equal(expectedBook.ID, notifications[0].BookID)
 	ass.Equal(expectedBook.Title, notifications[0].Title)
 	ass.Equal(expectedBook.ISBN, notifications[0].ISBN)
 	ass.Equal(expectedBook.Description, notifications[0].Description)
-	ass.Equal(expectedBook.AuthorID, uuid.MustParse(string(notifications[0].AuthorID)))
+	ass.Equal(expectedBook.AuthorID, notifications[0].AuthorID)
 }

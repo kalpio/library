@@ -44,7 +44,7 @@ func Update[T Models](model T) error {
 	}
 
 	if model.GetID() == domain.EmptyUUID() {
-		return errors.Errorf("repository: ID for %T must be set", model)
+		return errors.Errorf("repository: AuthorID for %T must be set", model)
 	}
 
 	if tx := db.GetDB().Model(model).
@@ -105,7 +105,7 @@ func GetByID[T Models](id uuid.UUID) (T, error) {
 	}
 
 	if err = db.GetDB().First(&result, id).Error; err != nil {
-		return *new(T), errors.Wrapf(err, "repository: could not find %T by ID: %d", new(T), id)
+		return *new(T), errors.Wrapf(err, "repository: could not find %T by AuthorID: %d", new(T), id)
 	}
 
 	return result, nil

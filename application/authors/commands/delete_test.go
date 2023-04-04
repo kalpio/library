@@ -8,7 +8,6 @@ import (
 	domainEvents "library/domain/events"
 	"testing"
 
-	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -17,15 +16,14 @@ func TestAuthor_DeleteCommandHandler_RaisedAuthorDeletedEvent(t *testing.T) {
 	registerEvents(ass)
 	mckService := new(authorServiceMock)
 
-	authorID := uuid.New()
-	expectedAuthorID := domain.AuthorID(authorID.String())
+	expectedID := domain.NewAuthorID()
 	mckService.
-		On("Delete", authorID).
+		On("Delete", expectedID).
 		Return(nil)
 
 	commandHandler := commands.NewDeleteAuthorCommandHandler(nil, mckService)
 	response, err := commandHandler.Handle(context.Background(),
-		commands.NewDeleteAuthorCommand(expectedAuthorID))
+		commands.NewDeleteAuthorCommand(expectedID))
 
 	ass.NoError(err)
 	mckService.AssertExpectations(t)
@@ -35,5 +33,5 @@ func TestAuthor_DeleteCommandHandler_RaisedAuthorDeletedEvent(t *testing.T) {
 	ass.Equal(1, len(notifications))
 
 	notification := notifications[0]
-	ass.Equal(authorID, notification.AuthorID)
+	ass.Equal(expectedID, notification.AuthorID)
 }

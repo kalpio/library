@@ -8,7 +8,6 @@ import (
 	domainEvents "library/domain/events"
 	"testing"
 
-	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -17,13 +16,13 @@ func TestAuthor_EditCommandHandler_Raised_AuthorEditedEvent(t *testing.T) {
 	registerEvents(ass)
 
 	mckService := new(authorServiceMock)
-	payloadAuthorID := uuid.New()
+	expectedID := domain.NewAuthorID()
 	editedAuthor := createAuthor()
-	editedAuthor.ID = payloadAuthorID
+	editedAuthor.SetID(expectedID)
 
 	mckService.
 		On("Edit",
-			payloadAuthorID,
+			expectedID,
 			editedAuthor.FirstName,
 			editedAuthor.MiddleName,
 			editedAuthor.LastName).
@@ -31,7 +30,7 @@ func TestAuthor_EditCommandHandler_Raised_AuthorEditedEvent(t *testing.T) {
 
 	commandHandler := commands.NewEditAuthorCommandHandler(nil, mckService)
 	_, err := commandHandler.Handle(context.Background(),
-		commands.NewEditAuthorCommand(domain.AuthorID(payloadAuthorID.String()),
+		commands.NewEditAuthorCommand(expectedID,
 			editedAuthor.FirstName,
 			editedAuthor.MiddleName,
 			editedAuthor.LastName))
@@ -43,7 +42,7 @@ func TestAuthor_EditCommandHandler_Raised_AuthorEditedEvent(t *testing.T) {
 	ass.Equal(1, len(notifications))
 
 	notification := notifications[0]
-	ass.Equal(payloadAuthorID, notification.AuthorID)
+	ass.Equal(expectedID, notification.AuthorID)
 	ass.Equal(editedAuthor.FirstName, notification.FirstName)
 	ass.Equal(editedAuthor.MiddleName, notification.MiddleName)
 	ass.Equal(editedAuthor.LastName, notification.LastName)

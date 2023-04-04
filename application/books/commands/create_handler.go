@@ -6,8 +6,6 @@ import (
 	"library/domain"
 	domainEvents "library/domain/events"
 	"library/services/book"
-
-	"github.com/google/uuid"
 )
 
 type CreateBookCommandHandler struct {
@@ -28,23 +26,12 @@ func (c *CreateBookCommandHandler) Handle(
 	ctx context.Context,
 	command *CreateBookCommand) (*CreateBookCommandResponse, error) {
 
-	var (
-		bookID   uuid.UUID
-		authorID uuid.UUID
-		model    *domain.Book
-		err      error
-	)
-	bookID, err = uuid.Parse(string(command.BookID))
-	if err != nil {
-		return nil, err
-	}
-
-	authorID, err = uuid.Parse(string(command.AuthorID))
-	model, err = c.bookSrv.Create(bookID,
+	// TODO: don't swallow the error
+	model, _ := c.bookSrv.Create(command.BookID,
 		command.Title,
 		command.ISBN,
 		command.Description,
-		authorID)
+		command.AuthorID)
 
 	response := &CreateBookCommandResponse{
 		BookID:      domain.BookID(model.ID.String()),
@@ -55,11 +42,11 @@ func (c *CreateBookCommandHandler) Handle(
 	}
 
 	domainEvents.Publish(ctx, events.NewBookCreatedEvent(
-		domain.BookID(model.ID.String()),
+		model.ID,
 		model.Title,
 		model.ISBN,
 		model.Description,
-		domain.AuthorID(model.AuthorID.String())))
+		model.AuthorID))
 
 	return response, nil
 }

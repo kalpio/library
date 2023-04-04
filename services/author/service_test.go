@@ -17,7 +17,11 @@ import (
 	"testing"
 )
 
-var authorService author.IAuthorService
+var (
+	authorService author.IAuthorService
+	emptyID       = domain.AuthorID(domain.EmptyUUID().String())
+	nilID         = domain.AuthorID(uuid.Nil.String())
+)
 
 type authorServiceDsn struct {
 	dsn          string
@@ -158,7 +162,7 @@ func createAuthorFailedWhenIdIsEmpty(t *testing.T) {
 
 	ass := assert.New(t)
 
-	_, err := createAuthorWithValues(domain.EmptyUUID(), random.String(10), random.String(10), random.String(20))
+	_, err := createAuthorWithValues(emptyID, random.String(10), random.String(10), random.String(20))
 	ass.Error(err)
 }
 
@@ -168,7 +172,7 @@ func createAuthorFailedWhenIdIsNil(t *testing.T) {
 
 	ass := assert.New(t)
 
-	_, err := createAuthorWithValues(uuid.Nil, random.String(10), random.String(10), random.String(20))
+	_, err := createAuthorWithValues(nilID, random.String(10), random.String(10), random.String(20))
 	ass.Error(err)
 }
 
@@ -212,7 +216,7 @@ func editAuthorFailedWhenNotExists(t *testing.T) {
 	a0, err := createAuthor()
 	ass.NoError(err)
 
-	a1, err := authorService.Edit(uuid.New(), a0.FirstName, a0.MiddleName, a0.LastName)
+	a1, err := authorService.Edit(domain.NewAuthorID(), a0.FirstName, a0.MiddleName, a0.LastName)
 	ass.Error(err)
 	ass.Nil(a1)
 }
@@ -254,7 +258,7 @@ func editAuthorFailedWhenIdIsEmpty(t *testing.T) {
 	a0, err := createAuthor()
 	ass.NoError(err)
 
-	a1, err := authorService.Edit(domain.EmptyUUID(), a0.FirstName, a0.MiddleName, a0.LastName)
+	a1, err := authorService.Edit(emptyID, a0.FirstName, a0.MiddleName, a0.LastName)
 	ass.Error(err)
 	ass.Nil(a1)
 }
@@ -268,7 +272,7 @@ func editAuthorFailedWhenIdIsNil(t *testing.T) {
 	a0, err := createAuthor()
 	ass.NoError(err)
 
-	a1, err := authorService.Edit(uuid.Nil, a0.FirstName, a0.MiddleName, a0.LastName)
+	a1, err := authorService.Edit(nilID, a0.FirstName, a0.MiddleName, a0.LastName)
 	ass.Error(err)
 	ass.Nil(a1)
 }
@@ -303,7 +307,7 @@ func getByIDFailedWhenNotExists(t *testing.T) {
 
 	ass := assert.New(t)
 
-	a, err := authorService.GetByID(uuid.New())
+	a, err := authorService.GetByID(domain.NewAuthorID())
 	ass.Error(err)
 	ass.Nil(a)
 }
@@ -314,7 +318,7 @@ func getByIDFailedWhenIDIsEmpty(t *testing.T) {
 
 	ass := assert.New(t)
 
-	a, err := authorService.GetByID(domain.EmptyUUID())
+	a, err := authorService.GetByID(emptyID)
 	ass.Error(err)
 	ass.Nil(a)
 }
@@ -325,7 +329,7 @@ func getByIDFailedWhenIDIsNil(t *testing.T) {
 
 	ass := assert.New(t)
 
-	a, err := authorService.GetByID(uuid.Nil)
+	a, err := authorService.GetByID(nilID)
 	ass.Error(err)
 	ass.Nil(a)
 }
@@ -372,7 +376,7 @@ func deleteFailedWhenNotExists(t *testing.T) {
 
 	ass := assert.New(t)
 
-	err := authorService.Delete(uuid.New())
+	err := authorService.Delete(domain.NewAuthorID())
 	ass.Error(err)
 }
 
@@ -382,7 +386,7 @@ func deleteFailedWhenIDIsEmpty(t *testing.T) {
 
 	ass := assert.New(t)
 
-	err := authorService.Delete(domain.EmptyUUID())
+	err := authorService.Delete(emptyID)
 	ass.Error(err)
 }
 
@@ -392,7 +396,7 @@ func deleteFailedWhenIDIsNil(t *testing.T) {
 
 	ass := assert.New(t)
 
-	err := authorService.Delete(uuid.Nil)
+	err := authorService.Delete(nilID)
 	ass.Error(err)
 }
 
@@ -442,9 +446,9 @@ func createAuthor() (*domain.Author, error) {
 }
 
 func createAuthorWithNames(firstName, middleName, lastName string) (*domain.Author, error) {
-	return createAuthorWithValues(uuid.New(), firstName, middleName, lastName)
+	return createAuthorWithValues(domain.NewAuthorID(), firstName, middleName, lastName)
 }
 
-func createAuthorWithValues(id uuid.UUID, firstName, middleName, lastName string) (*domain.Author, error) {
+func createAuthorWithValues(id domain.AuthorID, firstName, middleName, lastName string) (*domain.Author, error) {
 	return authorService.Create(id, firstName, middleName, lastName)
 }

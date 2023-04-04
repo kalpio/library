@@ -9,7 +9,6 @@ import (
 	"library/random"
 	"testing"
 
-	"github.com/google/uuid"
 	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 )
@@ -21,11 +20,11 @@ func TestBookCreatedEventHandler_Handle_LogValidMessage(t *testing.T) {
 	log.SetOutput(writer)
 
 	event := events.NewBookCreatedEvent(
-		domain.BookID(uuid.New().String()),
+		domain.NewBookID(),
 		random.String(20),
 		random.String(20),
 		random.String(120),
-		domain.AuthorID(uuid.New().String()))
+		domain.NewAuthorID())
 	eventHandler := &events.BookCreatedEventHandler{}
 	expected := fmt.Sprintf("Book created [%v, %s, %s, %s, %v]", event.BookID, event.Title, event.ISBN, event.Description, event.AuthorID)
 	err := eventHandler.Handle(context.Background(), event)

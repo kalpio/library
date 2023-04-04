@@ -7,8 +7,6 @@ import (
 	"library/random"
 	"testing"
 
-	"github.com/google/uuid"
-
 	"github.com/stretchr/testify/assert"
 )
 
@@ -16,12 +14,12 @@ func TestSaveNewBook(t *testing.T) {
 	afterTest := testutils.BeforeTest(t)
 	defer afterTest(t)
 
-	id := uuid.New()
+	id := domain.NewBookID()
 	title := random.String(100)
 	isbn := random.String(13)
 	format := random.String(3)
 	author := domain.NewAuthor(
-		uuid.New(),
+		domain.NewAuthorID(),
 		random.String(10),
 		random.String(10),
 		random.String(10))
@@ -94,19 +92,19 @@ func TestDelete(t *testing.T) {
 	ass := assert.New(t)
 
 	book := createNewBookInDB(t)
-	err := repository.Delete[domain.Book](book.ID)
+	err := repository.Delete[domain.Book](book.ID.UUID())
 
 	ass.NoError(err)
 }
 
 func createNewBookInDB(t *testing.T) *domain.Book {
 	b := domain.NewBook(
-		uuid.New(),
+		domain.NewBookID(),
 		random.String(100),
 		random.String(13),
 		random.String(3),
 		domain.NewAuthor(
-			uuid.New(),
+			domain.NewAuthorID(),
 			random.String(6),
 			random.String(6),
 			random.String(6)))

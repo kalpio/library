@@ -4,16 +4,14 @@ import (
 	"github.com/pkg/errors"
 	"library/domain"
 	"library/infrastructure/repository"
-
-	"github.com/google/uuid"
 )
 
 type IAuthorService interface {
-	Create(id uuid.UUID, firstName, middleName, lastName string) (*domain.Author, error)
-	Edit(id uuid.UUID, firstName, middleName, lastName string) (*domain.Author, error)
-	GetByID(id uuid.UUID) (*domain.Author, error)
+	Create(id domain.AuthorID, firstName, middleName, lastName string) (*domain.Author, error)
+	Edit(id domain.AuthorID, firstName, middleName, lastName string) (*domain.Author, error)
+	GetByID(id domain.AuthorID) (*domain.Author, error)
 	GetAll() ([]domain.Author, error)
-	Delete(id uuid.UUID) error
+	Delete(id domain.AuthorID) error
 }
 
 type authorService struct {
@@ -24,8 +22,8 @@ func newAuthorService(db domain.IDatabase) IAuthorService {
 	return &authorService{db}
 }
 
-func (a *authorService) Create(id uuid.UUID, firstName, middleName, lastName string) (*domain.Author, error) {
-	model := domain.NewAuthor(id, firstName, middleName, lastName)
+func (a *authorService) Create(id domain.AuthorID, firstName, middleName, lastName string) (*domain.Author, error) {
+	model := domain.NewAuthor(domain.AuthorID(id.String()), firstName, middleName, lastName)
 
 	exists, err := exists(firstName, middleName, lastName)
 	if err != nil {
@@ -44,10 +42,10 @@ func (a *authorService) Create(id uuid.UUID, firstName, middleName, lastName str
 	return &result, nil
 }
 
-func (a *authorService) Edit(id uuid.UUID, firstName, middleName, lastName string) (*domain.Author, error) {
+func (a *authorService) Edit(id domain.AuthorID, firstName, middleName, lastName string) (*domain.Author, error) {
 	model := &domain.Author{
-		Entity: domain.Entity{
-			ID: id,
+		Entity: domain.Entity[domain.AuthorID]{
+			ID: domain.AuthorID(id.String()),
 		},
 		FirstName:  firstName,
 		MiddleName: middleName,
@@ -68,8 +66,8 @@ func (a *authorService) Edit(id uuid.UUID, firstName, middleName, lastName strin
 	return result, nil
 }
 
-func (a *authorService) GetByID(id uuid.UUID) (*domain.Author, error) {
-	result, err := repository.GetByID[domain.Author](id)
+func (a *authorService) GetByID(id domain.AuthorID) (*domain.Author, error) {
+	result, err := repository.GetByID[domain.Author](id.UUID())
 	if err != nil {
 		return nil, err
 	}
@@ -86,8 +84,8 @@ func (a *authorService) GetAll() ([]domain.Author, error) {
 	return result, nil
 }
 
-func (a *authorService) Delete(id uuid.UUID) error {
-	err := repository.Delete[domain.Author](id)
+func (a *authorService) Delete(id domain.AuthorID) error {
+	err := repository.Delete[domain.Author](id.UUID())
 	return errors.Wrap(err, "could not delete author")
 }
 

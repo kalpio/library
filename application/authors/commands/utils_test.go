@@ -6,7 +6,6 @@ import (
 	"library/random"
 	"time"
 
-	"github.com/google/uuid"
 	"github.com/mehdihadeli/go-mediatr"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -30,17 +29,17 @@ type authorServiceMock struct {
 	mock.Mock
 }
 
-func (a *authorServiceMock) Create(id uuid.UUID, firstName, middleName, lastName string) (*domain.Author, error) {
+func (a *authorServiceMock) Create(id domain.AuthorID, firstName, middleName, lastName string) (*domain.Author, error) {
 	args := a.Called(id, firstName, middleName, lastName)
 	return args.Get(0).(*domain.Author), args.Error(1)
 }
 
-func (a *authorServiceMock) Edit(id uuid.UUID, firstName, middleName, lastName string) (*domain.Author, error) {
+func (a *authorServiceMock) Edit(id domain.AuthorID, firstName, middleName, lastName string) (*domain.Author, error) {
 	args := a.Called(id, firstName, middleName, lastName)
 	return args.Get(0).(*domain.Author), args.Error(1)
 }
 
-func (a *authorServiceMock) GetByID(id uuid.UUID) (*domain.Author, error) {
+func (a *authorServiceMock) GetByID(id domain.AuthorID) (*domain.Author, error) {
 	args := a.Called(id)
 	return args.Get(0).(*domain.Author), args.Error(1)
 }
@@ -50,15 +49,15 @@ func (a *authorServiceMock) GetAll() ([]domain.Author, error) {
 	return args.Get(0).([]domain.Author), args.Error(1)
 }
 
-func (a *authorServiceMock) Delete(id uuid.UUID) error {
+func (a *authorServiceMock) Delete(id domain.AuthorID) error {
 	args := a.Called(id)
 	return args.Error(0)
 }
 
 func createAuthor() *domain.Author {
 	return &domain.Author{
-		Entity: domain.Entity{
-			ID:        uuid.New(),
+		Entity: domain.Entity[domain.AuthorID]{
+			ID:        domain.NewAuthorID(),
 			CreatedAt: time.Now(),
 			UpdatedAt: time.Now(),
 		},

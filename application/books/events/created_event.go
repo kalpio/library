@@ -11,14 +11,14 @@ type BookCreatedEvent struct {
 }
 
 func NewBookCreatedEvent(bookID domain.BookID,
-	title, isbn, descritpion string,
+	title, isbn, description string,
 	authorID domain.AuthorID) *BookCreatedEvent {
 
 	return &BookCreatedEvent{
 		BookID:      bookID,
 		Title:       title,
 		ISBN:        isbn,
-		Description: descritpion,
+		Description: description,
 		AuthorID:    authorID,
 	}
 }

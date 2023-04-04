@@ -28,13 +28,13 @@ type postBookDto struct {
 	AuthorID    string `json:"author_id"`
 }
 
-func generateBookDto(bookAuthorID uuid.UUID) postBookDto {
+func generateBookDto(authorID domain.AuthorID) postBookDto {
 	return postBookDto{
 		ID:          uuid.New().String(),
 		Title:       random.String(20),
 		ISBN:        random.String(13),
 		Description: random.String(20),
-		AuthorID:    bookAuthorID.String(),
+		AuthorID:    authorID.String(),
 	}
 }
 
