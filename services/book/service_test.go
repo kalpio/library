@@ -18,8 +18,14 @@ import (
 	"testing"
 )
 
-var bookService book.IBookService
-var authorService author.IAuthorService
+var (
+	authorService author.IAuthorService
+	bookService   book.IBookService
+	emptyBookID   = domain.BookID(domain.EmptyUUID().String())
+	emptyAuthorID = domain.AuthorID(domain.EmptyUUID().String())
+	nilBookID     = domain.BookID(uuid.Nil.String())
+	nilAuthorID   = domain.AuthorID(uuid.Nil.String())
+)
 
 type bookServiceDsn struct {
 	dsn          string
@@ -149,11 +155,11 @@ func createBookFailedWhenAuthorDoesNotExist(t *testing.T) {
 
 	ass := assert.New(t)
 
-	newBook, err := bookService.Create(uuid.New(),
+	newBook, err := bookService.Create(domain.NewBookID(),
 		random.String(20),
 		random.String(13),
 		random.String(140),
-		uuid.New())
+		domain.NewAuthorID())
 
 	ass.Error(err)
 	ass.Nil(newBook)
@@ -204,11 +210,11 @@ func createBookFailedWhenAuthorIsEmpty(t *testing.T) {
 
 	ass := assert.New(t)
 
-	b, err := bookService.Create(uuid.New(),
+	b, err := bookService.Create(domain.NewBookID(),
 		random.String(20),
 		random.String(13),
 		random.String(140),
-		domain.EmptyUUID())
+		emptyAuthorID)
 	ass.Error(err)
 	ass.Nil(b)
 }
@@ -219,11 +225,11 @@ func createBookFailedWhenAuthorIsNil(t *testing.T) {
 
 	ass := assert.New(t)
 
-	b, err := bookService.Create(uuid.New(),
+	b, err := bookService.Create(domain.NewBookID(),
 		random.String(20),
 		random.String(13),
 		random.String(140),
-		uuid.Nil)
+		emptyAuthorID)
 	ass.Error(err)
 	ass.Nil(b)
 }
@@ -237,7 +243,7 @@ func createBookFailedWhenTitleIsEmpty(t *testing.T) {
 	bookAuthor, err := createAuthor()
 	ass.NoError(err)
 
-	b, err := bookService.Create(uuid.New(),
+	b, err := bookService.Create(domain.NewBookID(),
 		"",
 		random.String(13),
 		random.String(140),
@@ -284,7 +290,7 @@ func updateBookFailedWhenAuthorDoesNotExist(t *testing.T) {
 	b, err := createBookWithAuthor("")
 	ass.NoError(err)
 
-	b.AuthorID = uuid.New()
+	b.AuthorID = domain.NewAuthorID()
 	b.Author.ID = b.AuthorID
 
 	b, err = bookService.Edit(b.ID, b.Title, b.ISBN, b.Description, b.AuthorID)
@@ -301,7 +307,7 @@ func updateBookFailedWhenAuthorIsEmpty(t *testing.T) {
 	b, err := createBookWithAuthor("")
 	ass.NoError(err)
 
-	b.AuthorID = domain.EmptyUUID()
+	b.AuthorID = emptyAuthorID
 
 	b, err = bookService.Edit(b.ID, b.Title, b.ISBN, b.Description, b.AuthorID)
 	ass.Error(err)
@@ -317,7 +323,7 @@ func updateBookFailedWhenAuthorIsNil(t *testing.T) {
 	b, err := createBookWithAuthor("")
 	ass.NoError(err)
 
-	b.AuthorID = uuid.Nil
+	b.AuthorID = nilAuthorID
 
 	b, err = bookService.Edit(b.ID, b.Title, b.ISBN, b.Description, b.AuthorID)
 	ass.Error(err)
@@ -385,7 +391,7 @@ func getBookByIDFailedWhenIDIsEmpty(t *testing.T) {
 
 	ass := assert.New(t)
 
-	_, err := bookService.GetByID(domain.EmptyUUID())
+	_, err := bookService.GetByID(emptyBookID)
 	ass.Error(err)
 }
 
@@ -395,7 +401,7 @@ func getBookByIDFailedWhenIDIsNil(t *testing.T) {
 
 	ass := assert.New(t)
 
-	_, err := bookService.GetByID(uuid.Nil)
+	_, err := bookService.GetByID(nilBookID)
 	ass.Error(err)
 }
 
@@ -405,7 +411,7 @@ func getBookByIDFailedWhenBookDoesNotExist(t *testing.T) {
 
 	ass := assert.New(t)
 
-	_, err := bookService.GetByID(uuid.New())
+	_, err := bookService.GetByID(nilBookID)
 	ass.Error(err)
 }
 
@@ -482,7 +488,7 @@ func deleteBookFailedWhenIDIsEmpty(t *testing.T) {
 
 	ass := assert.New(t)
 
-	err := bookService.Delete(domain.EmptyUUID())
+	err := bookService.Delete(emptyBookID)
 	ass.Error(err)
 }
 
@@ -492,7 +498,7 @@ func deleteBookFailedWhenIDIsNil(t *testing.T) {
 
 	ass := assert.New(t)
 
-	err := bookService.Delete(uuid.Nil)
+	err := bookService.Delete(nilBookID)
 	ass.Error(err)
 }
 
@@ -502,12 +508,12 @@ func deleteBookFailedWhenBookDoesNotExist(t *testing.T) {
 
 	ass := assert.New(t)
 
-	err := bookService.Delete(uuid.New())
+	err := bookService.Delete(domain.NewBookID())
 	ass.Error(err)
 }
 
 func createAuthor() (*domain.Author, error) {
-	return authorService.Create(uuid.New(),
+	return authorService.Create(domain.NewAuthorID(),
 		random.String(20),
 		random.String(20),
 		random.String(20))
@@ -526,8 +532,8 @@ func createBookWithAuthor(isbn string) (*domain.Book, error) {
 	return createBook(isbn, bookAuthor.ID)
 }
 
-func createBook(isbn string, authorID uuid.UUID) (*domain.Book, error) {
-	return bookService.Create(uuid.New(),
+func createBook(isbn string, authorID domain.AuthorID) (*domain.Book, error) {
+	return bookService.Create(domain.NewBookID(),
 		random.String(100),
 		isbn,
 		random.String(240),
@@ -535,7 +541,7 @@ func createBook(isbn string, authorID uuid.UUID) (*domain.Book, error) {
 }
 
 func addAuthor() (*domain.Author, error) {
-	return authorService.Create(uuid.New(),
+	return authorService.Create(domain.NewAuthorID(),
 		random.String(20),
 		random.String(20),
 		random.String(20))
