@@ -2,7 +2,6 @@ package authortest
 
 import (
 	"fmt"
-	"github.com/google/uuid"
 	"library/domain"
 	"net/http"
 	"net/http/httptest"
@@ -30,13 +29,13 @@ func GetExistingAuthorByID(t *testing.T) {
 func GetNotExistingAuthorByID(t *testing.T) {
 	ass := assert.New(t)
 
-	resp := requestGetByID(uuid.New())
+	resp := requestGetByID(domain.NewAuthorID())
 
 	ass.NotNil(resp)
 	ass.Equal(http.StatusBadRequest, resp.Code)
 }
 
-func requestGetByID(id uuid.UUID) *httptest.ResponseRecorder {
+func requestGetByID(id domain.AuthorID) *httptest.ResponseRecorder {
 	req, _ := http.NewRequest("GET", fmt.Sprintf("/api/v1/author/%s", id.String()), nil)
 	return executeRequest(req)
 }

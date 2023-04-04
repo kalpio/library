@@ -68,7 +68,7 @@ func Test_SaveReturnsError_When_FirstNameIsEmpty(t *testing.T) {
 	author := domain.NewAuthor(id, firstName, middleName, lastName)
 	result, err := repository.Save(*author)
 	ass.Error(err)
-	ass.Equal(result.ID, domain.EmptyUUID())
+	ass.Equal(result.ID, domain.AuthorID(""))
 }
 
 func Test_SaveReturnsError_When_LastNameIsEmpty(t *testing.T) {
@@ -84,7 +84,7 @@ func Test_SaveReturnsError_When_LastNameIsEmpty(t *testing.T) {
 	author := domain.NewAuthor(id, firstName, middleName, lastName)
 	result, err := repository.Save(*author)
 	ass.Error(err)
-	ass.Equal(result.ID, domain.EmptyUUID())
+	ass.Equal(result.ID, domain.AuthorID(""))
 }
 
 func TestGetByID(t *testing.T) {

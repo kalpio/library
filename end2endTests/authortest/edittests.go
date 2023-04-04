@@ -4,8 +4,8 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
+	"library/domain"
 	"library/random"
 	"net/http"
 	"net/http/httptest"
@@ -29,7 +29,7 @@ func EditExistingAuthor(t *testing.T) {
 	values, err := unmarshalEditResponse(resp.Body)
 	ass.NoError(err)
 
-	ass.Equal(author.ID, uuid.MustParse(values["id"].(string)))
+	ass.Equal(author.ID, domain.AuthorID(values["id"].(string)))
 	ass.Equal(firstName, values["first_name"])
 	ass.Equal(middleName, values["middle_name"])
 	ass.Equal(lastname, values["last_name"])
@@ -47,7 +47,7 @@ func unmarshalEditResponse(body *bytes.Buffer) (map[string]any, error) {
 	return result, err
 }
 
-func prepareEditAuthorRequestData(id uuid.UUID, firstName, middleName, lastName string) *bytes.Buffer {
+func prepareEditAuthorRequestData(id domain.AuthorID, firstName, middleName, lastName string) *bytes.Buffer {
 	values := map[string]any{
 		"id":          id,
 		"first_name":  firstName,
@@ -59,7 +59,7 @@ func prepareEditAuthorRequestData(id uuid.UUID, firstName, middleName, lastName 
 	return bytes.NewBuffer(jsonValue)
 }
 
-func patchAuthorData(buff *bytes.Buffer, id uuid.UUID) *httptest.ResponseRecorder {
+func patchAuthorData(buff *bytes.Buffer, id domain.AuthorID) *httptest.ResponseRecorder {
 	req, _ := http.NewRequest("PATCH", fmt.Sprintf("/api/v1/author/%s", id.String()), buff)
 	return executeRequest(req)
 }
