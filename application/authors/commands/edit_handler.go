@@ -7,8 +7,6 @@ import (
 	"library/services/author"
 
 	domainEvents "library/domain/events"
-
-	"github.com/google/uuid"
 )
 
 type EditAuthorCommandHandler struct {
@@ -21,12 +19,7 @@ func NewEditAuthorCommandHandler(db domain.IDatabase, authorSrv author.IAuthorSe
 }
 
 func (c *EditAuthorCommandHandler) Handle(ctx context.Context, command *EditAuthorCommand) (*EditAuthorCommandResponse, error) {
-	authorID, err := uuid.Parse(string(command.ID))
-	if err != nil {
-		return nil, err
-	}
-
-	model, err := c.authorSrv.Edit(authorID, command.FirstName, command.MiddleName, command.LastName)
+	model, err := c.authorSrv.Edit(command.AuthorID.UUID(), command.FirstName, command.MiddleName, command.LastName)
 	if err != nil {
 		return nil, err
 	}

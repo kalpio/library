@@ -25,7 +25,7 @@ func newAuthorService(db domain.IDatabase) IAuthorService {
 }
 
 func (a *authorService) Create(id uuid.UUID, firstName, middleName, lastName string) (*domain.Author, error) {
-	model := domain.NewAuthor(id, firstName, middleName, lastName)
+	model := domain.NewAuthor(domain.AuthorID(id.String()), firstName, middleName, lastName)
 
 	exists, err := exists(firstName, middleName, lastName)
 	if err != nil {
@@ -46,8 +46,8 @@ func (a *authorService) Create(id uuid.UUID, firstName, middleName, lastName str
 
 func (a *authorService) Edit(id uuid.UUID, firstName, middleName, lastName string) (*domain.Author, error) {
 	model := &domain.Author{
-		Entity: domain.Entity{
-			ID: id,
+		Entity: domain.Entity[domain.AuthorID]{
+			ID: domain.AuthorID(id.String()),
 		},
 		FirstName:  firstName,
 		MiddleName: middleName,

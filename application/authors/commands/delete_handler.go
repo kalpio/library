@@ -6,8 +6,6 @@ import (
 	"library/domain"
 	domainEvents "library/domain/events"
 	"library/services/author"
-
-	"github.com/google/uuid"
 )
 
 type DeleteAuthorCommandHandler struct {
@@ -20,18 +18,14 @@ func NewDeleteAuthorCommandHandler(db domain.IDatabase, authorSrv author.IAuthor
 }
 
 func (c *DeleteAuthorCommandHandler) Handle(ctx context.Context, command *DeleteAuthorCommand) (*DeleteAuthorCommandResponse, error) {
-	authorID, err := uuid.Parse(string(command.AuthorID))
-	if err != nil {
-		return nil, err
-	}
-
-	err = c.authorSrv.Delete(authorID)
+	authorID := command.AuthorID.UUID()
+	err := c.authorSrv.Delete(authorID)
 	if err != nil {
 		return nil, err
 	}
 
 	response := &DeleteAuthorCommandResponse{Succeeded: true}
-	domainEvents.Publish(ctx, &events.AuthorDeletedEvent{AuthorID: authorID})
+	domainEvents.Publish(ctx, &events.AuthorDeletedEvent{AuthorID: command.AuthorID})
 
 	return response, nil
 }

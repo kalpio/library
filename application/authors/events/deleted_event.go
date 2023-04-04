@@ -1,7 +1,9 @@
 package events
 
-import "github.com/google/uuid"
+import (
+	"library/domain"
+)
 
 type AuthorDeletedEvent struct {
-	AuthorID uuid.UUID `json:"id"`
+	AuthorID domain.AuthorID `json:"id"`
 }

@@ -1,7 +1,7 @@
 package queries
 
 import (
-	"github.com/google/uuid"
+	"library/domain"
 	"time"
 )
 
@@ -13,12 +13,12 @@ type GetAllAuthorsQueryResponse struct {
 }
 
 type result struct {
-	AuthorID   uuid.UUID      `json:"id"`
-	FirstName  string         `json:"first_name"`
-	MiddleName string         `json:"middle_name"`
-	LastName   string         `json:"last_name"`
-	CreatedAt  time.Time      `json:"created_at"`
-	UpdatedAt  time.Time      `json:"updated_at"`
+	AuthorID   domain.AuthorID `json:"id"`
+	FirstName  string          `json:"first_name"`
+	MiddleName string          `json:"middle_name"`
+	LastName   string          `json:"last_name"`
+	CreatedAt  time.Time       `json:"created_at"`
+	UpdatedAt  time.Time       `json:"updated_at"`
 }
 
 func NewGetAllAuthorsQuery() *GetAllAuthorsQuery {

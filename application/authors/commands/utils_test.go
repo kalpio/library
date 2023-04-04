@@ -57,8 +57,8 @@ func (a *authorServiceMock) Delete(id uuid.UUID) error {
 
 func createAuthor() *domain.Author {
 	return &domain.Author{
-		Entity: domain.Entity{
-			ID:        uuid.New(),
+		Entity: domain.Entity[domain.AuthorID]{
+			ID:        domain.NewAuthorID(),
 			CreatedAt: time.Now(),
 			UpdatedAt: time.Now(),
 		},

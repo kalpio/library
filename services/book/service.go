@@ -51,7 +51,7 @@ func (b *bookService) Create(id uuid.UUID,
 		return nil, err
 	}
 
-	model := domain.NewBook(id, title, isbn, description, bookAuthor)
+	model := domain.NewBook(domain.BookID(id.String()), title, isbn, description, bookAuthor)
 
 	var result domain.Book
 	result, err = repository.Save(*model)
@@ -102,8 +102,8 @@ func (b *bookService) Edit(id uuid.UUID,
 
 	// TODO(kalpio): use domain.NewBook - in repository update method add update author table. Not is locked when update book
 	model := &domain.Book{
-		Entity: domain.Entity{
-			ID: id,
+		Entity: domain.Entity[domain.BookID]{
+			ID: domain.BookID(id.String()),
 		},
 		Title:       title,
 		ISBN:        isbn,

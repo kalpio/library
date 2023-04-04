@@ -7,8 +7,6 @@ import (
 	"library/random"
 	"testing"
 
-	"github.com/google/uuid"
-
 	"github.com/stretchr/testify/assert"
 )
 
@@ -16,7 +14,7 @@ func Test_SaveAuthorSucceeded(t *testing.T) {
 	afterTest := testutils.BeforeTest(t)
 	defer afterTest(t)
 
-	id := uuid.New()
+	id := domain.NewAuthorID()
 	firstName := random.String(10)
 	middleName := random.String(10)
 	lastName := random.String(10)
@@ -37,7 +35,7 @@ func Test_SaveReturnsError_When_AuthorAlreadyExists(t *testing.T) {
 	defer afterTest(t)
 
 	ass := assert.New(t)
-	id := uuid.New()
+	id := domain.NewAuthorID()
 	firstName := random.String(10)
 	middleName := random.String(10)
 	lastName := random.String(10)
@@ -62,7 +60,7 @@ func Test_SaveReturnsError_When_FirstNameIsEmpty(t *testing.T) {
 	defer afterTest(t)
 
 	ass := assert.New(t)
-	id := uuid.New()
+	id := domain.NewAuthorID()
 	firstName := ""
 	middleName := random.String(10)
 	lastName := random.String(10)
@@ -78,7 +76,7 @@ func Test_SaveReturnsError_When_LastNameIsEmpty(t *testing.T) {
 	defer afterTest(t)
 
 	ass := assert.New(t)
-	id := uuid.New()
+	id := domain.NewAuthorID()
 	firstName := random.String(10)
 	middleName := random.String(10)
 	lastName := ""
@@ -95,7 +93,7 @@ func TestGetByID(t *testing.T) {
 
 	ass := assert.New(t)
 	expect := createNewAuthorInDB(t)
-	got, err := repository.GetByID[domain.Author](expect.ID)
+	got, err := repository.GetByID[domain.Author](expect.ID.UUID())
 
 	ass.NoError(err)
 	assertThatTheyAreSameAuthor(ass, got, expect)
@@ -127,7 +125,7 @@ func TestDelete(t *testing.T) {
 	ass := assert.New(t)
 
 	a := createNewAuthorInDB(t)
-	err := repository.Delete[domain.Author](a.ID)
+	err := repository.Delete[domain.Author](a.ID.UUID())
 
 	ass.NoError(err)
 }
@@ -151,7 +149,7 @@ func assertThatTheyAreSameAuthor(ass *assert.Assertions, got domain.Author, expe
 
 func createNewAuthorInDB(t *testing.T) domain.Author {
 	a := domain.NewAuthor(
-		uuid.New(),
+		domain.NewAuthorID(),
 		random.String(6),
 		random.String(6),
 		random.String(6))

@@ -355,10 +355,10 @@ func updateBookFailedWhenISBNIsTooShort(t *testing.T) {
 }
 
 func TestBookService_GetByID(t *testing.T) {
-	t.Run("Get book by ID succeeded", getBookByIDSucceeded)
-	t.Run("Get book by ID failed when ID is empty", getBookByIDFailedWhenIDIsEmpty)
-	t.Run("Get book by ID failed when ID is nil", getBookByIDFailedWhenIDIsNil)
-	t.Run("Get book by ID failed when book doesn't exist", getBookByIDFailedWhenBookDoesNotExist)
+	t.Run("Get book by AuthorID succeeded", getBookByIDSucceeded)
+	t.Run("Get book by AuthorID failed when AuthorID is empty", getBookByIDFailedWhenIDIsEmpty)
+	t.Run("Get book by AuthorID failed when AuthorID is nil", getBookByIDFailedWhenIDIsNil)
+	t.Run("Get book by AuthorID failed when book doesn't exist", getBookByIDFailedWhenBookDoesNotExist)
 }
 
 func getBookByIDSucceeded(t *testing.T) {
@@ -458,8 +458,8 @@ func getAllBooksSucceededWhenThereAreNoBook(t *testing.T) {
 
 func TestBookService_Delete(t *testing.T) {
 	t.Run("Delete book succeeded", deleteBookSucceeded)
-	t.Run("Delete book failed when ID is empty", deleteBookFailedWhenIDIsEmpty)
-	t.Run("Delete book failed when ID is nil", deleteBookFailedWhenIDIsNil)
+	t.Run("Delete book failed when AuthorID is empty", deleteBookFailedWhenIDIsEmpty)
+	t.Run("Delete book failed when AuthorID is nil", deleteBookFailedWhenIDIsNil)
 	t.Run("Delete book failed when book doesn't exist", deleteBookFailedWhenBookDoesNotExist)
 }
 

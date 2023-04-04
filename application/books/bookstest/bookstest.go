@@ -105,11 +105,11 @@ func (b *BookServiceMock) Delete(id uuid.UUID) error {
 }
 
 func CreateBook() *domain.Book {
-	return domain.NewBook(uuid.New(),
+	return domain.NewBook(domain.NewBookID(),
 		random.String(20),
 		random.String(12),
 		random.String(120),
-		domain.NewAuthor(uuid.New(),
+		domain.NewAuthor(domain.NewAuthorID(),
 			random.String(20),
 			random.String(20),
 			random.String(20)))

@@ -1,7 +1,6 @@
 package queries
 
 import (
-	"github.com/google/uuid"
 	"library/domain"
 )
 
@@ -10,11 +9,11 @@ type GetBookByIDQuery struct {
 }
 
 type GetBookByIDQueryResponse struct {
-	BookID      uuid.UUID `json:"id"`
-	Title       string    `json:"title"`
-	ISBN        string    `json:"isbn"`
-	Description string    `json:"description"`
-	AuthorID    uuid.UUID `json:"author_id"`
+	BookID      domain.BookID   `json:"id"`
+	Title       string          `json:"title"`
+	ISBN        string          `json:"isbn"`
+	Description string          `json:"description"`
+	AuthorID    domain.AuthorID `json:"author_id"`
 }
 
 func NewGetBookByIDQuery(bookID domain.BookID) *GetBookByIDQuery {
