@@ -22,7 +22,7 @@ func TestAuthor_EditCommandHandler_Raised_AuthorEditedEvent(t *testing.T) {
 
 	mckService.
 		On("Edit",
-			expectedID.UUID(),
+			expectedID,
 			editedAuthor.FirstName,
 			editedAuthor.MiddleName,
 			editedAuthor.LastName).

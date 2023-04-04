@@ -20,7 +20,7 @@ func NewGetBookByIDQueryHandler(db domain.IDatabase, bookSrv book.IBookService) 
 }
 
 func (c *GetBookByIDQueryHandler) Handle(_ context.Context, query *GetBookByIDQuery) (*GetBookByIDQueryResponse, error) {
-	result, err := c.bookSrv.GetByID(query.BookID.UUID())
+	result, err := c.bookSrv.GetByID(query.BookID)
 	if err != nil {
 		return nil, fmt.Errorf("book queries: cannot get book from service: %w", err)
 	}

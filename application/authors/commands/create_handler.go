@@ -18,8 +18,7 @@ func NewCreateAuthorCommandHandler(db domain.IDatabase, authorSrv author.IAuthor
 }
 
 func (c *CreateAuthorCommandHandler) Handle(ctx context.Context, command *CreateAuthorCommand) (*CreateAuthorCommandResponse, error) {
-	authorID := command.AuthorID.UUID()
-	model, err := c.authorSrv.Create(authorID, command.FirstName, command.MiddleName, command.LastName)
+	model, err := c.authorSrv.Create(command.AuthorID, command.FirstName, command.MiddleName, command.LastName)
 	if err != nil {
 		return nil, err
 	}

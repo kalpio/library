@@ -18,8 +18,7 @@ func NewDeleteAuthorCommandHandler(db domain.IDatabase, authorSrv author.IAuthor
 }
 
 func (c *DeleteAuthorCommandHandler) Handle(ctx context.Context, command *DeleteAuthorCommand) (*DeleteAuthorCommandResponse, error) {
-	authorID := command.AuthorID.UUID()
-	err := c.authorSrv.Delete(authorID)
+	err := c.authorSrv.Delete(command.AuthorID)
 	if err != nil {
 		return nil, err
 	}

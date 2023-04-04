@@ -1,7 +1,6 @@
 package bookstest
 
 import (
-	"github.com/google/uuid"
 	"github.com/stretchr/testify/mock"
 	"gorm.io/gorm"
 	"library/application/books"
@@ -73,23 +72,23 @@ func newBookServiceMock() *BookServiceMock {
 	return &BookServiceMock{}
 }
 
-func (b *BookServiceMock) Create(id uuid.UUID,
+func (b *BookServiceMock) Create(id domain.BookID,
 	title, isbn, description string,
-	authorID uuid.UUID) (*domain.Book, error) {
+	authorID domain.AuthorID) (*domain.Book, error) {
 
 	args := b.Called(id, title, isbn, description, authorID)
 	return args.Get(0).(*domain.Book), args.Error(1)
 }
 
-func (b *BookServiceMock) Edit(id uuid.UUID,
+func (b *BookServiceMock) Edit(id domain.BookID,
 	title, isbn, description string,
-	authorID uuid.UUID) (*domain.Book, error) {
+	authorID domain.AuthorID) (*domain.Book, error) {
 
 	args := b.Called(id, title, isbn, description, authorID)
 	return args.Get(0).(*domain.Book), args.Error(1)
 }
 
-func (b *BookServiceMock) GetByID(id uuid.UUID) (*domain.Book, error) {
+func (b *BookServiceMock) GetByID(id domain.BookID) (*domain.Book, error) {
 	args := b.Called(id)
 	return args.Get(0).(*domain.Book), args.Error(1)
 }
@@ -99,7 +98,7 @@ func (b *BookServiceMock) GetAll() ([]domain.Book, error) {
 	return args.Get(0).([]domain.Book), args.Error(1)
 }
 
-func (b *BookServiceMock) Delete(id uuid.UUID) error {
+func (b *BookServiceMock) Delete(id domain.BookID) error {
 	args := b.Called(id)
 	return args.Error(0)
 }

@@ -27,11 +27,11 @@ func TestBook_CreateCommandHandler_RaisedBookCreatedEvent(t *testing.T) {
 
 	mckService.
 		On("Create",
-			expectedBook.ID.UUID(),
+			expectedBook.ID,
 			expectedBook.Title,
 			expectedBook.ISBN,
 			expectedBook.Description,
-			expectedBook.AuthorID.UUID()).
+			expectedBook.AuthorID).
 		Return(expectedBook, nil)
 
 	commandHandler := commands.NewCreateBookCommandHandler(nil, mckService)

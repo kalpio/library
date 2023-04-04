@@ -27,11 +27,11 @@ func (c *CreateBookCommandHandler) Handle(
 	command *CreateBookCommand) (*CreateBookCommandResponse, error) {
 
 	// TODO: don't swallow the error
-	model, _ := c.bookSrv.Create(command.BookID.UUID(),
+	model, _ := c.bookSrv.Create(command.BookID,
 		command.Title,
 		command.ISBN,
 		command.Description,
-		command.AuthorID.UUID())
+		command.AuthorID)
 
 	response := &CreateBookCommandResponse{
 		BookID:      domain.BookID(model.ID.String()),

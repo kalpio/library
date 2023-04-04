@@ -19,7 +19,7 @@ func TestAuthor_CreateCommandHandler_RaisedAuthorCreatedEvent(t *testing.T) {
 
 	mckService.
 		On("Create",
-			expectedAuthor.ID.UUID(),
+			expectedAuthor.ID,
 			expectedAuthor.FirstName,
 			expectedAuthor.MiddleName,
 			expectedAuthor.LastName).

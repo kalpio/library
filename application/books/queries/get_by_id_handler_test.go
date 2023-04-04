@@ -25,7 +25,7 @@ func TestBook_QueryHandler_ReturnCorrectData(t *testing.T) {
 
 	mckService.
 		On("GetByID",
-			expectedBook.ID.UUID()).
+			expectedBook.ID).
 		Return(expectedBook, nil)
 
 	query := queries.NewGetBookByIDQuery(expectedBook.ID)

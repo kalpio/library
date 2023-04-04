@@ -16,7 +16,7 @@ func NewGetAuthorByIDQueryHandler(db domain.IDatabase, authorSrv author.IAuthorS
 }
 
 func (c *GetAuthorByIDQueryHandler) Handle(_ context.Context, query *GetAuthorByIDQuery) (*GetAuthorByIDQueryResponse, error) {
-	result, err := c.authorSrv.GetByID(query.AuthorID.UUID())
+	result, err := c.authorSrv.GetByID(query.AuthorID)
 	if err != nil {
 		return nil, err
 	}

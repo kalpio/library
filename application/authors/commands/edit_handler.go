@@ -19,7 +19,7 @@ func NewEditAuthorCommandHandler(db domain.IDatabase, authorSrv author.IAuthorSe
 }
 
 func (c *EditAuthorCommandHandler) Handle(ctx context.Context, command *EditAuthorCommand) (*EditAuthorCommandResponse, error) {
-	model, err := c.authorSrv.Edit(command.AuthorID.UUID(), command.FirstName, command.MiddleName, command.LastName)
+	model, err := c.authorSrv.Edit(command.AuthorID, command.FirstName, command.MiddleName, command.LastName)
 	if err != nil {
 		return nil, err
 	}
