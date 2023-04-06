@@ -6,14 +6,16 @@ import (
 	"library/application/authors/events"
 	"library/domain"
 	domainEvents "library/domain/events"
+	"library/tests"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 )
 
 func TestAuthor_EditCommandHandler_Raised_AuthorEditedEvent(t *testing.T) {
 	ass := assert.New(t)
-	registerEvents(ass)
+	//registerEvents(ass)
 
 	mckService := new(authorServiceMock)
 	expectedID := domain.NewAuthorID()
@@ -37,6 +39,12 @@ func TestAuthor_EditCommandHandler_Raised_AuthorEditedEvent(t *testing.T) {
 
 	ass.NoError(err)
 	mckService.AssertExpectations(t)
+
+	tests.Wait(
+		func() bool {
+			return len(domainEvents.GetEvents[*events.AuthorEditedEvent]()) > 0
+		},
+		1*time.Second)
 
 	notifications := domainEvents.GetEvents[*events.AuthorEditedEvent]()
 	ass.Equal(1, len(notifications))

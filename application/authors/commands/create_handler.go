@@ -32,7 +32,7 @@ func (c *CreateAuthorCommandHandler) Handle(ctx context.Context, command *Create
 		UpdatedAt:  model.UpdatedAt,
 	}
 
-	domainEvents.Publish(ctx, &events.AuthorCreatedEvent{
+	go domainEvents.Publish(ctx, &events.AuthorCreatedEvent{
 		AuthorID:   model.ID,
 		FirstName:  model.FirstName,
 		MiddleName: model.MiddleName,

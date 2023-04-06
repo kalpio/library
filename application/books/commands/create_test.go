@@ -10,14 +10,13 @@ import (
 	domainEvents "library/domain/events"
 	"library/ioc"
 	"library/services/book"
+	"library/tests"
 	"testing"
+	"time"
 )
 
 func TestBook_CreateCommandHandler_RaisedBookCreatedEvent(t *testing.T) {
 	ass := assert.New(t)
-
-	err := bookstest.Initialize()
-	ass.NoError(err)
 
 	bookSrv, err := ioc.Get[book.IBookService]()
 	ass.NoError(err)
@@ -44,6 +43,12 @@ func TestBook_CreateCommandHandler_RaisedBookCreatedEvent(t *testing.T) {
 
 	ass.NoError(err)
 	mckService.AssertExpectations(t)
+
+	tests.Wait(
+		func() bool {
+			return len(domainEvents.GetEvents[*events.BookCreatedEvent]()) > 0
+		},
+		1*time.Second)
 
 	notifications := domainEvents.GetEvents[*events.BookCreatedEvent]()
 	ass.Len(notifications, 1)

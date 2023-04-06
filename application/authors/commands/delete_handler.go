@@ -24,7 +24,7 @@ func (c *DeleteAuthorCommandHandler) Handle(ctx context.Context, command *Delete
 	}
 
 	response := &DeleteAuthorCommandResponse{Succeeded: true}
-	domainEvents.Publish(ctx, &events.AuthorDeletedEvent{AuthorID: command.AuthorID})
+	go domainEvents.Publish(ctx, &events.AuthorDeletedEvent{AuthorID: command.AuthorID})
 
 	return response, nil
 }

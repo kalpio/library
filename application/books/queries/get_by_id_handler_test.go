@@ -14,9 +14,6 @@ import (
 func TestBook_QueryHandler_ReturnCorrectData(t *testing.T) {
 	ass := assert.New(t)
 
-	err := bookstest.Initialize()
-	ass.NoError(err)
-
 	bookSrv, err := ioc.Get[book.IBookService]()
 	ass.NoError(err)
 
