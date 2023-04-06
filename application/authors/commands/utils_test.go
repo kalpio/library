@@ -1,28 +1,35 @@
 package commands_test
 
 import (
+	log "github.com/sirupsen/logrus"
 	"library/application/authors/events"
 	"library/domain"
 	"library/random"
 	"time"
 
 	"github.com/mehdihadeli/go-mediatr"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
 
-func registerEvents(ass *assert.Assertions) {
+func init() {
+	if err := registerEvents(); err != nil {
+		log.Fatalln(err)
+	}
+}
+func registerEvents() error {
 	if err := mediatr.RegisterNotificationHandler[*events.AuthorCreatedEvent](&events.AuthorCreatedEventHandler{}); err != nil {
-		ass.NoError(err)
+		return err
 	}
 
 	if err := mediatr.RegisterNotificationHandler[*events.AuthorEditedEvent](&events.AuthorEditedEventHandler{}); err != nil {
-		ass.NoError(err)
+		return err
 	}
 
 	if err := mediatr.RegisterNotificationHandler[*events.AuthorDeletedEvent](&events.AuthorDeletedEventHandler{}); err != nil {
-		ass.NoError(err)
+		return err
 	}
+
+	return nil
 }
 
 type authorServiceMock struct {

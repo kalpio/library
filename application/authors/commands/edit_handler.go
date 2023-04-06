@@ -33,7 +33,7 @@ func (c *EditAuthorCommandHandler) Handle(ctx context.Context, command *EditAuth
 		UpdatedAt:  model.UpdatedAt,
 	}
 
-	domainEvents.Publish(ctx, &events.AuthorEditedEvent{
+	go domainEvents.Publish(ctx, &events.AuthorEditedEvent{
 		AuthorID:   model.ID,
 		FirstName:  model.FirstName,
 		MiddleName: model.MiddleName,

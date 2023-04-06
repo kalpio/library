@@ -3,21 +3,27 @@ package events
 import (
 	"context"
 	"reflect"
+	"sync"
 
 	"github.com/mehdihadeli/go-mediatr"
 )
 
 type notifications struct {
+	m      sync.RWMutex
 	events map[reflect.Type][]any
 }
 
 func newNotifications() *notifications {
 	return &notifications{
+		m:      sync.RWMutex{},
 		events: map[reflect.Type][]any{},
 	}
 }
 
 func (n *notifications) add(notification any) {
+	n.m.Lock()
+	defer n.m.Unlock()
+
 	notificationType := reflect.TypeOf(notification)
 	if _, ok := n.events[notificationType]; ok {
 		n.events[notificationType] = append(n.events[notificationType], notification)
@@ -28,6 +34,9 @@ func (n *notifications) add(notification any) {
 }
 
 func (n *notifications) clear() {
+	n.m.Lock()
+	defer n.m.Unlock()
+
 	for t := range n.events {
 		delete(n.events, t)
 	}
@@ -36,6 +45,9 @@ func (n *notifications) clear() {
 var notificationsObj = newNotifications()
 
 func GetEvents[TNotification any]() []TNotification {
+	notificationsObj.m.RLock()
+	defer notificationsObj.m.RUnlock()
+
 	notificationType := getType[TNotification]()
 	if events, ok := notificationsObj.events[notificationType]; ok {
 		var result []TNotification
@@ -59,6 +71,7 @@ func Clear() {
 }
 
 func Publish[TNotification any](ctx context.Context, notification TNotification) {
+	// TODO(kalpio): don't swallow the error
 	if err := mediatr.Publish(ctx, notification); err == nil {
 		notificationsObj.add(notification)
 	}

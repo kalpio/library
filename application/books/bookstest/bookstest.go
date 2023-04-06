@@ -1,6 +1,7 @@
 package bookstest
 
 import (
+	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/mock"
 	"gorm.io/gorm"
 	"library/application/books"
@@ -42,26 +43,23 @@ func (d dbBook) GetDatabaseName() string {
 	return ""
 }
 
-func Initialize() error {
-	var lastErr error
+func init() {
 	if err := ioc.AddSingleton[domain.IDsn](newDsnBook); err != nil {
-		lastErr = err
+		log.Fatalln(err)
 	}
 
 	if err := ioc.AddSingleton[domain.IDatabase](newDBBook); err != nil {
-		lastErr = err
+		log.Fatalln(err)
 	}
 
 	if err := ioc.AddSingleton[book.IBookService](newBookServiceMock); err != nil {
-		lastErr = err
+		log.Fatalln(err)
 	}
 
 	bookRegister := books.NewBookRegister()
 	if err := bookRegister.Register(); err != nil {
-		lastErr = err
+		log.Fatalln(err)
 	}
-
-	return lastErr
 }
 
 type BookServiceMock struct {

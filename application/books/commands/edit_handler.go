@@ -9,35 +9,34 @@ import (
 	"library/services/book"
 )
 
-type CreateBookCommandHandler struct {
+type EditBookCommandHandler struct {
 	db      domain.IDatabase
 	bookSrv book.IBookService
 }
 
-func NewCreateBookCommandHandler(db domain.IDatabase,
-	bookSrv book.IBookService) *CreateBookCommandHandler {
+func NewEditBookCommandHandler(db domain.IDatabase,
+	bookSrv book.IBookService) *EditBookCommandHandler {
 
-	return &CreateBookCommandHandler{
+	return &EditBookCommandHandler{
 		db:      db,
 		bookSrv: bookSrv,
 	}
 }
 
-func (c *CreateBookCommandHandler) Handle(
+func (c *EditBookCommandHandler) Handle(
 	ctx context.Context,
-	command *CreateBookCommand) (*CreateBookCommandResponse, error) {
+	command *EditBookCommand) (*EditBookCommandResponse, error) {
 
-	model, err := c.bookSrv.Create(command.BookID,
+	model, err := c.bookSrv.Edit(command.BookID,
 		command.Title,
 		command.ISBN,
 		command.Description,
 		command.AuthorID)
-
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to create book")
+		return nil, errors.Wrap(err, "failed to edit book")
 	}
 
-	response := &CreateBookCommandResponse{
+	response := &EditBookCommandResponse{
 		BookID:      domain.BookID(model.ID.String()),
 		Title:       model.Title,
 		ISBN:        model.ISBN,
@@ -45,7 +44,7 @@ func (c *CreateBookCommandHandler) Handle(
 		AuthorID:    domain.AuthorID(model.AuthorID.String()),
 	}
 
-	go domainEvents.Publish(ctx, events.NewBookCreatedEvent(
+	go domainEvents.Publish(ctx, events.NewBookEditedEvent(
 		model.ID,
 		model.Title,
 		model.ISBN,
