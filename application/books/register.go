@@ -36,6 +36,10 @@ func (r *bookRegister) Register() error {
 		lastErr = err
 	}
 
+	if err := r.registerDeleteCommand(); err != nil {
+		lastErr = err
+	}
+
 	if err := r.registerGetByIDQuery(); err != nil {
 		lastErr = err
 	}
@@ -92,6 +96,25 @@ func (r *bookRegister) registerEditCommand() error {
 	if err := mediatr.RegisterNotificationHandler[*events.BookEditedEvent](
 		&events.BookEditedEventHandler{}); err != nil {
 		lastErr = errors.Wrap(err, "register [book]: failed to register book edited event")
+	}
+
+	return lastErr
+}
+
+func (r *bookRegister) registerDeleteCommand() error {
+	var lastErr error
+
+	deleteBookCommandHandler := commands.NewDeleteBookCommandHandler(r.database, r.bookSrv)
+	if err := mediatr.RegisterRequestHandler[
+		*commands.DeleteBookCommand,
+		*commands.DeleteBookCommandResponse](
+		deleteBookCommandHandler); err != nil {
+		lastErr = errors.Wrap(err, "register [book]: failed to register delete book command")
+	}
+
+	if err := mediatr.RegisterNotificationHandler[*events.BookDeletedEvent](
+		&events.BookDeletedEventHandler{}); err != nil {
+		lastErr = errors.Wrap(err, "register [book]: failed to register book deleted event")
 	}
 
 	return lastErr
