@@ -128,14 +128,14 @@ func afterTest(t *testing.T) {
 }
 
 func TestBookService_Create(t *testing.T) {
-	t.Run("Create book succeeded", createBookSucceeded)
-	t.Run("Create book failed when author doesn't exist", createBookFailedWhenAuthorDoesNotExist)
-	t.Run("Create book failed when author is empty", createBookFailedWhenAuthorIsEmpty)
-	t.Run("Create book failed when author is nil", createBookFailedWhenAuthorIsNil)
-	t.Run("Create book failed when title is empty", createBookFailedWhenTitleIsEmpty)
-	t.Run("Create book failed when ISBN is too long", createBookFailedWhenISBNIsTooLong)
-	t.Run("Create book failed when ISBN is too short", createBookFailedWhenISBNIsTooShort)
-	t.Run("Create book failed when trying add same ISBN twice", createBookFailedWhenTryingAddSameISBNTwice)
+	t.Run("Add book succeeded", createBookSucceeded)
+	t.Run("Add book failed when author doesn't exist", createBookFailedWhenAuthorDoesNotExist)
+	t.Run("Add book failed when author is empty", createBookFailedWhenAuthorIsEmpty)
+	t.Run("Add book failed when author is nil", createBookFailedWhenAuthorIsNil)
+	t.Run("Add book failed when title is empty", createBookFailedWhenTitleIsEmpty)
+	t.Run("Add book failed when ISBN is too long", createBookFailedWhenISBNIsTooLong)
+	t.Run("Add book failed when ISBN is too short", createBookFailedWhenISBNIsTooShort)
+	t.Run("Add book failed when trying add same ISBN twice", createBookFailedWhenTryingAddSameISBNTwice)
 }
 
 func createBookSucceeded(t *testing.T) {

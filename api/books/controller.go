@@ -24,7 +24,7 @@ type createBookDto struct {
 	AuthorID    string `json:"author_id"`
 }
 
-func (a *Controller) Create(ctx *gin.Context) {
+func (a *Controller) Add(ctx *gin.Context) {
 	var json createBookDto
 	if err := ctx.ShouldBindJSON(&json); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -61,4 +61,56 @@ func (a *Controller) Get(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, result)
+}
+
+func (a *Controller) GetAll(ctx *gin.Context) {
+	query := queries.NewGetAllBooksQuery()
+	result, err := mediatr.Send[*queries.GetAllBooksQuery, *queries.GetAllBooksQueryResponse](
+		ctx.Request.Context(),
+		query)
+
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, result)
+}
+
+func (a *Controller) Edit(ctx *gin.Context) {
+	var json createBookDto
+	if err := ctx.ShouldBindJSON(&json); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	command := commands.NewEditBookCommand(domain.BookID(json.ID),
+		json.Title,
+		json.ISBN,
+		json.Description,
+		domain.AuthorID(json.AuthorID))
+	response, err := mediatr.Send[*commands.EditBookCommand, *commands.EditBookCommandResponse](
+		ctx.Request.Context(),
+		command)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	ctx.JSON(http.StatusCreated, response)
+}
+
+func (a *Controller) Delete(ctx *gin.Context) {
+	paramID := ctx.Param("id")
+
+	command := commands.NewDeleteBookCommand(domain.BookID(paramID))
+	response, err := mediatr.Send[*commands.DeleteBookCommand, *commands.DeleteBookCommandResponse](
+		ctx.Request.Context(),
+		command)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	ctx.JSON(http.StatusCreated, response)
 }

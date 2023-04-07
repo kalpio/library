@@ -20,8 +20,11 @@ func configureRouter() *gin.Engine {
 		v1.PATCH("/author/:id", authorCtrl.Edit)
 		v1.DELETE("/author/:id", authorCtrl.Delete)
 
-		v1.POST("/book", bookCtrl.Create)
+		v1.GET("/book", bookCtrl.GetAll)
 		v1.GET("/book/:id", bookCtrl.Get)
+		v1.POST("/book", bookCtrl.Add)
+		v1.PATCH("/book/:id", bookCtrl.Edit)
+		v1.DELETE("/book/:id", bookCtrl.Delete)
 	}
 
 	return r

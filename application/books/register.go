@@ -22,12 +22,11 @@ func NewBookRegister() register.IRegister[*domain.Book] {
 }
 
 func (r *bookRegister) Register() error {
-	err := r.resolveServices()
-	if err != nil {
-		return err
+	var lastErr error
+	if err := r.resolveServices(); err != nil {
+		lastErr = err
 	}
 
-	var lastErr error
 	if err := r.registerCreateCommand(); err != nil {
 		lastErr = err
 	}
