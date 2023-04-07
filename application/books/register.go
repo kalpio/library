@@ -44,6 +44,10 @@ func (r *bookRegister) Register() error {
 		lastErr = err
 	}
 
+	if err := r.registerGetAllQuery(); err != nil {
+		lastErr = err
+	}
+
 	return errors.Wrap(lastErr, "register [book]: failed to register mediatr")
 }
 
@@ -127,6 +131,18 @@ func (r *bookRegister) registerGetByIDQuery() error {
 		*queries.GetBookByIDQueryResponse](
 		getBookQueryHandler); err != nil {
 		return errors.Wrap(err, "register [book]: failed to register get book by id query")
+	}
+
+	return nil
+}
+
+func (r *bookRegister) registerGetAllQuery() error {
+	getAllBooksQueryHandler := queries.NewGetAllBooksQueryHandler(r.database, r.bookSrv)
+	if err := mediatr.RegisterRequestHandler[
+		*queries.GetAllBooksQuery,
+		*queries.GetAllBooksQueryResponse](
+		getAllBooksQueryHandler); err != nil {
+		return errors.Wrap(err, "register [book]: failed to register get all books query")
 	}
 
 	return nil

@@ -7,7 +7,7 @@ import (
 )
 
 type GetAllAuthorsQueryHandler struct {
-	db domain.IDatabase
+	db        domain.IDatabase
 	authorSrv author.IAuthorService
 }
 
