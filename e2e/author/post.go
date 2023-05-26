@@ -4,48 +4,61 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	log "github.com/sirupsen/logrus"
+	"github.com/google/uuid"
 	"io"
 	"library/domain"
+	"library/e2e/log"
 	"library/random"
 	"net/http"
 	"time"
 )
 
 func Post(apiUrl string, count int, ch chan domain.AuthorID) {
-
+	logger := log.NewLogger("POST /author")
+	for i := 0; i < count; i++ {
+		id := post(apiUrl, logger)
+		if id.IsNil() {
+			continue
+		}
+		ch <- id
+	}
+	close(ch)
 }
 
-func post(apiUrl string) map[string]interface{} {
+func post(apiUrl string, logger *log.Logger) domain.AuthorID {
 	url := fmt.Sprintf("%s/author", apiUrl)
-	log.Infof("POST %q\n", url)
+	logger.Infoln(url)
 
 	values := prepareCreateAuthorData()
-	jsonData := mustMarshal(values)
+	jsonData := mustMarshal(values, logger)
 
 	client := &http.Client{}
 	resp, err := client.Post(url, "application/json", bytes.NewBuffer(jsonData))
+	if err != nil {
+		logger.Failln("POST /author: failed to post: %v", err)
+		return domain.AuthorID(uuid.Nil.String())
+	}
 	defer func() {
 		if errClose := resp.Body.Close(); errClose != nil {
-			log.Println(fmt.Sprintf("failed to close response body: %v", err))
+			logger.Println(fmt.Sprintf("failed to close response body: %v", errClose))
 		}
 	}()
 
-	body := getBodyBytes(resp.Body)
+	body := getBodyBytes(resp.Body, logger)
 
 	if resp.StatusCode != http.StatusCreated {
-		log.Println(fmt.Sprintf("body: %s", string(body)))
-		fail("author [post]: incorrect response status: expected %s, got: %s", http.StatusCreated, resp.StatusCode)
-		return nil
+		logger.Println(fmt.Sprintf("body: %s", string(body)))
+		logger.Failln("POST /author: incorrect response status: expected %s, got: %s", http.StatusCreated, resp.StatusCode)
+		return domain.AuthorID(uuid.Nil.String())
 	}
 
 	var response createAuthorResponse
 	if err = json.Unmarshal(body, &response); err != nil {
-		fail("author [post]: failed to unmarshal response: %v", err)
-		return nil
+		logger.Failln("POST /author: failed to unmarshal response: %v", err)
+		return domain.AuthorID(uuid.Nil.String())
 	}
 
-	log.Println(fmt.Sprintf("response: %+v", response))
+	logger.Println(fmt.Sprintf("response: %+v", response))
 	return response.ID
 }
 
@@ -65,23 +78,18 @@ func prepareCreateAuthorData() map[string]interface{} {
 		"last_name":   random.String(120),
 	}
 }
-func mustMarshal(v interface{}) []byte {
+func mustMarshal(v interface{}, logger *log.Logger) []byte {
 	b, err := json.Marshal(v)
 	if err != nil {
-		fail("failed to marshal: %v", err)
+		logger.Failln("POST /author: failed to marshal: %v", err)
 	}
 	return b
 }
 
-func getBodyBytes(body io.Reader) []byte {
+func getBodyBytes(body io.Reader, logger *log.Logger) []byte {
 	buf := new(bytes.Buffer)
 	if _, err := buf.ReadFrom(body); err != nil {
-		fail("failed to read body: %v", err)
+		logger.Failln("POST /author: failed to read body: %v", err)
 	}
 	return buf.Bytes()
-}
-
-func fail(format string, args ...interface{}) {
-	message := fmt.Sprintf(format, args...)
-	log.Fatalf("POST /author: %s", message)
 }

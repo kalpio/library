@@ -8,7 +8,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"io"
 	"library/domain"
-	"library/random"
+	"library/e2e/author"
 	"net"
 	"net/http"
 	"sync"
@@ -30,57 +30,17 @@ func main() {
 	var authors []domain.AuthorID
 	var wg sync.WaitGroup
 	var ch = make(chan domain.AuthorID, 1000)
-	go postAuthors(apiURL, cap(ch), ch)
+	author.Post(apiURL, cap(ch), ch)
 	for c := range ch {
 		authors = append(authors, c)
 	}
 
-	for _, author := range authors {
+	for _, a := range authors {
 		wg.Add(1)
-		go getAuthor(apiURL, author, &wg)
+		go getAuthor(apiURL, a, &wg)
 	}
 
 	wg.Wait()
-}
-
-func postAuthors(apiURL string, count int, ch chan domain.AuthorID) {
-	for i := 0; i < count; i++ {
-		ch <- postAuthor(apiURL)
-	}
-	close(ch)
-}
-
-func postAuthor(apiURL string) domain.AuthorID {
-	url := fmt.Sprintf("%s/author", apiURL)
-	log.Println(fmt.Sprintf("POST %q", url))
-
-	values := prepareCreateAuthorData()
-	jsonData := mustMarshal(values)
-
-	client := &http.Client{}
-	resp, err := client.Post(url, "application/json", bytes.NewBuffer(jsonData))
-	defer func() {
-		if errClose := resp.Body.Close(); errClose != nil {
-			log.Println(fmt.Sprintf("failed to close response body: %v", err))
-		}
-	}()
-
-	body := getBodyBytes(resp.Body)
-
-	if resp.StatusCode != http.StatusCreated {
-		log.Println(fmt.Sprintf("body: %s", string(body)))
-		fail("author [post]: incorrect response status: expected %s, got: %s", http.StatusCreated, resp.StatusCode)
-		return domain.AuthorID(domain.EmptyUUID().String())
-	}
-
-	var response createAuthorResponse
-	if err = json.Unmarshal(body, &response); err != nil {
-		fail("author [post]: failed to unmarshal response: %v", err)
-		return domain.AuthorID(domain.EmptyUUID().String())
-	}
-
-	log.Println(fmt.Sprintf("response: %+v", response))
-	return response.ID
 }
 
 type createAuthorResponse struct {
@@ -90,22 +50,6 @@ type createAuthorResponse struct {
 	LastName   string          `json:"last_name"`
 	CreatedAt  time.Time       `json:"created_at"`
 	UpdatedAt  time.Time       `json:"updated_at"`
-}
-
-func prepareCreateAuthorData() map[string]interface{} {
-	return map[string]interface{}{
-		"first_name":  random.String(20),
-		"middle_name": random.String(20),
-		"last_name":   random.String(120),
-	}
-}
-
-func mustMarshal(v interface{}) []byte {
-	b, err := json.Marshal(v)
-	if err != nil {
-		fail("failed to marshal: %v", err)
-	}
-	return b
 }
 
 func getBodyBytes(body io.Reader) []byte {
