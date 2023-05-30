@@ -5,9 +5,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/google/uuid"
-	"io"
 	"library/domain"
 	"library/e2e/log"
+	"library/e2e/utils"
 	"library/random"
 	"net/http"
 	"time"
@@ -44,7 +44,11 @@ func post(apiUrl string, logger *log.Logger) domain.AuthorID {
 		}
 	}()
 
-	body := getBodyBytes(resp.Body, logger)
+	body, err := utils.GetBodyBytes(resp.Body)
+	if err != nil {
+		logger.Failln("POST /author: failed to read response body: %v", err)
+		return domain.AuthorID(uuid.Nil.String())
+	}
 
 	if resp.StatusCode != http.StatusCreated {
 		logger.Println(fmt.Sprintf("body: %s", string(body)))
@@ -84,12 +88,4 @@ func mustMarshal(v interface{}, logger *log.Logger) []byte {
 		logger.Failln("POST /author: failed to marshal: %v", err)
 	}
 	return b
-}
-
-func getBodyBytes(body io.Reader, logger *log.Logger) []byte {
-	buf := new(bytes.Buffer)
-	if _, err := buf.ReadFrom(body); err != nil {
-		logger.Failln("POST /author: failed to read body: %v", err)
-	}
-	return buf.Bytes()
 }

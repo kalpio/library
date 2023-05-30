@@ -3,6 +3,7 @@ package repository
 import (
 	"library/domain"
 	"library/ioc"
+	"sync"
 
 	"github.com/google/uuid"
 
@@ -17,15 +18,19 @@ type Models interface {
 
 var (
 	errFailedGetDbService = "repository: failed to get database service"
+	lock                  = &sync.RWMutex{}
 )
 
 func Save[T Models](model T) (T, error) {
+	lock.Lock()
+	defer lock.Unlock()
+
 	db, err := ioc.Get[domain.IDatabase]()
 	if err != nil {
 		return *new(T), errors.Wrap(err, errFailedGetDbService)
 	}
 
-	if err := model.Validate(); err != nil {
+	if err = model.Validate(); err != nil {
 		return *new(T), errors.Wrapf(err, "repository: an error during %T validation", model)
 	}
 
@@ -34,6 +39,9 @@ func Save[T Models](model T) (T, error) {
 }
 
 func Update[T Models](model T) error {
+	lock.Lock()
+	defer lock.Unlock()
+
 	db, err := ioc.Get[domain.IDatabase]()
 	if err != nil {
 		return errors.Wrap(err, errFailedGetDbService)
@@ -57,6 +65,9 @@ func Update[T Models](model T) error {
 }
 
 func GetByColumns[T Models](columnValue map[string]interface{}) (T, error) {
+	lock.RLock()
+	defer lock.RUnlock()
+
 	db, err := ioc.Get[domain.IDatabase]()
 	if err != nil {
 		return *new(T), errors.Wrap(err, errFailedGetDbService)
@@ -75,6 +86,9 @@ func GetByColumns[T Models](columnValue map[string]interface{}) (T, error) {
 }
 
 func GetAll[T Models]() ([]T, error) {
+	lock.RLock()
+	defer lock.RUnlock()
+
 	var (
 		db      domain.IDatabase
 		err     error
@@ -93,6 +107,9 @@ func GetAll[T Models]() ([]T, error) {
 }
 
 func GetByID[T Models](id uuid.UUID) (T, error) {
+	lock.RLock()
+	defer lock.RUnlock()
+
 	var (
 		db     domain.IDatabase
 		err    error
@@ -112,6 +129,9 @@ func GetByID[T Models](id uuid.UUID) (T, error) {
 }
 
 func Delete[T Models](id uuid.UUID) error {
+	lock.Lock()
+	defer lock.Unlock()
+
 	var (
 		db  domain.IDatabase
 		err error
