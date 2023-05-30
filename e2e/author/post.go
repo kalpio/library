@@ -30,12 +30,16 @@ func post(apiUrl string, logger *log.Logger) domain.AuthorID {
 	logger.Infolnf(url)
 
 	values := prepareCreateAuthorData()
-	jsonData := mustMarshal(values, logger)
+	jsonData, err := utils.MustMarshal(values)
+	if err != nil {
+		logger.Faillnf("failed to marshal values: %v", err)
+		return domain.AuthorID(uuid.Nil.String())
+	}
 
 	client := &http.Client{}
 	resp, err := client.Post(url, "application/json", bytes.NewBuffer(jsonData))
 	if err != nil {
-		logger.Faillnf("POST /author: failed to post: %v", err)
+		logger.Faillnf("failed to post: %v", err)
 		return domain.AuthorID(uuid.Nil.String())
 	}
 	defer func() {
@@ -46,23 +50,23 @@ func post(apiUrl string, logger *log.Logger) domain.AuthorID {
 
 	body, err := utils.GetBodyBytes(resp.Body)
 	if err != nil {
-		logger.Faillnf("POST /author: failed to read response body: %v", err)
+		logger.Faillnf("failed to read response body: %v", err)
 		return domain.AuthorID(uuid.Nil.String())
 	}
 
 	if resp.StatusCode != http.StatusCreated {
-		logger.Printlnf(fmt.Sprintf("body: %s", string(body)))
-		logger.Faillnf("POST /author: incorrect response status: expected %s, got: %s", http.StatusCreated, resp.StatusCode)
+		logger.Printlnf("body: %s", string(body))
+		logger.Faillnf("incorrect response status: expected %s, got: %s", http.StatusCreated, resp.StatusCode)
 		return domain.AuthorID(uuid.Nil.String())
 	}
 
 	var response createAuthorResponse
 	if err = json.Unmarshal(body, &response); err != nil {
-		logger.Faillnf("POST /author: failed to unmarshal response: %v", err)
+		logger.Faillnf("failed to unmarshal response: %v", err)
 		return domain.AuthorID(uuid.Nil.String())
 	}
 
-	logger.Printlnf(fmt.Sprintf("response: %+v", response))
+	logger.Printlnf("response: %+v", response)
 	return response.ID
 }
 
@@ -81,11 +85,4 @@ func prepareCreateAuthorData() map[string]interface{} {
 		"middle_name": random.String(20),
 		"last_name":   random.String(120),
 	}
-}
-func mustMarshal(v interface{}, logger *log.Logger) []byte {
-	b, err := json.Marshal(v)
-	if err != nil {
-		logger.Faillnf("POST /author: failed to marshal: %v", err)
-	}
-	return b
 }

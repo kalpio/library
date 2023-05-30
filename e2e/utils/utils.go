@@ -2,6 +2,7 @@ package utils
 
 import (
 	"bytes"
+	"encoding/json"
 	"io"
 )
 
@@ -12,4 +13,13 @@ func GetBodyBytes(body io.Reader) ([]byte, error) {
 	}
 
 	return buf.Bytes(), nil
+}
+
+func MustMarshal(v interface{}) ([]byte, error) {
+	data, err := json.Marshal(v)
+	if err != nil {
+		return nil, err
+	}
+
+	return data, nil
 }

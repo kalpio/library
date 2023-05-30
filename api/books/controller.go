@@ -31,7 +31,7 @@ func (a *Controller) Add(ctx *gin.Context) {
 		return
 	}
 
-	command := commands.NewCreateBookCommand(domain.BookID(json.ID),
+	command := commands.NewCreateBookCommand(domain.NewBookID(),
 		json.Title,
 		json.ISBN,
 		json.Description,
