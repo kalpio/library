@@ -27,7 +27,7 @@ func Post(apiUrl string, count int, ch chan domain.AuthorID) {
 
 func post(apiUrl string, logger *log.Logger) domain.AuthorID {
 	url := fmt.Sprintf("%s/author", apiUrl)
-	logger.Infoln(url)
+	logger.Infolnf(url)
 
 	values := prepareCreateAuthorData()
 	jsonData := mustMarshal(values, logger)
@@ -35,34 +35,34 @@ func post(apiUrl string, logger *log.Logger) domain.AuthorID {
 	client := &http.Client{}
 	resp, err := client.Post(url, "application/json", bytes.NewBuffer(jsonData))
 	if err != nil {
-		logger.Failln("POST /author: failed to post: %v", err)
+		logger.Faillnf("POST /author: failed to post: %v", err)
 		return domain.AuthorID(uuid.Nil.String())
 	}
 	defer func() {
 		if errClose := resp.Body.Close(); errClose != nil {
-			logger.Println(fmt.Sprintf("failed to close response body: %v", errClose))
+			logger.Printlnf("failed to close response body: %v", errClose)
 		}
 	}()
 
 	body, err := utils.GetBodyBytes(resp.Body)
 	if err != nil {
-		logger.Failln("POST /author: failed to read response body: %v", err)
+		logger.Faillnf("POST /author: failed to read response body: %v", err)
 		return domain.AuthorID(uuid.Nil.String())
 	}
 
 	if resp.StatusCode != http.StatusCreated {
-		logger.Println(fmt.Sprintf("body: %s", string(body)))
-		logger.Failln("POST /author: incorrect response status: expected %s, got: %s", http.StatusCreated, resp.StatusCode)
+		logger.Printlnf(fmt.Sprintf("body: %s", string(body)))
+		logger.Faillnf("POST /author: incorrect response status: expected %s, got: %s", http.StatusCreated, resp.StatusCode)
 		return domain.AuthorID(uuid.Nil.String())
 	}
 
 	var response createAuthorResponse
 	if err = json.Unmarshal(body, &response); err != nil {
-		logger.Failln("POST /author: failed to unmarshal response: %v", err)
+		logger.Faillnf("POST /author: failed to unmarshal response: %v", err)
 		return domain.AuthorID(uuid.Nil.String())
 	}
 
-	logger.Println(fmt.Sprintf("response: %+v", response))
+	logger.Printlnf(fmt.Sprintf("response: %+v", response))
 	return response.ID
 }
 
@@ -85,7 +85,7 @@ func prepareCreateAuthorData() map[string]interface{} {
 func mustMarshal(v interface{}, logger *log.Logger) []byte {
 	b, err := json.Marshal(v)
 	if err != nil {
-		logger.Failln("POST /author: failed to marshal: %v", err)
+		logger.Faillnf("POST /author: failed to marshal: %v", err)
 	}
 	return b
 }

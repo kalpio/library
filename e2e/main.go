@@ -22,21 +22,16 @@ func main() {
 
 	apiURL := fmt.Sprintf("%s/api/v1", baseURL)
 
-	var authors []domain.AuthorID
 	var wg sync.WaitGroup
 	var ch = make(chan domain.AuthorID, 1000)
 
 	go author.Post(apiURL, cap(ch), ch)
-	for c := range ch {
-		authors = append(authors, c)
-		wg.Add(1)
-		go author.Get(apiURL, c, &wg)
-	}
 
-	//for _, a := range authors {
-	//	wg.Add(1)
-	//	go author.Get(apiURL, a, &wg)
-	//}
+	for c := range ch {
+		wg.Add(2)
+		author.Get(apiURL, c, &wg)
+		author.Delete(apiURL, c, &wg)
+	}
 
 	wg.Wait()
 }

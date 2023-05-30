@@ -13,15 +13,17 @@ func NewLogger(prefix string) *Logger {
 	return &Logger{prefix: prefix}
 }
 
-func (l *Logger) Failln(format string, args ...interface{}) {
+func (l *Logger) Faillnf(format string, args ...interface{}) {
 	message := fmt.Sprintf(format, args...)
 	logrus.Fatalln(fmt.Sprintf("%s: %s", l.prefix, message))
 }
 
-func (l *Logger) Println(args ...interface{}) {
-	logrus.Println(fmt.Sprintf("%s: %s", l.prefix, fmt.Sprint(args...)))
+func (l *Logger) Printlnf(format string, args ...interface{}) {
+	message := fmt.Sprintf(format, args...)
+	logrus.Println(fmt.Sprintf("%s: %s", l.prefix, message))
 }
 
-func (l *Logger) Infoln(args ...interface{}) {
-	logrus.Infoln(fmt.Sprintf("%s: %s", l.prefix, fmt.Sprint(args...)))
+func (l *Logger) Infolnf(format string, args ...interface{}) {
+	message := fmt.Sprintf(format, args...)
+	logrus.Infoln(fmt.Sprintf("%s: %s", l.prefix, message))
 }

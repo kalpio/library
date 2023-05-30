@@ -16,33 +16,33 @@ func Get(apiUrl string, id domain.AuthorID, wg *sync.WaitGroup) {
 	logger := log.NewLogger("GET /author")
 
 	url := fmt.Sprintf("%s/author/%s", apiUrl, id)
-	logger.Println(fmt.Sprintf("GET %q", url))
+	logger.Printlnf(url)
 
 	client := &http.Client{}
 	resp, err := client.Get(url)
 	defer func() {
 		if errClose := resp.Body.Close(); errClose != nil {
-			logger.Println(fmt.Sprintf("failed to close response body: %v", err))
+			logger.Printlnf(fmt.Sprintf("failed to close response body: %v", errClose))
 		}
 	}()
 
 	body, err := utils.GetBodyBytes(resp.Body)
 	if err != nil {
-		logger.Failln("author [get]: failed to read response body: %v", err)
+		logger.Faillnf("failed to read response body: %v", err)
 		return
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		logger.Println(fmt.Sprintf("body: %s", string(body)))
-		logger.Failln("author [get]: incorrect response status: expected %s, got: %s", http.StatusOK, resp.StatusCode)
+		logger.Printlnf(fmt.Sprintf("body: %s", string(body)))
+		logger.Faillnf("incorrect response status: expected %s, got: %s", http.StatusOK, resp.StatusCode)
 		return
 	}
 
 	var response createAuthorResponse
 	if err = json.Unmarshal(body, &response); err != nil {
-		logger.Failln("author [get]: failed to unmarshal response: %v", err)
+		logger.Faillnf("failed to unmarshal response: %v", err)
 		return
 	}
 
-	logger.Println(fmt.Sprintf("response: %+v", response))
+	logger.Printlnf("response: %+v", response)
 }
