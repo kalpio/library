@@ -24,6 +24,7 @@ func main() {
 	apiURL := fmt.Sprintf("%s/api/v1", baseURL)
 
 	var authors []domain.AuthorID
+	var books []domain.BookID
 	var wg sync.WaitGroup
 	var authorChan = make(chan domain.AuthorID, 1000)
 	const bookCountPerAuthor = 10
@@ -36,6 +37,16 @@ func main() {
 	}
 
 	book.Post(apiURL, authors, bookCountPerAuthor, bookChan)
+
+	for b := range bookChan {
+		books = append(books, b)
+	}
+
+	for _, bookId := range books {
+		wg.Add(2)
+		book.Get(apiURL, bookId, &wg)
+		book.Delete(apiURL, bookId, &wg)
+	}
 
 	for _, authorId := range authors {
 		wg.Add(2)

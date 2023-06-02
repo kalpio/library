@@ -97,7 +97,7 @@ func (a *Controller) Edit(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusCreated, response)
+	ctx.JSON(http.StatusOK, response)
 }
 
 func (a *Controller) Delete(ctx *gin.Context) {
@@ -111,6 +111,10 @@ func (a *Controller) Delete(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+	if !response.Succeeded {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Unable to delete book"})
+		return
+	}
 
-	ctx.JSON(http.StatusCreated, response)
+	ctx.JSON(http.StatusOK, response)
 }

@@ -112,10 +112,10 @@ func (a *Controller) Delete(ctx *gin.Context) {
 		return
 	}
 
-	if response.Succeeded {
-		ctx.JSON(http.StatusOK, gin.H{})
+	if !response.Succeeded {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Unable to delete author"})
 		return
 	}
 
-	ctx.JSON(http.StatusBadRequest, gin.H{})
+	ctx.JSON(http.StatusOK, gin.H{})
 }

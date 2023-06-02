@@ -1,4 +1,4 @@
-package author
+package book
 
 import (
 	"encoding/json"
@@ -10,16 +10,20 @@ import (
 	"sync"
 )
 
-func Get(apiUrl string, id domain.AuthorID, wg *sync.WaitGroup) {
+func Get(apiUrl string, id domain.BookID, wg *sync.WaitGroup) {
 	defer wg.Done()
 
-	logger := log.NewLogger("GET /author")
+	logger := log.NewLogger("GET /book")
 
-	url := fmt.Sprintf("%s/author/%s", apiUrl, id)
+	url := fmt.Sprintf("%s/book/%s", apiUrl, id)
 	logger.Printlnf(url)
 
 	client := &http.Client{}
 	resp, err := client.Get(url)
+	if err != nil {
+		logger.Faillnf("failed to get: %v", err)
+		return
+	}
 	defer func() {
 		if errClose := resp.Body.Close(); errClose != nil {
 			logger.Printlnf("failed to close response body: %v", errClose)
@@ -33,12 +37,12 @@ func Get(apiUrl string, id domain.AuthorID, wg *sync.WaitGroup) {
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		logger.Printlnf(fmt.Sprintf("body: %s", string(body)))
+		logger.Printlnf("body: %s", string(body))
 		logger.Faillnf("incorrect response status: expected %s, got: %s", http.StatusOK, resp.StatusCode)
 		return
 	}
 
-	var response createAuthorResponse
+	var response createBookResponse
 	if err = json.Unmarshal(body, &response); err != nil {
 		logger.Faillnf("failed to unmarshal response: %v", err)
 		return
