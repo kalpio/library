@@ -11,7 +11,7 @@ import (
 func Delete(apiUrl string, id domain.BookID, wg *sync.WaitGroup) {
 	defer wg.Done()
 
-	logger := log.NewLogger("DELETE /book")
+	logger := log.NewLogger(fmt.Sprintf("DELETE /book/%s", id))
 	url := fmt.Sprintf("%s/book/%s", apiUrl, id)
 	logger.Printlnf(url)
 

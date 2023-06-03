@@ -9,7 +9,7 @@ type GetAllAuthorsQuery struct {
 }
 
 type GetAllAuthorsQueryResponse struct {
-	Result []result
+	Result []result `json:"authors"`
 }
 
 type result struct {

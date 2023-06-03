@@ -13,7 +13,7 @@ func NewGetAllBooksQuery() *GetAllBooksQuery {
 }
 
 type GetAllBooksQueryResponse struct {
-	Result []result
+	Result []result `json:"books"`
 }
 
 type result struct {

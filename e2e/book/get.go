@@ -13,7 +13,7 @@ import (
 func Get(apiUrl string, id domain.BookID, wg *sync.WaitGroup) {
 	defer wg.Done()
 
-	logger := log.NewLogger("GET /book")
+	logger := log.NewLogger(fmt.Sprintf("GET /book/%s", id))
 
 	url := fmt.Sprintf("%s/book/%s", apiUrl, id)
 	logger.Printlnf(url)

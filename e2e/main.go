@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"github.com/samber/lo"
 	log "github.com/sirupsen/logrus"
 	"library/domain"
 	"library/e2e/author"
@@ -42,10 +43,13 @@ func main() {
 		books = append(books, b)
 	}
 
-	for _, bookId := range books {
+	readBook := book.GetAll(apiURL)
+	assertReadBooks(books, readBook)
+
+	for _, b := range readBook {
 		wg.Add(2)
-		book.Get(apiURL, bookId, &wg)
-		book.Delete(apiURL, bookId, &wg)
+		book.Get(apiURL, b.ID, &wg)
+		book.Delete(apiURL, b.ID, &wg)
 	}
 
 	for _, authorId := range authors {
@@ -55,4 +59,15 @@ func main() {
 	}
 
 	wg.Wait()
+}
+
+func assertReadBooks(books []domain.BookID, readBook []*domain.Book) {
+	readBookIds := lo.Map(readBook, func(b *domain.Book, index int) domain.BookID {
+		return b.ID
+	})
+	for _, b := range books {
+		if !lo.Contains(readBookIds, b) {
+			log.Fatalln(fmt.Sprintf("book %s not found\n", b))
+		}
+	}
 }
