@@ -1,13 +1,22 @@
 package application
 
 import (
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"library/api/author"
 	"library/api/books"
+	"time"
 )
 
 func configureRouter() *gin.Engine {
 	r := gin.Default()
+
+	r.Use(cors.New(cors.Config{
+		AllowOrigins: []string{"*"},
+		AllowMethods: []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
+		AllowHeaders: []string{"Content-Type", "hx-current-url", "hx-request", "hx-target", "hx-trigger"},
+		MaxAge:       12 * time.Hour,
+	}))
 
 	authorCtrl := author.NewAuthorController()
 	bookCtrl := books.NewBooksController()

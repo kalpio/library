@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Library</title>
+</head>
+<body>
+	<form id="author-form" hx-post="http://127.0.0.1:8089/api/v1/author" hx-ext="json-enc" hx-target="" hx-swap="none" data-target-error="#error">
+		<label>
+			First name:
+			<input type="text" id="first_name" name="first_name">
+		</label>
+		<label>
+			Middle name:
+			<input type="text" id="middle_name" name="middle_name">
+		</label>
+		<label>
+			Last name:
+			<input type="text" id="last_name" name="last_name">
+		</label>
+		<input type="submit" value="Submit">
+	</form>
+	<div id="response">
+		<ul id="author-list">
+		</ul>
+	</div>
+	<div id="error" style="display: none;"></div>
+</body>
+<script src="https://unpkg.com/htmx.org@1.9.2" integrity="sha384-L6OqL9pRWyyFU3+/bjdSri+iIphTN/bvYyM37tICVyOJkWZLpP2vGn6VUEXgzg6h" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/htmx.org/dist/ext/json-enc.js"></script>
+<script type="text/javascript">
+	const f = document.getElementById('author-form');
+	f.addEventListener("htmx:sendError", function () {
+		alert("Error sending");
+	});
+
+	document.body.addEventListener("htmx:afterRequest", (evt) => {
+		if (evt.detail.failed) {
+			processFailed(evt);
+		} else if (evt.detail.successful) {
+			processSuccess(evt);
+		}
+	});
+
+	function processFailed(evt) {
+		changeErrorVisibility(evt, true);
+
+		const targetError = evt.target.attributes.getNamedItem("data-target-error");
+		if (!targetError) return;
+
+		let response = JSON.parse(evt.detail.xhr.responseText);
+		const err = document.querySelector(targetError.value);
+		err.style.display = "block";
+		err.innerHTML = response.error;
+	}
+
+	function processSuccess(evt) {
+		changeErrorVisibility(evt, false);
+
+		let response = JSON.parse(evt.detail.xhr.responseText);
+		const ul = document.querySelector("#author-list");
+		let li = document.createElement("li");
+		li.innerHTML = response.first_name + " " + response.middle_name + " " + response.last_name;
+		ul.appendChild(li);
+
+		clearFields();
+	}
+
+	function clearFields() {
+		document.getElementById("first_name").value = "";
+		document.getElementById("middle_name").value = "";
+		document.getElementById("last_name").value = "";
+	}
+
+	function changeErrorVisibility(evt, visible) {
+		const targetError = evt.target.attributes.getNamedItem("data-target-error");
+		if (!targetError) return;
+
+		const err = document.querySelector(targetError.value);
+		err.style.display = visible ? "block" : "none";
+	}
+</script>
+</html>
