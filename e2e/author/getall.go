@@ -1,4 +1,4 @@
-package book
+package author
 
 import (
 	"encoding/json"
@@ -9,10 +9,10 @@ import (
 	"net/http"
 )
 
-func GetAll(apiUrl string) []domain.Book {
-	logger := log.NewLogger("GET /book")
+func GetAll(apiUrl string) []domain.Author {
+	logger := log.NewLogger("GET /author")
 
-	url := fmt.Sprintf("%s/book", apiUrl)
+	url := fmt.Sprintf("%s/author", apiUrl)
 	logger.Printlnf(url)
 
 	client := &http.Client{}
@@ -39,17 +39,17 @@ func GetAll(apiUrl string) []domain.Book {
 		return nil
 	}
 
-	var response getAllBooksResponse
+	var response getAllAuthorsResponse
 	if err = json.Unmarshal(body, &response); err != nil {
 		logger.Faillnf("failed to unmarshal response: %v", err)
 		return nil
 	}
 
-	logger.Printlnf("response: found %+v books", len(response.Books))
+	logger.Printlnf("response: found %+v authors", len(response.Authors))
 
-	return response.Books
+	return response.Authors
 }
 
-type getAllBooksResponse struct {
-	Books []domain.Book `json:"books"`
+type getAllAuthorsResponse struct {
+	Authors []domain.Author `json:"authors"`
 }
