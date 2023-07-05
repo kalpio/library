@@ -91,8 +91,8 @@ func (b *BookServiceMock) GetByID(id domain.BookID) (*domain.Book, error) {
 	return args.Get(0).(*domain.Book), args.Error(1)
 }
 
-func (b *BookServiceMock) GetAll() ([]domain.Book, error) {
-	args := b.Called()
+func (b *BookServiceMock) GetAll(page, pageSize int) ([]domain.Book, error) {
+	args := b.Called(page, pageSize)
 	return args.Get(0).([]domain.Book), args.Error(1)
 }
 

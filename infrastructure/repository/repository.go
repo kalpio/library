@@ -74,7 +74,7 @@ func GetByColumns[T Models](columnValue map[string]interface{}) (T, error) {
 	return result, nil
 }
 
-func GetAll[T Models]() ([]T, error) {
+func GetAll[T Models](page, pageSize int) ([]T, error) {
 	var (
 		db      domain.IDatabase
 		err     error
@@ -85,7 +85,12 @@ func GetAll[T Models]() ([]T, error) {
 		return *new([]T), err
 	}
 
-	if err = db.GetDB().Find(&results).Error; err != nil {
+	offset := (page - 1) * pageSize
+	if err = db.GetDB().
+		Offset(offset).
+		Limit(pageSize).
+		Find(&results).
+		Error; err != nil {
 		return *new([]T), errors.Wrapf(err, "repository: could not read list %T", new(T))
 	}
 

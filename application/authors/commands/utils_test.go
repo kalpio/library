@@ -51,8 +51,8 @@ func (a *authorServiceMock) GetByID(id domain.AuthorID) (*domain.Author, error) 
 	return args.Get(0).(*domain.Author), args.Error(1)
 }
 
-func (a *authorServiceMock) GetAll() ([]domain.Author, error) {
-	args := a.Called()
+func (a *authorServiceMock) GetAll(page, size int) ([]domain.Author, error) {
+	args := a.Called(page, size)
 	return args.Get(0).([]domain.Author), args.Error(1)
 }
 

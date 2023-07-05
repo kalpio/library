@@ -345,7 +345,9 @@ func getAllSucceededWhenThereAreNoAuthors(t *testing.T) {
 
 	ass := assert.New(t)
 
-	authors, err := authorService.GetAll()
+	page := 1
+	size := 50
+	authors, err := authorService.GetAll(page, size)
 	ass.NoError(err)
 	ass.Len(authors, 0)
 }
@@ -413,7 +415,9 @@ func getAllSucceeded(t *testing.T) {
 		values = append(values, a)
 	}
 
-	authors, err := authorService.GetAll()
+	page := 1
+	size := 50
+	authors, err := authorService.GetAll(page, size)
 	ass.NoError(err)
 	ass.Len(authors, len(values))
 
