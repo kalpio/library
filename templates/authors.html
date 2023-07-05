@@ -1,0 +1,7 @@
+{{ range $author := .data }}
+<tr>
+    <td>{{ $author.FirstName }}</td>
+    <td>{{ $author.MiddleName }}</td>
+    <td>{{ $author.LastName }}</td>
+</tr>
+{{ end }}

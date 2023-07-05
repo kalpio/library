@@ -22,5 +22,5 @@ go.work
 .idea
 .fleet
 /library
-/library.db
+library.db
 /library.exe
