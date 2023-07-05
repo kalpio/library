@@ -109,7 +109,9 @@ func TestGetAll(t *testing.T) {
 	expects = append(expects, createNewAuthorInDB(t))
 	expects = append(expects, createNewAuthorInDB(t))
 
-	results, err := repository.GetAll[domain.Author]()
+	page := 1
+	pageSize := 50
+	results, err := repository.GetAll[domain.Author](page, pageSize)
 
 	ass.NoError(err)
 	ass.Equal(3, len(results))

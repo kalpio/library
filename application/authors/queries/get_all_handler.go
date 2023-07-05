@@ -15,12 +15,12 @@ func NewGetAllAuthorsQueryHandler(db domain.IDatabase, authorSrv author.IAuthorS
 	return &GetAllAuthorsQueryHandler{db: db, authorSrv: authorSrv}
 }
 
-func (c *GetAllAuthorsQueryHandler) Handle(_ context.Context, _ *GetAllAuthorsQuery) (*GetAllAuthorsQueryResponse, error) {
+func (c *GetAllAuthorsQueryHandler) Handle(_ context.Context, query *GetAllAuthorsQuery) (*GetAllAuthorsQueryResponse, error) {
 	var (
 		res []domain.Author
 		err error
 	)
-	if res, err = c.authorSrv.GetAll(); err != nil {
+	if res, err = c.authorSrv.GetAll(query.Page, query.Size); err != nil {
 		return nil, err
 	}
 

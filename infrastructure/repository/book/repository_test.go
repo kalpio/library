@@ -59,7 +59,9 @@ func TestGetAll(t *testing.T) {
 	expected = append(expected, createNewBookInDB(t))
 	expected = append(expected, createNewBookInDB(t))
 
-	results, err := repository.GetAll[domain.Book]()
+	page := 1
+	pageSize := 50
+	results, err := repository.GetAll[domain.Book](page, pageSize)
 	ass.NoError(err)
 	ass.Equal(len(results), 3)
 

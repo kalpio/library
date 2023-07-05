@@ -433,7 +433,9 @@ func getAllBooksSucceeded(t *testing.T) {
 		values = append(values, *b)
 	}
 
-	books, err := bookService.GetAll()
+	page := 1
+	size := 50
+	books, err := bookService.GetAll(page, size)
 	ass.NoError(err)
 
 	ass.Len(books, len(values))
@@ -456,7 +458,9 @@ func getAllBooksSucceededWhenThereAreNoBook(t *testing.T) {
 
 	ass := assert.New(t)
 
-	books, err := bookService.GetAll()
+	page := 1
+	size := 50
+	books, err := bookService.GetAll(page, size)
 	ass.NoError(err)
 
 	ass.Len(books, 0)

@@ -6,6 +6,8 @@ import (
 )
 
 type GetAllBooksQuery struct {
+	Page int
+	Size int
 }
 
 func NewGetAllBooksQuery() *GetAllBooksQuery {

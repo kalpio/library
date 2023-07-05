@@ -20,7 +20,7 @@ type IBookService interface {
 
 	GetByID(id domain.BookID) (*domain.Book, error)
 
-	GetAll() ([]domain.Book, error)
+	GetAll(page, pageSize int) ([]domain.Book, error)
 
 	Delete(id domain.BookID) error
 }
@@ -128,8 +128,8 @@ func (b *bookService) GetByID(id domain.BookID) (*domain.Book, error) {
 	return &result, nil
 }
 
-func (b *bookService) GetAll() ([]domain.Book, error) {
-	result, err := repository.GetAll[domain.Book]()
+func (b *bookService) GetAll(page, pageSize int) ([]domain.Book, error) {
+	result, err := repository.GetAll[domain.Book](page, pageSize)
 	if err != nil {
 		return nil, fmt.Errorf("book service: could not find books: %w", err)
 	}

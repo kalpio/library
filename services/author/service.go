@@ -10,7 +10,7 @@ type IAuthorService interface {
 	Create(id domain.AuthorID, firstName, middleName, lastName string) (*domain.Author, error)
 	Edit(id domain.AuthorID, firstName, middleName, lastName string) (*domain.Author, error)
 	GetByID(id domain.AuthorID) (*domain.Author, error)
-	GetAll() ([]domain.Author, error)
+	GetAll(page, pageSize int) ([]domain.Author, error)
 	Delete(id domain.AuthorID) error
 }
 
@@ -75,8 +75,8 @@ func (a *authorService) GetByID(id domain.AuthorID) (*domain.Author, error) {
 	return &result, nil
 }
 
-func (a *authorService) GetAll() ([]domain.Author, error) {
-	result, err := repository.GetAll[domain.Author]()
+func (a *authorService) GetAll(page, pageSize int) ([]domain.Author, error) {
+	result, err := repository.GetAll[domain.Author](page, pageSize)
 	if err != nil {
 		return nil, err
 	}

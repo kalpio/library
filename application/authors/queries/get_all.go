@@ -6,6 +6,8 @@ import (
 )
 
 type GetAllAuthorsQuery struct {
+	Page int
+	Size int
 }
 
 type GetAllAuthorsQueryResponse struct {

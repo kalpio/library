@@ -15,12 +15,12 @@ func NewGetAllBooksQueryHandler(db domain.IDatabase, bookSrv book.IBookService) 
 	return &GetAllBooksQueryHandler{db: db, bookSrv: bookSrv}
 }
 
-func (c *GetAllBooksQueryHandler) Handle(_ context.Context, _ *GetAllBooksQuery) (*GetAllBooksQueryResponse, error) {
+func (c *GetAllBooksQueryHandler) Handle(_ context.Context, query *GetAllBooksQuery) (*GetAllBooksQueryResponse, error) {
 	var (
 		res []domain.Book
 		err error
 	)
-	if res, err = c.bookSrv.GetAll(); err != nil {
+	if res, err = c.bookSrv.GetAll(query.Page, query.Size); err != nil {
 		return nil, err
 	}
 
