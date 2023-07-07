@@ -22,7 +22,8 @@ go.work
 .idea
 .fleet
 /library
-/library.db
+/*.db
+/*.db-journal
 /library.exe
 /bin/
 /e2e/e2e

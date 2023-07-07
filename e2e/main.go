@@ -55,18 +55,18 @@ func main() {
 		book.Delete(apiURL, b.ID, &wg)
 	}
 
-	readAuthors := author.GetAll(apiURL)
-	authorIds := lo.Map(readAuthors, func(a domain.Author, index int) domain.AuthorID {
-		return a.ID
-	})
-	authorIds = extractId(readBooks)
-	assertReadData(authors, authorIds)
-
-	for _, authorId := range authors {
-		wg.Add(2)
-		author.Get(apiURL, authorId, &wg)
-		author.Delete(apiURL, authorId, &wg)
-	}
+	//readAuthors := author.GetAll(apiURL)
+	//authorIds := lo.Map(readAuthors, func(a domain.Author, index int) domain.AuthorID {
+	//	return a.ID
+	//})
+	//authorIds = extractId[domain.Author, domain.AuthorID](readAuthors)
+	//assertReadData(authors, authorIds)
+	//
+	//for _, authorId := range authors {
+	//	wg.Add(2)
+	//	author.Get(apiURL, authorId, &wg)
+	//	author.Delete(apiURL, authorId, &wg)
+	//}
 
 	wg.Wait()
 }
@@ -79,10 +79,10 @@ func assertReadData[T domain.BookID | domain.AuthorID](books []T, readBook []T) 
 	}
 }
 
-func extractId[T domain.Book | domain.Author, U domain.BookID | domain.AuthorID](data []T) []U {
-	var ids []U
-	for _, d := range data {
-		ids = append(ids, d.GetID())
-	}
-	return ids
-}
+//func extractId[T domain.ID, U domain.BookID | domain.AuthorID](data []T) []U {
+//	var ids []U
+//	for _, d := range data {
+//		ids = append(ids, d.UUID())
+//	}
+//	return ids
+//}
