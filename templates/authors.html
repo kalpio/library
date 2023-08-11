@@ -1,7 +1,21 @@
-{{ range $author := .data }}
-<tr>
-    <td>{{ $author.FirstName }}</td>
-    <td>{{ $author.MiddleName }}</td>
-    <td>{{ $author.LastName }}</td>
+{{ $length := .length }}
+{{ $url := printf "/author?page=%d&size=20" .pageIndex }}
+{{ range $i, $author := .data }}
+{{ if eq $i $length }}
+<tr class="odd:bg-white even:bg-slate-50 hover:bg-slate-200"
+    hx-get="{{ $url }}"
+    hx-trigger="revealed"
+    hx-swap="afterend"
+    hx-target="this">
+    <td class="border border-slate-300 p-4 text-slate-500 text-ellipsis">{{ $author.FirstName }}</td>
+    <td class="border border-slate-300 p-4 text-slate-500 text-ellipsis">{{ $author.MiddleName }}</td>
+    <td class="border border-slate-300 p-4 text-slate-500 text-ellipsis">{{ $author.LastName }}</td>
 </tr>
+{{ else }}
+<tr class="odd:bg-white even:bg-slate-50 hover:bg-slate-200">
+    <td class="border border-slate-300 p-4 text-slate-500 text-ellipsis">{{ $author.FirstName }}</td>
+    <td class="border border-slate-300 p-4 text-slate-500 text-ellipsis">{{ $author.MiddleName }}</td>
+    <td class="border border-slate-300 p-4 text-slate-500 text-ellipsis">{{ $author.LastName }}</td>
+</tr>
+{{ end }}
 {{ end }}

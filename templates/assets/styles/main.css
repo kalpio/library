@@ -1,0 +1,29 @@
+*, root {
+  margin: 0;
+  padding: 0;
+  border: 0 transparent none;
+  font-size: 16px;
+}
+
+table {
+  border-spacing: 0;
+  border: 1px solid #ccc;
+  margin: 10px auto;
+  border-radius: 10px;
+  background: #fefefe;
+  box-shadow: 3px 3px 6px #888;
+}
+
+table thead tr {
+  font-family: monospace;
+  font-size: 0.8em;
+}
+
+th {
+  padding: 6px;
+  border-bottom: 1px solid #bbb;
+}
+
+table#authors-table {
+  width: 70%;
+}

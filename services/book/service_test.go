@@ -2,13 +2,6 @@ package book_test
 
 import (
 	"fmt"
-	"github.com/google/uuid"
-	"github.com/pkg/errors"
-	"github.com/samber/lo"
-	log "github.com/sirupsen/logrus"
-	"github.com/stretchr/testify/assert"
-	"gorm.io/driver/sqlite"
-	"gorm.io/gorm"
 	"library/domain"
 	"library/ioc"
 	"library/migrations"
@@ -16,6 +9,14 @@ import (
 	"library/services/author"
 	"library/services/book"
 	"testing"
+
+	"github.com/google/uuid"
+	"github.com/pkg/errors"
+	"github.com/samber/lo"
+	log "github.com/sirupsen/logrus"
+	"github.com/stretchr/testify/assert"
+	"gorm.io/driver/sqlite"
+	"gorm.io/gorm"
 )
 
 var (

@@ -7,6 +7,7 @@ import (
 	"library/application/authors/queries"
 	"library/domain"
 	"net/http"
+	"strconv"
 )
 
 type WebController struct {
@@ -59,7 +60,19 @@ func (a *WebController) Get(ctx *gin.Context) {
 }
 
 func (a *WebController) GetAll(ctx *gin.Context) {
-	query := queries.NewGetAllAuthorsQuery()
+	pageParam := ctx.DefaultQuery("page", "1")
+	sizeParam := ctx.DefaultQuery("size", "10")
+	page, err := strconv.Atoi(pageParam)
+	if err != nil {
+		ctx.HTML(http.StatusBadRequest, "error.html", gin.H{"error": err.Error()})
+		return
+	}
+	size, err := strconv.Atoi(sizeParam)
+	if err != nil {
+		ctx.HTML(http.StatusBadRequest, "error.html", gin.H{"error": err.Error()})
+		return
+	}
+	query := queries.NewGetAllAuthorsQuery(page, size)
 	response, err := mediatr.Send[*queries.GetAllAuthorsQuery, *queries.GetAllAuthorsQueryResponse](
 		ctx.Request.Context(),
 		query)
@@ -69,5 +82,6 @@ func (a *WebController) GetAll(ctx *gin.Context) {
 		return
 	}
 
-	ctx.HTML(http.StatusOK, "authors.html", gin.H{"data": response.Result})
+	length := len(response.Result) - 1
+	ctx.HTML(http.StatusOK, "authors.html", gin.H{"data": response.Result, "pageIndex": page + 1, "length": length})
 }

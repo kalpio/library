@@ -23,6 +23,6 @@ type result struct {
 	UpdatedAt  time.Time       `json:"updated_at"`
 }
 
-func NewGetAllAuthorsQuery() *GetAllAuthorsQuery {
-	return &GetAllAuthorsQuery{}
+func NewGetAllAuthorsQuery(page, size int) *GetAllAuthorsQuery {
+	return &GetAllAuthorsQuery{Page: page, Size: size}
 }

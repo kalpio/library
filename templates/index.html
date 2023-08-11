@@ -4,92 +4,68 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Library</title>
+    <link href="/assets/styles/output.css" rel="stylesheet">
 </head>
 <body>
-    <form id="author-form" hx-post="http://127.0.0.1:8089/author" hx-target="#authors-target" hx-swap="beforeend"
-    data-target-error="#error">
-    <label>
-        First name:
-        <input type="text" id="first_name" name="first_name">
-    </label>
-    <label>
-        Middle name:
-        <input type="text" id="middle_name" name="middle_name">
-    </label>
-    <label>
-        Last name:
-        <input type="text" id="last_name" name="last_name">
-    </label>
-    <input type="submit" value="Submit">
-</form>
-<div id="response">
-    <div id="indicator" class="htmx-indicator">
-        Loading data...
+
+<div class="container mx-auto p-10">
+    <div class="columns-1">
+        <div class="grid grid-flow-row auto-rows-max">
+            <div>
+                <form id="author-form" hx-post="http://127.0.0.1:8089/author" hx-target="#authors-target"
+                      hx-swap="beforeend" data-target-error="#error">
+                    <label>
+                        First name:
+                        <input type="text" id="first_name" name="first_name" class="border border-gray-400 focus:outline-none focus:border-blue-500 rounded h-30 text-lg px-2 py-1">
+                    </label>
+                    <label>
+                        Middle name:
+                        <input type="text" id="middle_name" name="middle_name">
+                    </label>
+                    <label>
+                        Last name:
+                        <input type="text" id="last_name" name="last_name">
+                    </label>
+                    <button type="submit" class="min-w-200 bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">
+                        Save
+                    </button>
+                </form>
+            </div>
+            <div>
+                <div id="response">
+                    <div id="indicator" class="htmx-indicator">
+                        Loading data...
+                    </div>
+                    <table class="table-fixed border-collapse border border-slate-400 border-spacing-2"
+                           id="authors-table"
+                           hx-get="/author/?page=1&size=20"
+                           hx-trigger="load"
+                           hx-swap="innerHTML"
+                           hx-target="#authors-target">
+                        <thead>
+                        <tr>
+                            <th class="border border-slate-300 p-4 text-slate-600 uppercase">First name</th>
+                            <th class="border border-slate-300 p-4 text-slate-600 uppercase">Middle name</th>
+                            <th class="border border-slate-300 p-4 text-slate-600 uppercase">Last name</th>
+                        </tr>
+                        </thead>
+                        <tbody id="authors-target">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
     </div>
-    <table hx-get="/author" hx-trigger="load" hx-swap="innerHTML" hx-target="#authors-target" hx-indicator="#indicator">
-        <thead>
-            <th>First name</th>
-            <th>Middle name</th>
-            <th>Last name</th>
-        </thead>
-        <tbody id="authors-target">
-            
-        </tbody>
-    </table>
 </div>
+
+<center>
+    <img alt="" class="htmx-indicator" width="40" src="assets/images/bars.svg"/>
+</center>
 <div id="error"></div>
 </body>
 <script src="https://unpkg.com/htmx.org@1.9.2"
-integrity="sha384-L6OqL9pRWyyFU3+/bjdSri+iIphTN/bvYyM37tICVyOJkWZLpP2vGn6VUEXgzg6h"
-crossorigin="anonymous"></script>
+        integrity="sha384-L6OqL9pRWyyFU3+/bjdSri+iIphTN/bvYyM37tICVyOJkWZLpP2vGn6VUEXgzg6h"
+        crossorigin="anonymous"></script>
 <script src="https://unpkg.com/htmx.org/dist/ext/json-enc.js"></script>
 <script src="assets/code.jquery.com_jquery-3.7.0.js"></script>
-<script type="text/javascript">
-                    const form = $("#author-form");
-                    form.on("htmx:sendError", () => {
-                        alert("Error sending");
-                    });
-                    
-                    // document.body.addEventListener("htmx:afterRequest", (evt) => {
-                    //     if (evt.detail.failed) {
-                    //         processFailed(evt);
-                    //     } else if (evt.detail.successful) {
-                    //         processSuccess(evt);
-                    //     }
-                    // });
-                    
-                    function processFailed(evt) {
-                        changeErrorVisibility(evt, true);
-                        
-                        const targetError = evt.target.attributes.getNamedItem("data-target-error");
-                        if (!targetError) return;
-                        
-                        let response = JSON.parse(evt.detail.xhr.responseText);
-                        $(targetError.value).css("display", "block");
-                        $(targetError.value).html(response.error);
-                    }
-                    
-                    function processSuccess(evt) {
-                        changeErrorVisibility(evt, false);
-                        
-                        let response = evt.detail.xhr.responseText;
-                        $('#authors-target').append(response);
-                        
-                        clearFields();
-                    }
-                    
-                    function clearFields() {
-                        document.getElementById("first_name").value = "";
-                        document.getElementById("middle_name").value = "";
-                        document.getElementById("last_name").value = "";
-                    }
-                    
-                    function changeErrorVisibility(evt, visible) {
-                        const targetError = evt.target.attributes.getNamedItem("data-target-error");
-                        if (!targetError) return;
-                        
-                        const err = document.querySelector(targetError.value);
-                        err.style.display = visible ? "block" : "none";
-                    }
-                </script>
-                </html>
+</html>
