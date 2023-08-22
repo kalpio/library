@@ -14,21 +14,29 @@
             <div>
                 <form id="author-form" hx-post="http://127.0.0.1:8089/author" hx-target="#authors-target"
                       hx-swap="beforeend" data-target-error="#error">
-                    <label>
-                        First name:
-                        <input type="text" id="first_name" name="first_name" class="border border-gray-400 focus:outline-none focus:border-blue-500 rounded h-30 text-lg px-2 py-1">
-                    </label>
-                    <label>
-                        Middle name:
-                        <input type="text" id="middle_name" name="middle_name">
-                    </label>
-                    <label>
-                        Last name:
-                        <input type="text" id="last_name" name="last_name">
-                    </label>
-                    <button type="submit" class="min-w-200 bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">
-                        Save
-                    </button>
+                    <div class="grid grid-rows-4 grid-cols-3 gap-y-4">
+                        <div class="flex flex-row col-start-2 gap-4">
+                            <label for="first_name" class="basis-1/3 text-right">First name:</label>
+                            <input type="text" id="first_name" name="first_name"
+                                   class="basis-2/3 border border-gray-400 focus:outline-none focus:border-blue-500 rounded h-30 text-lg px-2 py-1">
+                        </div>
+                        <div class="flex flex-row col-start-2 gap-4">
+                            <label for="middle_name" class="basis-1/3 text-right">Middle name:</label>
+                            <input type="text" id="middle_name" name="middle_name"
+                                   class="basis-2/3 border border-gray-400 focus:outline-none focus:border-blue-500 rounded h-30 text-lg px-2 py-1">
+                        </div>
+                        <div class="flex flex-row col-start-2 gap-4">
+                            <label for="last_name" class="basis-1/3 text-right">Last name:</label>
+                            <input type="text" id="last_name" name="last_name"
+                                   class="basis-2/3 border border-gray-400 focus:outline-none focus:border-blue-500 rounded h-30 text-lg px-2 py-1">
+                        </div>
+                        <div class="flex flex-row col-start-2 justify-end">
+                            <button type="submit"
+                                    class="min-w-[200px] bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">
+                                Save
+                            </button>
+                        </div>
+                    </div>
                 </form>
             </div>
             <div>
@@ -58,9 +66,9 @@
     </div>
 </div>
 
-<center>
+<div class="flex justify-center">
     <img alt="" class="htmx-indicator" width="40" src="assets/images/bars.svg"/>
-</center>
+</div>
 <div id="error"></div>
 </body>
 <script src="https://unpkg.com/htmx.org@1.9.2"

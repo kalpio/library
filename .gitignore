@@ -25,3 +25,5 @@ go.work
 library.db
 /library.exe
 bin/
+/tmp/build-errors.log
+/.air.toml
